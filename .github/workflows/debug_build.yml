@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - google-play
   pull_request:
     branches:
       - master
@@ -11,19 +12,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        package_variant: [ apt-android-7, apt-android-5 ]
-
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
 
+      - name: Setup java 17 as required by gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Build APKs
         shell: bash {0}
-        env:
-          PACKAGE_VARIANT: ${{ matrix.package_variant }}
         run: |
           exit_on_error() { echo "$1"; exit 1; }
 
@@ -42,7 +42,7 @@ jobs:
           fi
 
           APK_DIR_PATH="./app/build/outputs/apk/debug"
-          APK_VERSION_TAG="$RELEASE_VERSION_NAME-${{ env.PACKAGE_VARIANT }}-github-debug" # Note the "-", GITHUB_SHA will already have "+" before it
+          APK_VERSION_TAG="$RELEASE_VERSION_NAME-github-debug" # Note the "-", GITHUB_SHA will already have "+" before it
           APK_BASENAME_PREFIX="termux-app_$APK_VERSION_TAG"
 
           # Used by attachment steps later
@@ -53,7 +53,6 @@ jobs:
           echo "Building APKs for 'APK_VERSION_TAG' build"
           export TERMUX_APP_VERSION_NAME="${RELEASE_VERSION_NAME/v/}" # Used by app/build.gradle
           export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
-          export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
           if ! ./gradlew assembleDebug; then
             exit_on_error "Build failed for '$APK_VERSION_TAG' build."
           fi

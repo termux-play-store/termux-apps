@@ -21,8 +21,6 @@ public interface TerminalViewClient {
      */
     float onScale(float scale);
 
-
-
     /**
      * On a single tap on the terminal if terminal mouse reporting not enabled.
      */
@@ -32,23 +30,15 @@ public interface TerminalViewClient {
 
     boolean shouldEnforceCharBasedInput();
 
-    boolean shouldUseCtrlSpaceWorkaround();
-
     boolean isTerminalViewSelected();
 
-
-
     void copyModeChanged(boolean copyMode);
-
-
 
     boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession session);
 
     boolean onKeyUp(int keyCode, KeyEvent e);
 
     boolean onLongPress(MotionEvent event);
-
-
 
     boolean readControlKey();
 
@@ -58,26 +48,6 @@ public interface TerminalViewClient {
 
     boolean readFnKey();
 
-
-
     boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session);
-
-
-    void onEmulatorSet();
-
-
-    void logError(String tag, String message);
-
-    void logWarn(String tag, String message);
-
-    void logInfo(String tag, String message);
-
-    void logDebug(String tag, String message);
-
-    void logVerbose(String tag, String message);
-
-    void logStackTraceWithMessage(String tag, String message, Exception e);
-
-    void logStackTrace(String tag, Exception e);
 
 }

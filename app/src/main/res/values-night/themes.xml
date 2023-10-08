@@ -11,12 +11,8 @@
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/black</item>
         <item name="colorPrimaryVariant">@color/black</item>
-
+ -l
         <item name="android:windowBackground">@color/black</item>
-
-        <!-- Avoid action mode toolbar pushing down terminal content when
-             selecting text on pre-6.0 (non-floating toolbar). -->
-        <item name="android:windowActionModeOverlay">true</item>
 
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>

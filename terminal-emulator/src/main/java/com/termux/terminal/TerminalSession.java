@@ -6,6 +6,7 @@ import android.os.Message;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -88,17 +89,6 @@ public final class TerminalSession extends TerminalOutput {
         this.mClient = client;
     }
 
-    /**
-     * @param client The {@link TerminalSessionClient} interface implementation to allow
-     *               for communication between {@link TerminalSession} and its client.
-     */
-    public void updateTerminalSessionClient(TerminalSessionClient client) {
-        mClient = client;
-
-        if (mEmulator != null)
-            mEmulator.updateTerminalSessionClient(client);
-    }
-
     /** Inform the attached pty of the new size and reflow or initialize the emulator. */
     public void updateSize(int columns, int rows) {
         if (mEmulator == null) {
@@ -126,7 +116,6 @@ public final class TerminalSession extends TerminalOutput {
         int[] processId = new int[1];
         mTerminalFileDescriptor = JNI.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns);
         mShellPid = processId[0];
-        mClient.setTerminalShellPid(this, mShellPid);
 
         final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor, mClient);
 
@@ -237,7 +226,7 @@ public final class TerminalSession extends TerminalOutput {
             try {
                 Os.kill(mShellPid, OsConstants.SIGKILL);
             } catch (ErrnoException e) {
-                Logger.logWarn(mClient, LOG_TAG, "Failed sending SIGKILL: " + e.getMessage());
+                Log.w(LOG_TAG, "Failed sending SIGKILL: " + e.getMessage());
             }
         }
     }

@@ -5,7 +5,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
-/** A combination of {@link GestureDetector} and {@link ScaleGestureDetector}. */
+/**
+ * A combination of {@link GestureDetector} and {@link ScaleGestureDetector}.
+ */
 final class GestureAndScaleRecognizer {
 
     public interface Listener {
