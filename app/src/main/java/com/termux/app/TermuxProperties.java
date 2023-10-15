@@ -33,7 +33,8 @@ public class TermuxProperties {
     }
 
     boolean isBackKeyTheEscapeKey() {
-        return properties.getProperty("back-key", "escape").equalsIgnoreCase("escape");
+        Log.e("termux", "isBackThe='" + properties.getProperty("back-key", "back"));
+        return properties.getProperty("back-key", "back").equalsIgnoreCase("escape");
     }
 
     boolean isEnforcingCharBasedInput() {
@@ -41,7 +42,7 @@ public class TermuxProperties {
     }
 
     boolean areVirtualVolumeKeysDisabled() {
-        return false; // TODO
+        return properties.getProperty("volume-keys", "normal").equalsIgnoreCase("volume");
     }
 
     public String getExtraKeys() {

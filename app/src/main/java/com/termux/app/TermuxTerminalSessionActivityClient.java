@@ -113,8 +113,6 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
 
     private int mBellSoundId;
 
-    private static final String LOG_TAG = "TermuxTerminalSessionActivityClient";
-
     public TermuxTerminalSessionActivityClient(TermuxActivity activity) {
         this.mActivity = activity;
     }
@@ -124,7 +122,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
      */
     public void onCreate() {
         // Set terminal fonts and colors
-        checkForFontAndColors();
+        onReloadActivityStyling();
     }
 
     /**
@@ -160,7 +158,8 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
     public void onStop() {
         // Store current session in shared preferences so that it can be restored later in
         // {@link #onStart} if needed.
-        setCurrentStoredSession();
+        TerminalSession currentSession = mActivity.getCurrentSession();
+        mActivity.mPreferences.setCurrentSession(currentSession == null ? null : currentSession.mHandle);
 
         // Release mBellSoundPool resources, specially to prevent exceptions like the following to be thrown
         // java.util.concurrent.TimeoutException: android.media.SoundPool.finalize() timed out after 10 seconds
@@ -173,8 +172,29 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
      * Should be called when mActivity.reloadActivityStyling() is called
      */
     public void onReloadActivityStyling() {
-        // Set terminal fonts and colors
-        checkForFontAndColors();
+        try {
+            File fontFile = new File(TermuxConstants.FONT_PATH);
+            File colorsFile = new File(TermuxConstants.COLORS_PATH);
+
+            final Properties props = new Properties();
+            if (colorsFile.isFile()) {
+                try (InputStream in = new FileInputStream(colorsFile)) {
+                    props.load(in);
+                }
+            }
+
+            TerminalColors.COLOR_SCHEME.updateWith(props);
+            TerminalSession session = mActivity.getCurrentSession();
+            if (session != null && session.getEmulator() != null) {
+                session.getEmulator().mColors.reset();
+            }
+            updateBackgroundColor();
+
+            final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
+            mActivity.getTerminalView().setTypeface(newTypeface);
+        } catch (Exception e) {
+            Log.e(TermuxConstants.LOG_TAG, "Error in onReloadActivityStyling()", e);
+        }
     }
 
     @Override
@@ -287,7 +307,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
                 mBellSoundId = mBellSoundPool.load(mActivity, com.termux.R.raw.bell, 1);
             } catch (Exception e) {
                 // Catch java.lang.RuntimeException: Unable to resume activity {com.termux/com.termux.app.TermuxActivity}: android.content.res.Resources$NotFoundException: File res/raw/bell.ogg from drawable resource ID
-                Log.e(LOG_TAG, "Failed to load bell sound pool", e);
+                Log.e(TermuxConstants.LOG_TAG, "Failed to load bell sound pool", e);
             }
         }
     }
@@ -392,25 +412,15 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         }
     }
 
-    public void setCurrentStoredSession() {
-        TerminalSession currentSession = mActivity.getCurrentSession();
-        mActivity.mPreferences.setCurrentSession(currentSession == null ? null : currentSession.mHandle);
-        ;
-    }
-
     /**
      * The current session as stored or the last one if that does not exist.
      */
     public TerminalSession getCurrentStoredSessionOrLast() {
-        String currentSessionHandle = mActivity.mPreferences.getCurrentSession();
-        if (currentSessionHandle == null) {
-            return null;
-        }
-
         // Check if the session handle found matches one of the currently running sessions
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return null;
 
+        String currentSessionHandle = mActivity.mPreferences.getCurrentSession();
         TerminalSession currentSession = service.getTerminalSessionForHandle(currentSessionHandle);
 
         if (currentSession == null) {
@@ -480,33 +490,6 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
             toastTitle.append(title);
         }
         return toastTitle.toString();
-    }
-
-
-    public void checkForFontAndColors() {
-        try {
-            File fontFile = new File(TermuxConstants.HOME_PATH + "/.termux/font.ttf");
-            File colorsFile = new File(TermuxConstants.HOME_PATH + "/.termux/colors.properties");
-
-            final Properties props = new Properties();
-            if (colorsFile.isFile()) {
-                try (InputStream in = new FileInputStream(colorsFile)) {
-                    props.load(in);
-                }
-            }
-
-            TerminalColors.COLOR_SCHEME.updateWith(props);
-            TerminalSession session = mActivity.getCurrentSession();
-            if (session != null && session.getEmulator() != null) {
-                session.getEmulator().mColors.reset();
-            }
-            updateBackgroundColor();
-
-            final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
-            mActivity.getTerminalView().setTypeface(newTypeface);
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Error in checkForFontAndColors()", e);
-        }
     }
 
     public void updateBackgroundColor() {

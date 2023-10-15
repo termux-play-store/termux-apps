@@ -27,7 +27,7 @@ public class TextSelectionCursorController implements CursorController {
     private long mShowStartTime = System.currentTimeMillis();
 
     private final int mHandleHeight;
-    private int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
+    public int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
 
     private ActionMode mActionMode;
     public final int ACTION_COPY = 1;
@@ -353,16 +353,6 @@ public class TextSelectionCursorController implements CursorController {
         return mIsSelectingText;
     }
 
-    public void getSelectors(int[] sel) {
-        if (sel == null || sel.length != 4) {
-            return;
-        }
-
-        sel[0] = mSelY1;
-        sel[1] = mSelY2;
-        sel[2] = mSelX1;
-        sel[3] = mSelX2;
-    }
 
     /** Get the currently selected text. */
     public String getSelectedText() {

@@ -44,6 +44,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,8 +81,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
 
-    private static final String LOG_TAG = "TermuxActivity";
-
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
      * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
@@ -104,7 +103,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
      * The {@link TerminalSessionClient} interface implementation to allow for communication between
      * {@link TerminalSession} and {@link TermuxActivity}.
      */
-    TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
+    final TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient = new TermuxTerminalSessionActivityClient(this);
 
     /**
      * The terminal extra keys view.
@@ -132,7 +131,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     Toast mLastToast;
 
     /**
-     * If between onResume() and onStop(). Note that only one session is in the foreground of the terminal view at the
+     * If between onStart() and onStop(). Note that only one session is in the foreground of the terminal view at the
      * time, so if the session causing a change is not in the foreground it should probably be treated as background.
      */
     private boolean mIsVisible;
@@ -156,7 +155,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setContentView(R.layout.activity_termux);
 
-        mTermuxTerminalSessionActivityClient = new TermuxTerminalSessionActivityClient(this);
         mTermuxTerminalViewClient = new TermuxTerminalViewClient(this, mTermuxTerminalSessionActivityClient);
 
         mTerminalView = findViewById(R.id.terminal_view);
@@ -208,38 +206,26 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @Override
     public void onStart() {
         super.onStart();
-
         mIsVisible = true;
         mTermuxTerminalSessionActivityClient.onStart();
-
         if (mTermuxTerminalViewClient != null) {
             mTermuxTerminalViewClient.onStart();
         }
-
         registerTermuxActivityBroadcastReceiver();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
-        if (mTermuxTerminalSessionActivityClient != null) {
-            mTermuxTerminalSessionActivityClient.onResume();
-        }
+        mTermuxTerminalSessionActivityClient.onResume();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
         mIsVisible = false;
-
-        if (mTermuxTerminalSessionActivityClient != null) {
-            mTermuxTerminalSessionActivityClient.onStop();
-        }
-
+        mTermuxTerminalSessionActivityClient.onStop();
         unregisterReceiver(mTermuxActivityBroadcastReceiver);
-
         getDrawer().closeDrawers();
     }
 
@@ -265,6 +251,42 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
         savedInstanceState.putBoolean(ARG_ACTIVITY_RECREATED, true);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.e("termux", "NEW INTENT: " + intent.getAction());
+        try {
+            if ("com.termux.app.NEW_STYLE".equals(intent.getAction())) {
+                byte[] newFont = intent.getByteArrayExtra("com.termux.app.extra.NEW_FONT");
+                if (newFont != null) {
+                    File fontFile = new File(TermuxConstants.FONT_PATH);
+                    if (newFont.length == 0) {
+                        fontFile.delete();
+                    } else {
+                        try (FileOutputStream fos = new FileOutputStream(fontFile)) {
+                            fos.write(newFont);
+                        }
+                    }
+                }
+                byte[] newColors = intent.getByteArrayExtra("com.termux.app.extra.NEW_COLORS");
+                if (newColors != null) {
+                    File colorsFile = new File(TermuxConstants.COLORS_PATH);
+                    if (newColors.length == 0) {
+                        colorsFile.delete();
+                    } else {
+                        try (FileOutputStream fos = new FileOutputStream(colorsFile)) {
+                            fos.write(newColors);
+                        }
+                    }
+                }
+                mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
+            }
+        } catch (Exception e) {
+            Log.e(TermuxConstants.LOG_TAG, "Error handling new intent", e);
+            TermuxMessageDialogUtils.showToast(this, "Error handling new intent: " + e.getMessage());
+        }
     }
 
     /**
@@ -516,6 +538,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         try {
             startActivity(stylingIntent);
         } catch (ActivityNotFoundException | IllegalArgumentException e) {
+            Log.e(TermuxConstants.LOG_TAG, "Error starting Termux:Style", e);
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.
             String installationUrl = isInstalledFromGooglePlay()
@@ -612,7 +635,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_RELOAD_STYLE);
         intentFilter.addAction(ACTION_REQUEST_PERMISSIONS);
-
         if (Build.VERSION.SDK_INT >= 33) {
             registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter, Context.RECEIVER_NOT_EXPORTED);
         } else {
@@ -623,6 +645,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.e("termux", "onReceive. visible=" + mIsVisible + ", action=" + intent.getAction());
             if (mIsVisible) {
                 switch (intent.getAction()) {
                     case ACTION_RELOAD_STYLE:
@@ -644,7 +667,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setTerminalToolbarHeight();
 
-        if (mTermuxTerminalSessionActivityClient != null)
-            mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
+        mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
     }
 }

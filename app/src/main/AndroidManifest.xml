@@ -12,14 +12,14 @@
         android:required="false" />
 
     <permission
-        android:name="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND"
+        android:name="com.termux.permission.RUN_COMMAND"
         android:description="@string/permission_run_command_description"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/permission_run_command_label"
         android:protectionLevel="dangerous" />
 
     <permission
-        android:name="com.termux.permission.internal"
+        android:name="com.termux.permission.TERMUX_INTERNAL"
         android:description="@string/permission_run_command_description"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/permission_run_command_label"
@@ -70,14 +70,15 @@
         </activity>
         <activity-alias
             android:name=".app.TermuxActivityInternal"
-            android:targetActivity=".app.TermuxActivity"/>
+            android:targetActivity=".app.TermuxActivity"
+            android:exported="true"
+            android:permission="com.termux.permission.TERMUX_INTERNAL" />
 
         <activity
             android:name=".app.TermuxHelpActivity"
             android:exported="false"
             android:parentActivityName=".app.TermuxActivity"
-            android:resizeableActivity="true"
-            tools:targetApi="n" />
+            android:resizeableActivity="true" />
 
         <activity
             android:name=".app.TermuxFileReceiverActivity"

@@ -39,7 +39,7 @@ public class TermuxPreferences {
     }
 
     public String getCurrentSession() {
-        return prefs.getString(PREF_KEEP_SCREEN_ON, null);
+        return prefs.getString(PREF_CURRENT_SESSION, null);
     }
 
     public void setShowTerminalToolbar(boolean newValue) {
