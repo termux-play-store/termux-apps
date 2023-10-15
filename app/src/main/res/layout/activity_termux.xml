@@ -1,6 +1,5 @@
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/activity_termux_root_relative_layout"
         android:layout_width="match_parent"
@@ -39,20 +38,6 @@
                 android:descendantFocusability="blocksDescendants"
                 android:orientation="vertical"
                 android:background="?attr/termuxActivityDrawerBackground">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <ImageButton
-                        android:id="@+id/settings_button"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_settings"
-                        android:background="@null"
-                        android:contentDescription="@string/action_open_settings"
-                        app:tint="?attr/termuxActivityDrawerImageTint" />
-                </LinearLayout>
 
                 <ListView
                     android:id="@+id/terminal_sessions_list"

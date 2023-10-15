@@ -38,17 +38,4 @@
         </intent>
     </shortcut>
 
-    <shortcut
-        android:shortcutId="settings"
-        android:enabled="true"
-        android:icon="@drawable/ic_settings"
-        android:shortcutShortLabel="@string/action_open_settings"
-        tools:targetApi="n_mr1">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="com.termux"
-            android:targetClass="com.termux.app.activities.SettingsActivity"
-            android:name="android.shortcut.conversation"/>
-    </shortcut>
-
 </shortcuts>
