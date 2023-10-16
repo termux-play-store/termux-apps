@@ -55,10 +55,7 @@ final class TermuxInstaller {
      * Performs bootstrap setup if necessary.
      */
     static void setupBootstrapIfNeeded(final Activity activity, final Runnable whenDone) {
-        String bootstrapErrorMessage;
-        Error filesDirectoryAccessibleError;
-
-        // Ensure that termux files directory is created if it does not already exist:
+        // Ensure that termux files and home directory is created if it does not already exist:
         new File(activity.getFilesDir(), "home").mkdir();
 
         // Termux can only be run as the primary user (device owner) since only that
@@ -66,7 +63,7 @@ final class TermuxInstaller {
         UserManager userManager = (UserManager) activity.getSystemService(Context.USER_SERVICE);
         boolean isCurrentUserPrimary = userManager.getSerialNumberForUser(UserHandle.getUserHandleForUid(activity.getApplicationInfo().uid)) == 0;
         if (!isCurrentUserPrimary) {
-            bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message);
+            String bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message);
             TermuxMessageDialogUtils.exitAppWithErrorMessage(activity, activity.getString(R.string.bootstrap_error_title), bootstrapErrorMessage);
             return;
         }
@@ -144,8 +141,6 @@ final class TermuxInstaller {
                         }
                     }
 
-                    if (symlinks.isEmpty())
-                        throw new RuntimeException("No SYMLINKS.txt encountered");
                     for (Pair<String, String> symlink : symlinks) {
                         Os.symlink(symlink.first, symlink.second);
                     }
