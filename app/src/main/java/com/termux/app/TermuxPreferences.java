@@ -6,9 +6,6 @@ import android.util.TypedValue;
 
 public class TermuxPreferences {
 
-    private static final int MAX_FONTSIZE = 256;
-    private static final int MIN_FONTSIZE = 256;
-
     private static final String PREF_KEEP_SCREEN_ON = "screen_on";
     private static final String PREF_CURRENT_SESSION = "current_session";
     private static final String PREF_FONT_SIZE = "font_size";
@@ -64,7 +61,7 @@ public class TermuxPreferences {
         int fontSize = getFontSize();
 
         fontSize += (increase ? 1 : -1) * 2;
-        fontSize = Math.max(MIN_FONTSIZE, Math.min(fontSize, MAX_FONTSIZE));
+        fontSize = Math.max(minFontSize, Math.min(fontSize, maxFontSize));
 
         prefs.edit().putInt(PREF_FONT_SIZE, fontSize).apply();
         return fontSize;
