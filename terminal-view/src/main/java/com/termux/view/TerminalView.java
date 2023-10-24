@@ -50,6 +50,13 @@ import com.termux.view.textselection.TextSelectionCursorController;
 public final class TerminalView extends View {
 
     /**
+     * The {@link KeyEvent} is generated from a non-physical device, like if 0 value is returned by {@link KeyEvent#getDeviceId()}.
+     */
+    public final static int KEY_EVENT_SOURCE_SOFT_KEYBOARD = 0;
+
+    private static final String LOG_TAG = "TerminalView";
+
+    /**
      * Log terminal view key and IME events.
      */
     private static final boolean TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
@@ -105,19 +112,11 @@ public final class TerminalView extends View {
      */
     int mCombiningAccent;
 
+    boolean mCtrlHeld;
+    boolean mShiftHeld;
+    boolean mAltHeld;
+
     private final boolean mAccessibilityEnabled;
-
-    /**
-     * The {@link KeyEvent} is generated from a virtual keyboard, like manually with the {@link KeyEvent#KeyEvent(int, int)} constructor.
-     */
-    public final static int KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD = KeyCharacterMap.VIRTUAL_KEYBOARD; // -1
-
-    /**
-     * The {@link KeyEvent} is generated from a non-physical device, like if 0 value is returned by {@link KeyEvent#getDeviceId()}.
-     */
-    public final static int KEY_EVENT_SOURCE_SOFT_KEYBOARD = 0;
-
-    private static final String LOG_TAG = "TerminalView";
 
     public TerminalView(Context context, AttributeSet attributes) { // NO_UCD (unused code)
         super(context, attributes);
@@ -544,7 +543,7 @@ public final class TerminalView extends View {
                 mMouseScrollStartY = y;
             }
         }
-        mEmulator.sendMouseEvent(button, x, y, pressed);
+        mEmulator.sendMouseEvent(button, x, y, pressed, mShiftHeld, mAltHeld, mCtrlHeld);
     }
 
     /**
@@ -628,17 +627,12 @@ public final class TerminalView extends View {
             Log.i(LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
         }
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (isSelectingText()) {
-                stopTextSelectionMode();
-                return true;
-            } else if (mClient.shouldBackButtonBeMappedToEscape()) {
-                // Intercept back button to treat it as escape:
-                switch (event.getAction()) {
-                    case KeyEvent.ACTION_DOWN:
-                        return onKeyDown(keyCode, event);
-                    case KeyEvent.ACTION_UP:
-                        return onKeyUp(keyCode, event);
-                }
+            Log.e("termux", "KEYCODE BACK PRE IME");
+            switch (event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    return onKeyDown(keyCode, event);
+                case KeyEvent.ACTION_UP:
+                    return onKeyUp(keyCode, event);
             }
         }
         return super.onKeyPreIme(keyCode, event);
@@ -742,9 +736,12 @@ public final class TerminalView extends View {
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
+        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
             Log.i(LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
-        if (mEmulator == null) return true;
+        }
+        if (mEmulator == null) {
+            return true;
+        }
         if (isSelectingText()) {
             stopTextSelectionMode();
         }
@@ -752,7 +749,7 @@ public final class TerminalView extends View {
         if (mClient.onKeyDown(keyCode, event, mTermSession)) {
             invalidate();
             return true;
-        } else if (event.isSystem() && (!mClient.shouldBackButtonBeMappedToEscape() || keyCode != KeyEvent.KEYCODE_BACK)) {
+        } else if (event.isSystem()) {
             return super.onKeyDown(keyCode, event);
         } else if (event.getAction() == KeyEvent.ACTION_MULTIPLE && keyCode == KeyEvent.KEYCODE_UNKNOWN) {
             mTermSession.write(event.getCharacters());
@@ -760,6 +757,9 @@ public final class TerminalView extends View {
         }
 
         final int metaState = event.getMetaState();
+        mCtrlHeld = event.isCtrlPressed();
+        mAltHeld = event.isAltPressed();
+        mShiftHeld = event.isShiftPressed();
         final boolean controlDown = event.isCtrlPressed() || mClient.readControlKey();
         final boolean leftAltDown = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0 || mClient.readAltKey();
         final boolean shiftDown = event.isShiftPressed() || mClient.readShiftKey();
@@ -824,10 +824,6 @@ public final class TerminalView extends View {
 
         if (mTermSession == null) return;
 
-        // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
-        if (mEmulator != null)
-            mEmulator.setCursorBlinkState(true);
-
         final boolean controlDown = controlDownFromEvent || mClient.readControlKey();
         final boolean altDown = leftAltDownFromEvent || mClient.readAltKey();
 
@@ -885,16 +881,15 @@ public final class TerminalView extends View {
      * Input the specified keyCode if applicable and return if the input was consumed.
      */
     public boolean handleKeyCode(int keyCode, int keyMod) {
-        // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
-        if (mEmulator != null)
-            mEmulator.setCursorBlinkState(true);
-
-        if (handleKeyCodeAction(keyCode, keyMod))
+        if (handleKeyCodeAction(keyCode, keyMod)) {
             return true;
+        }
 
         TerminalEmulator term = mTermSession.getEmulator();
         String code = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(), term.isKeypadApplicationMode());
-        if (code == null) return false;
+        if (code == null) {
+            return false;
+        }
         mTermSession.write(code);
         return true;
     }
@@ -928,12 +923,15 @@ public final class TerminalView extends View {
      */
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
+        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
             Log.i(LOG_TAG, "onKeyUp(keyCode=" + keyCode + ", event=" + event + ")");
+        }
 
-        // Do not return for KEYCODE_BACK and send it to the client since user may be trying
-        // to exit the activity.
-        if (mEmulator == null && keyCode != KeyEvent.KEYCODE_BACK) return true;
+        if (mEmulator == null && keyCode != KeyEvent.KEYCODE_BACK) {
+            // Do not return for KEYCODE_BACK and send it to the client
+            // since user may be trying to exit the activity.
+            return true;
+        }
 
         if (mClient.onKeyUp(keyCode, event)) {
             invalidate();
@@ -964,7 +962,7 @@ public final class TerminalView extends View {
         if (viewWidth == 0 || viewHeight == 0 || mTermSession == null) return;
 
         // https://developer.android.com/develop/ui/views/layout/insets/rounded-corner
-        if (Build.VERSION.SDK_INT >= 31) {
+        if (Build.VERSION.SDK_INT >= 50) {
             WindowInsets insets = getRootWindowInsets();
             RoundedCorner topLeft = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT);
             RoundedCorner topRight = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT);
@@ -1083,7 +1081,7 @@ public final class TerminalView extends View {
     @Override
     public void autofill(AutofillValue value) {
         if (value.isText()) {
-            mTermSession.write(value.getTextValue().toString());
+            mTermSession.write(value.getTextValue() + "\n");
         }
     }
 

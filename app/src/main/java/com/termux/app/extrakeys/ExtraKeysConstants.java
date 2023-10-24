@@ -2,20 +2,12 @@ package com.termux.app.extrakeys;
 
 import android.view.KeyEvent;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class ExtraKeysConstants {
+public final class ExtraKeysConstants {
 
-    /** Defines the repetitive keys that can be passed to {@link ExtraKeysView#setRepetitiveKeys(List)}. */
-    public static List<String> PRIMARY_REPETITIVE_KEYS = Arrays.asList(
-        "UP", "DOWN", "LEFT", "RIGHT",
-        "BKSP", "DEL",
-        "PGUP", "PGDN"
-    );
-
+    public static class ExtraKeyDisplayMap extends HashMap<String, String> {}
 
     /** Defines the {@link KeyEvent} for common keys. */
     public static Map<String, Integer> PRIMARY_KEY_CODES_FOR_STRINGS = new HashMap<String, Integer>() {{
@@ -25,6 +17,7 @@ public class ExtraKeysConstants {
         put("HOME", KeyEvent.KEYCODE_MOVE_HOME);
         put("END", KeyEvent.KEYCODE_MOVE_END);
         put("PGUP", KeyEvent.KEYCODE_PAGE_UP);
+
         put("PGDN", KeyEvent.KEYCODE_PAGE_DOWN);
         put("INS", KeyEvent.KEYCODE_INSERT);
         put("DEL", KeyEvent.KEYCODE_FORWARD_DEL);
@@ -48,34 +41,12 @@ public class ExtraKeysConstants {
         put("F12", KeyEvent.KEYCODE_F12);
     }};
 
-
-
-    /**
-     * HashMap that implements Python dict.get(key, default) function.
-     * Default java.util .get(key) is then the same as .get(key, null);
-     */
-    static class CleverMap<K,V> extends HashMap<K,V> {
-        V get(K key, V defaultValue) {
-            if (containsKey(key))
-                return get(key);
-            else
-                return defaultValue;
-        }
-    }
-
-    public static class ExtraKeyDisplayMap extends CleverMap<String, String> {}
-
-
-
     /*
      * Multiple maps are available to quickly change
      * the style of the keys.
      */
 
     public static class EXTRA_KEY_DISPLAY_MAPS {
-        /**
-         * Keys are displayed in a natural looking way, like "→" for "RIGHT"
-         */
         public static final ExtraKeyDisplayMap CLASSIC_ARROWS_DISPLAY = new ExtraKeyDisplayMap() {{
             // classic arrow keys (for ◀ ▶ ▲ ▼ @see arrowVariationDisplay)
             put("LEFT", "←"); // U+2190 ← LEFTWARDS ARROW

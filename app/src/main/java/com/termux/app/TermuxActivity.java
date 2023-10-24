@@ -1,6 +1,8 @@
 package com.termux.app;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -12,21 +14,30 @@ import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
+import com.google.android.material.navigation.NavigationView;
 import com.termux.R;
 import com.termux.app.extrakeys.ExtraKeysView;
 import com.termux.app.extrakeys.TermuxTerminalExtraKeys;
@@ -36,9 +47,14 @@ import com.termux.terminal.TerminalSessionClient;
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
@@ -46,6 +62,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,7 +93,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final int CONTEXT_MENU_STYLING_ID = 5;
     private static final int CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON = 6;
     private static final int CONTEXT_MENU_HELP_ID = 7;
-    private static final int CONTEXT_MENU_REPORT_ID = 8;
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
@@ -165,7 +181,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setTerminalToolbarView(savedInstanceState);
 
-        View newSessionButton = findViewById(R.id.new_session_button);
+        setupDrawerMenu();
+
+        /*
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        Menu menu = navigationView.getMenu();
+        MenuItem newSessionItem = menu.findItem(R.id.new_session);
+        newSessionItem.setOnMenuItemClickListener(item -> {
+            mTermuxTerminalSessionActivityClient.addNewSession(false, null);
+            return true;
+        });
+        View newSessionButton = findViewById()
         newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
             TermuxMessageDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
@@ -174,8 +200,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 -1, null, null);
             return true;
         });
-
-        View toggleKeyboardButton = findViewById(R.id.toggle_keyboard_button);
+        MenuItem toggleKeyboardButton = menu.findItem(R.id.toggle_keyboard);
+        toggleKeyboardButton.setOnMenuItemClickListener(item -> {
+            mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
+            getDrawer().closeDrawers();
+            return true;
+        });
         toggleKeyboardButton.setOnClickListener(v -> {
             mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
             getDrawer().closeDrawers();
@@ -184,6 +214,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             toggleTerminalToolbar();
             return true;
         });
+         */
 
         registerForContextMenu(mTerminalView);
 
@@ -194,13 +225,39 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         } else {
             startService(serviceIntent);
         }
-        ;
 
         // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
         // callback if it succeeds.
         if (!bindService(serviceIntent, this, 0)) {
             throw new RuntimeException("bindService() failed");
         }
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
+                        getDrawer().closeDrawers();
+                    } else {
+                        getDrawer().openDrawer(Gravity.LEFT);
+                    }
+
+                }
+            });
+        }
+
+        //var intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        //startActivityForResult(intent, 2332,null);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == 2332 && resultCode == Activity.RESULT_OK) {
+            Log.e("termux", "OK: " + data.getData());
+            DocumentFile pickedDir = DocumentFile.fromTreeUri(this, data.getData());
+            Log.e("termux", "Environment.getExternalStorageDirectory().getPath(): " + Environment.getExternalStorageDirectory().getPath());
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -218,6 +275,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onResume() {
         super.onResume();
         mTermuxTerminalSessionActivityClient.onResume();
+        if (!mPreferences.isFullscreen()) {
+            mTerminalView.requestFocus();
+        }
+        applyFullscreenSetting(mPreferences.isFullscreen());
     }
 
     @Override
@@ -256,7 +317,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Log.e("termux", "NEW INTENT: " + intent.getAction());
         try {
             if ("com.termux.app.NEW_STYLE".equals(intent.getAction())) {
                 byte[] newFont = intent.getByteArrayExtra("com.termux.app.extra.NEW_FONT");
@@ -298,12 +358,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onServiceConnected(ComponentName componentName, IBinder service) {
         mTermuxService = ((TermuxService.LocalBinder) service).service;
 
+/*
         ListView termuxSessionsListView = findViewById(R.id.terminal_sessions_list);
         mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getTermuxSessions());
         termuxSessionsListView.setAdapter(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemClickListener(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
-
+ */
 
         final Intent intent = getIntent();
         if (intent != null) {
@@ -340,6 +401,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         // Update the {@link TerminalSession} and {@link TerminalEmulator} clients.
         mTermuxService.setTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
+
+        termuxSessionListNotifyUpdated();
     }
 
     @Override
@@ -405,13 +468,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }
     }
 
-    @SuppressLint("RtlHardcoded")
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
             getDrawer().closeDrawers();
         } else {
-            finishActivityIfNotFinishing();
+            getDrawer().openDrawer(Gravity.LEFT);
         }
     }
 
@@ -459,7 +522,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         menu.add(Menu.NONE, CONTEXT_MENU_STYLING_ID, Menu.NONE, R.string.action_style_terminal);
         menu.add(Menu.NONE, CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.action_toggle_keep_screen_on).setCheckable(true).setChecked(mTerminalView.getKeepScreenOn());
         menu.add(Menu.NONE, CONTEXT_MENU_HELP_ID, Menu.NONE, R.string.action_open_help);
-        menu.add(Menu.NONE, CONTEXT_MENU_REPORT_ID, Menu.NONE, R.string.action_report_issue);
     }
 
     /**
@@ -606,8 +668,66 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
 
+    private SubMenu mSessionsSubMenu;
+    private SubMenu mTasksSubMenu;
+
+    public void setupDrawerMenu() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        Menu menu = navigationView.getMenu();
+        menu.clear();
+        navigationView.inflateMenu(R.menu.drawer_menu);
+        menu = navigationView.getMenu();
+
+        navigationView.getRootView().setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Log.e("termux", "ON LONG CLICK: " + v);
+                return false;
+            }
+        });
+
+        mSessionsSubMenu = menu.addSubMenu("Sessions");
+        SubMenu toolsSubMenu = menu.addSubMenu("Tools");
+
+        if (mTermuxService != null) {
+            int i = 0;
+            for (TermuxSession session : mTermuxService.getTermuxSessions()) {
+                i++;
+
+                String numberPart = "[" + i + "] ";
+                String sessionNamePart = (TextUtils.isEmpty(session.mTerminalSession.mSessionName) ? "" : session.mTerminalSession.mSessionName);
+                String sessionTitlePart = (TextUtils.isEmpty(session.mTerminalSession.getTitle()) ? "" : ((sessionNamePart.isEmpty() ? "" : "\n") + session.mTerminalSession.getTitle()));
+
+                String title = numberPart + sessionTitlePart;
+                MenuItem sessionsItem = mSessionsSubMenu.add(title);
+                sessionsItem.setOnMenuItemClickListener(item -> {
+                    getTermuxTerminalSessionClient().setCurrentSession(session.mTerminalSession);
+                    getDrawer().closeDrawers();
+                    return true;
+                });
+            }
+        }
+
+        MenuItem keyboardItem = toolsSubMenu.add("Keyboard");
+        keyboardItem.setIcon(R.drawable.icon_keyboard);
+        keyboardItem.setOnMenuItemClickListener(item -> {
+            mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
+            getDrawer().closeDrawers();
+            return true;
+        });
+
+        MenuItem newSessionItem = toolsSubMenu.add("New session");
+        newSessionItem.setIcon(R.drawable.icon_add);
+        newSessionItem.setOnMenuItemClickListener(item -> {
+            mTermuxTerminalSessionActivityClient.addNewSession(false, null);
+            getDrawer().closeDrawers();
+            return true;
+        });
+        mTasksSubMenu = menu.addSubMenu("Sessions");
+    }
+
     public void termuxSessionListNotifyUpdated() {
-        mTermuxSessionListViewController.notifyDataSetChanged();
+        setupDrawerMenu();
     }
 
     public boolean isVisible() {
@@ -645,11 +765,15 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.e("termux", "onReceive. visible=" + mIsVisible + ", action=" + intent.getAction());
+            Log.e("termux", "ONRECEIVE: " + intent.getAction() + ", isVisible=" + isVisible());
             if (mIsVisible) {
                 switch (intent.getAction()) {
                     case ACTION_RELOAD_STYLE:
-                        reloadActivityStyling();
+                        if ("storage".equals(intent.getStringExtra(ACTION_RELOAD_STYLE))) {
+                            TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
+                        } else {
+                            reloadActivityStyling();
+                        }
                         return;
                     default:
                 }
@@ -669,4 +793,25 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
     }
+
+    void applyFullscreenSetting(boolean doFullscreen) {
+        WindowInsetsControllerCompat windowInsetsController =
+            WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        View rootView = findViewById(R.id.activity_termux_root_relative_layout);
+        if (doFullscreen) {
+            rootView.setFitsSystemWindows(false);
+            rootView.setPadding(0, 0, 0, 0);
+
+            windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
+            windowInsetsController.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+
+            InputMethodManager imm = getSystemService(InputMethodManager.class);
+            imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
+        } else {
+            rootView.setFitsSystemWindows(true);
+            windowInsetsController.show(WindowInsetsCompat.Type.systemBars());
+        }
+    }
+
 }

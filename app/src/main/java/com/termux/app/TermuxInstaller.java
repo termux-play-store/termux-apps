@@ -49,8 +49,6 @@ final class TermuxInstaller {
 
     private static final String TERMUX_STAGING_PREFIX_DIR_PATH = TermuxConstants.FILES_PATH + "/usr-staging"; // Default: "/data/data/com.termux/files/usr-staging"
 
-    private static final String LOG_TAG = "TermuxInstaller";
-
     /**
      * Performs bootstrap setup if necessary.
      */
@@ -149,7 +147,7 @@ final class TermuxInstaller {
 
                     activity.runOnUiThread(whenDone);
                 } catch (final Exception e) {
-                    Log.e(LOG_TAG, "Error in installation", e);
+                    Log.e(TermuxConstants.LOG_TAG, "Error in installation", e);
                     showBootstrapErrorDialog(activity, whenDone, "Error in installation: " + e.getMessage());
                 } finally {
                     activity.runOnUiThread(() -> {
@@ -165,7 +163,7 @@ final class TermuxInstaller {
     }
 
     public static void showBootstrapErrorDialog(Activity activity, Runnable whenDone, String message) {
-        Log.e(LOG_TAG, "Bootstrap Error: " + message);
+        Log.e(TermuxConstants.LOG_TAG, "Bootstrap Error: " + message);
 
         activity.runOnUiThread(() -> {
             try {
@@ -186,7 +184,7 @@ final class TermuxInstaller {
     }
 
     static void setupStorageSymlinks(final Context context) {
-        Log.i(LOG_TAG, "Setting up storage symlinks.");
+        Log.i(TermuxConstants.LOG_TAG, "Setting up storage symlinks.");
 
         new Thread() {
             public void run() {
@@ -197,7 +195,7 @@ final class TermuxInstaller {
                         throw new RuntimeException("Unable to clear ~/storage");
                     }
 
-                    Log.i(LOG_TAG, "Setting up storage symlinks at ~/storage/shared, ~/storage/downloads, ~/storage/dcim, ~/storage/pictures, ~/storage/music and ~/storage/movies for directories in \"" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\".");
+                    Log.i(TermuxConstants.LOG_TAG, "Setting up storage symlinks at ~/storage/shared, ~/storage/downloads, ~/storage/dcim, ~/storage/pictures, ~/storage/music and ~/storage/movies for directories in \"" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\".");
 
                     // Get primary storage root "/storage/emulated/0" symlink
                     File sharedDir = Environment.getExternalStorageDirectory();
@@ -243,7 +241,6 @@ final class TermuxInstaller {
                             File dir = dirs[i];
                             if (dir == null) continue;
                             String symlinkName = "external-" + i;
-                            Log.i(LOG_TAG, "Setting up storage symlinks at ~/storage/" + symlinkName + " for \"" + dir.getAbsolutePath() + "\".");
                             Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
                         }
                     }
@@ -255,7 +252,6 @@ final class TermuxInstaller {
                             File dir = dirs[i];
                             if (dir == null) continue;
                             String symlinkName = "media-" + i;
-                            Log.i(LOG_TAG, "Setting up storage symlinks at ~/storage/" + symlinkName + " for \"" + dir.getAbsolutePath() + "\".");
                             Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
                         }
                     }
@@ -269,10 +265,12 @@ final class TermuxInstaller {
     public static boolean deleteDir(File dir) {
         if (dir.isDirectory()) {
             String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
-                if (!success) {
-                    return false;
+            if (children != null) {
+                for (int i = 0; i < children.length; i++) {
+                    boolean success = deleteDir(new File(dir, children[i]));
+                    if (!success) {
+                        return false;
+                    }
                 }
             }
         }

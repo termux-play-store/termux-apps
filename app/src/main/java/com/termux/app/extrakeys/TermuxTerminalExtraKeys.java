@@ -1,8 +1,8 @@
 package com.termux.app.extrakeys;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -20,7 +20,7 @@ import org.json.JSONException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TermuxTerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
+public class TermuxTerminalExtraKeys {
     public static Map<String, Integer> PRIMARY_KEY_CODES_FOR_STRINGS = new HashMap<>() {{
         put("SPACE", KeyEvent.KEYCODE_SPACE);
         put("ESC", KeyEvent.KEYCODE_ESCAPE);
@@ -139,13 +139,12 @@ public class TermuxTerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
             } else {
                 // not a control char
                 key.codePoints().forEach(codePoint -> {
-                    mActivity.getTerminalView().inputCodePoint(TerminalView.KEY_EVENT_SOURCE_VIRTUAL_KEYBOARD, codePoint, ctrlDown, altDown);
+                    mActivity.getTerminalView().inputCodePoint(KeyCharacterMap.VIRTUAL_KEYBOARD, codePoint, ctrlDown, altDown);
                 });
             }
         }
     }
 
-    @Override
     public void onExtraKeyButtonClick(View view, ExtraKeyButton buttonInfo, MaterialButton button) {
         if (buttonInfo.isMacro()) {
             String[] keys = buttonInfo.getKey().split(" ");
@@ -172,7 +171,6 @@ public class TermuxTerminalExtraKeys implements ExtraKeysView.IExtraKeysView {
         }
     }
 
-    @Override
     public boolean performExtraKeyButtonHapticFeedback(View view, ExtraKeyButton buttonInfo, MaterialButton button) {
         return false;
     }

@@ -69,7 +69,9 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
         if (session != null) {
             TerminalEmulator term = mActivity.getCurrentSession().getEmulator();
             if (!term.isMouseTrackingActive() && !e.isFromSource(InputDevice.SOURCE_MOUSE)) {
-                mActivity.getSystemService(InputMethodManager.class).showSoftInput(mActivity.getTerminalView(), 0);
+                if (!mActivity.mPreferences.isFullscreen()) {
+                    mActivity.getSystemService(InputMethodManager.class).showSoftInput(mActivity.getTerminalView(), 0);
+                }
             }
         }
     }
@@ -98,7 +100,9 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
     @SuppressLint("RtlHardcoded")
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession currentSession) {
-        if (handleVirtualKeys(keyCode, e, true)) return true;
+        if (handleVirtualKeys(keyCode, e, true)) {
+            return true;
+        }
 
         if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
             mTermuxTerminalSessionActivityClient.removeFinishedSession(currentSession);
@@ -127,12 +131,19 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
                 showUrlSelection();
             } else if (unicodeChar == 'v') {
                 doPaste();
+            } else if (unicodeChar == 'z') {
+                mActivity.requestAutoFill();
             } else if (unicodeChar == '+' || e.getUnicodeChar(KeyEvent.META_SHIFT_ON) == '+') {
                 // We also check for the shifted char here since shift may be required to produce '+',
                 // see https://github.com/termux/termux-api/issues/2
                 changeFontSize(true);
             } else if (unicodeChar == '-') {
                 changeFontSize(false);
+            } else if (unicodeChar == 'f') {
+                boolean doFullscreen = mActivity.mPreferences.toggleFullscreen();
+                mActivity.applyFullscreenSetting(doFullscreen);
+            } else if (unicodeChar == 't') {
+                mActivity.toggleTerminalToolbar();
             } else if (unicodeChar >= '1' && unicodeChar <= '9') {
                 int index = unicodeChar - '1';
                 mTermuxTerminalSessionActivityClient.switchToSession(index);
@@ -158,6 +169,13 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
 
     /** Handle dedicated volume buttons as virtual keys if applicable. */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                mActivity.onBackPressed();
+            }
+            return true;
+        }
+
         InputDevice inputDevice = event.getDevice();
         if (mActivity.mProperties.areVirtualVolumeKeysDisabled()) {
             return false;
@@ -307,6 +325,7 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
 
                 case 'z': // Zecret :)
                     mActivity.requestAutoFill();
+                    break;
             }
 
             if (resultingKeyCode != -1) {
@@ -337,7 +356,7 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
      */
     public void onToggleSoftKeyboardRequest() {
         mActivity.getSystemService(InputMethodManager.class).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-
+        mActivity.mTerminalView.requestFocus();
     }
 
     public void shareSessionTranscript() {

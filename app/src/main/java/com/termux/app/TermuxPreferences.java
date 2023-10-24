@@ -10,6 +10,7 @@ public class TermuxPreferences {
     private static final String PREF_CURRENT_SESSION = "current_session";
     private static final String PREF_FONT_SIZE = "font_size";
     private static final String PREF_SHOW_TOOLBAR = "show_toolbar";
+    private static final String PREF_FULLSCREEN = "fullscreen";
 
     private int minFontSize;
     private int maxFontSize;
@@ -45,6 +46,16 @@ public class TermuxPreferences {
 
     public boolean isShowTerminalToolbar() {
         return prefs.getBoolean(PREF_SHOW_TOOLBAR, true);
+    }
+
+    public boolean toggleFullscreen() {
+        boolean newValue = !isFullscreen();
+        prefs.edit().putBoolean(PREF_FULLSCREEN, newValue).apply();
+        return newValue;
+    }
+
+    public boolean isFullscreen() {
+        return prefs.getBoolean(PREF_FULLSCREEN, false);
     }
 
     public boolean toggleShowTerminalToolbar() {

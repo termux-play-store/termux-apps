@@ -1,12 +1,12 @@
-    <RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/activity_termux_root_relative_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true"
-        >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_termux_root_relative_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    >
 
         <androidx.drawerlayout.widget.DrawerLayout
             android:id="@+id/drawer_layout"
@@ -27,6 +27,15 @@
                 android:autofillHints="password"
                 tools:ignore="UnusedAttribute" />
 
+            <com.google.android.material.navigation.NavigationView
+                android:id="@+id/nav_view"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="start"
+                android:fitsSystemWindows="true"
+                app:menu="@menu/drawer_menu" />
+
+            <!--
             <LinearLayout
                 android:id="@+id/left_drawer"
                 android:layout_width="240dp"
@@ -60,7 +69,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/action_toggle_soft_keyboard" />
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        app:iconPadding="0dp"
+                        app:iconGravity="textStart"
+                        app:icon="@drawable/icon_keyboard" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/new_session_button"
@@ -68,9 +83,17 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/action_new_session" />
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        app:iconPadding="0dp"
+                        app:iconGravity="textStart"
+                        app:icon="@drawable/icon_add"
+                        />
                 </LinearLayout>
             </LinearLayout>
+                -->
 
         </androidx.drawerlayout.widget.DrawerLayout>
 

@@ -321,18 +321,6 @@ public final class TerminalEmulator {
     private boolean mAboutToAutoWrap;
 
     /**
-     * If the cursor blinking is enabled. It requires cursor itself to be enabled, which is controlled
-     * byt whether {@link #DECSET_BIT_CURSOR_ENABLED} bit is set or not.
-     */
-    private boolean mCursorBlinkingEnabled;
-
-    /**
-     * If currently cursor should be in a visible state or not if {@link #mCursorBlinkingEnabled}
-     * is {@code true}.
-     */
-    private boolean mCursorBlinkState;
-
-    /**
      * Current foreground and background colors. Can either be a color index in [0,259] or a truecolor (24-bit) value.
      * For a 24-bit value the top byte (0xff000000) is set.
      *
@@ -430,7 +418,6 @@ public final class TerminalEmulator {
     public void updateTerminalSessionClient(TerminalSessionClient client) {
         mClient = client;
         setCursorStyle();
-        setCursorBlinkState(true);
     }
 
     public TerminalBuffer getScreen() {
@@ -451,22 +438,24 @@ public final class TerminalEmulator {
     /**
      * @param mouseButton one of the MOUSE_* constants of this class.
      */
-    public void sendMouseEvent(int mouseButton, int column, int row, boolean pressed) {
+    public void sendMouseEvent(int mouseButton, int column, int row, boolean pressed, boolean shiftPressed, boolean altPressed, boolean ctrlPressed) {
         if (column < 1) column = 1;
         if (column > mColumns) column = mColumns;
         if (row < 1) row = 1;
         if (row > mRows) row = mRows;
 
+        int modifiers = (shiftPressed ? 4 : 0) + (altPressed ? 8 : 0) + (ctrlPressed ? 16 : 0);
+
         if (mouseButton == MOUSE_LEFT_BUTTON_MOVED && !isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT)) {
             // Do not send tracking.
         } else if (isDecsetInternalBitSet(DECSET_BIT_MOUSE_PROTOCOL_SGR)) {
-            mSession.write(String.format("\033[<%d;%d;%d" + (pressed ? 'M' : 'm'), mouseButton, column, row));
+            mSession.write(String.format("\033[<%d;%d;%d" + (pressed ? 'M' : 'm'), mouseButton | modifiers, column, row));
         } else {
             mouseButton = pressed ? mouseButton : 3; // 3 for release of all buttons.
             // Clip to screen, and clip to the limits of 8-bit data.
             boolean out_of_bounds = column > 255 - 32 || row > 255 - 32;
             if (!out_of_bounds) {
-                byte[] data = {'\033', '[', 'M', (byte) (32 + mouseButton), (byte) (32 + column), (byte) (32 + row)};
+                byte[] data = {'\033', '[', 'M', (byte) (32 + mouseButton | modifiers), (byte) (32 + column), (byte) (32 + row)};
                 mSession.write(data, 0, data.length);
             }
         }
@@ -537,22 +526,6 @@ public final class TerminalEmulator {
     public boolean isCursorEnabled() {
         return isDecsetInternalBitSet(DECSET_BIT_CURSOR_ENABLED);
     }
-
-    public boolean shouldCursorBeVisible() {
-        if (!isCursorEnabled())
-            return false;
-        else
-            return mCursorBlinkingEnabled ? mCursorBlinkState : true;
-    }
-
-    public void setCursorBlinkingEnabled(boolean cursorBlinkingEnabled) {
-        this.mCursorBlinkingEnabled = cursorBlinkingEnabled;
-    }
-
-    public void setCursorBlinkState(boolean cursorBlinkState) {
-        this.mCursorBlinkState = cursorBlinkState;
-    }
-
 
     public boolean isKeypadApplicationMode() {
         return isDecsetInternalBitSet(DECSET_BIT_APPLICATION_KEYPAD);
@@ -1482,8 +1455,8 @@ public final class TerminalEmulator {
                 // http://www.vt100.net/docs/vt100-ug/chapter3.html: "Move the active position to the same horizontal
                 // position on the preceding line. If the active position is at the top margin, a scroll down is performed".
                 if (mCursorRow <= mTopMargin) {
-                    mScreen.blockCopy(0, mTopMargin, mColumns, mBottomMargin - (mTopMargin + 1), 0, mTopMargin + 1);
-                    blockClear(0, mTopMargin, mColumns);
+                    mScreen.blockCopy(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, mBottomMargin - (mTopMargin + 1), mLeftMargin, mTopMargin + 1);
+                    blockClear(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin);
                 } else {
                     mCursorRow--;
                 }
@@ -1697,8 +1670,8 @@ public final class TerminalEmulator {
                     final int linesToScrollArg = getArg0(1);
                     final int linesBetweenTopAndBottomMargins = mBottomMargin - mTopMargin;
                     final int linesToScroll = Math.min(linesBetweenTopAndBottomMargins, linesToScrollArg);
-                    mScreen.blockCopy(0, mTopMargin, mColumns, linesBetweenTopAndBottomMargins - linesToScroll, 0, mTopMargin + linesToScroll);
-                    blockClear(0, mTopMargin, mColumns, linesToScroll);
+                    mScreen.blockCopy(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, linesBetweenTopAndBottomMargins - linesToScroll, mLeftMargin, mTopMargin + linesToScroll);
+                    blockClear(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, linesToScroll);
                 } else {
                     // "${CSI}${func};${startx};${starty};${firstrow};${lastrow}T" - initiate highlight mouse tracking.
                     unimplementedSequence(b);

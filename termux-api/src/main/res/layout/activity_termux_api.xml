@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/partial_primary_toolbar"
+        layout="@layout/partial_primary_toolbar" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            tools:context=".activities.TermuxAPIActivity">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/textview_plugin_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="web"
+                android:gravity="start|center_vertical"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:textColor="?android:textColorPrimary"
+                android:textColorLink="?android:textColorLink"
+                android:textSize="14sp"
+                android:textStyle="normal" />
+
+            <View style="@style/ViewDivider" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/textview_battery_optimization_not_disabled_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="web"
+                android:gravity="start|center_vertical"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:text="@string/msg_battery_optimization_not_disabled_warning"
+                android:textColor="@color/red_error"
+                android:textColorLink="@color/red_error_link"
+                android:textSize="14sp"
+                android:textStyle="normal" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_disable_battery_optimizations"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:gravity="center"
+                android:text="@string/action_disable_battery_optimizations"
+                android:textColor="?android:textColorPrimary"
+                android:textSize="12sp"
+                app:strokeColor="?android:textColorPrimary"
+                app:strokeWidth="2dp" />
+
+            <View style="@style/ViewDivider" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/textview_display_over_other_apps_not_granted_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="web"
+                android:gravity="start|center_vertical"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:text="@string/msg_display_over_other_apps_permission_not_granted_warning"
+                android:textColor="@color/red_error"
+                android:textColorLink="@color/red_error_link"
+                android:textSize="14sp"
+                android:textStyle="normal" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_grant_display_over_other_apps_permission"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:gravity="center"
+                android:text="@string/action_grant_display_over_other_apps_permission"
+                android:textColor="?android:textColorPrimary"
+                android:textSize="12sp"
+                app:strokeColor="?android:textColorPrimary"
+                app:strokeWidth="2dp" />
+        </LinearLayout>
+
+    </ScrollView>
+</LinearLayout>

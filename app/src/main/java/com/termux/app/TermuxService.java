@@ -25,6 +25,9 @@ import com.termux.R;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -44,15 +47,19 @@ public final class TermuxService extends Service {
 
     public static final String ACTION_STOP_SERVICE = "com.termux.service.action.service_stop";
     public static final String ACTION_SERVICE_EXECUTE = "com.termux.service.action.service_execute";
+    public static final String ACTION_ON_BOOT = "com.termux.app.ACTION_ON_BOOT";
     public static final String ACTION_WAKE_LOCK = "com.termux.service.action.wake_lock";
     public static final String ACTION_WAKE_UNLOCK = "com.termux.service.action.wake_unlock";
+
     public static final String TERMUX_EXECUTE_EXTRA_ARGUMENTS = "com.termux.execute.arguments";
     public static final String TERMUX_EXECUTE_WORKDIR = "com.termux.execute.workdir";
 
     public static final String NOTIFICATION_CHANNEL_ID = "com.termu.service.notification_channel";
 
 
-    /** This service is only bound from inside the same process and never uses IPC. */
+    /**
+     * This service is only bound from inside the same process and never uses IPC.
+     */
     class LocalBinder extends Binder {
         public final TermuxService service = TermuxService.this;
     }
@@ -62,7 +69,8 @@ public final class TermuxService extends Service {
     private final Handler mHandler = new Handler();
 
 
-    /** The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
+    /**
+     * The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
      * that holds activity references for activity related functions.
      * Note that the service may often outlive the activity, so need to clear this reference.
      */
@@ -73,7 +81,9 @@ public final class TermuxService extends Service {
      */
     private TermuxShellManager mShellManager;
 
-    /** The wake lock and wifi lock are always acquired and released together. */
+    /**
+     * The wake lock and wifi lock are always acquired and released together.
+     */
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
 
@@ -109,6 +119,9 @@ public final class TermuxService extends Service {
                 case ACTION_SERVICE_EXECUTE:
                     Log.d(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
                     actionServiceExecute(intent);
+                    break;
+                case ACTION_ON_BOOT:
+                    runOnBoot();
                     break;
                 default:
                     Log.e(LOG_TAG, "Invalid action: \"" + intent.getAction() + "\"");
@@ -151,7 +164,9 @@ public final class TermuxService extends Service {
         stopSelf(-1);
     }
 
-    /** Process action to stop service. */
+    /**
+     * Process action to stop service.
+     */
     private void actionStopService() {
         mWantsToStop = true;
         killAllTermuxExecutionCommands();
@@ -167,7 +182,9 @@ public final class TermuxService extends Service {
         }
     }
 
-    /** Process action to acquire Power and Wi-Fi WakeLocks. */
+    /**
+     * Process action to acquire Power and Wi-Fi WakeLocks.
+     */
     @SuppressLint({"WakelockTimeout", "BatteryLife"})
     private void actionAcquireWakeLock() {
         if (mWakeLock != null) {
@@ -191,7 +208,9 @@ public final class TermuxService extends Service {
         updateNotification();
     }
 
-    /** Process action to release Power and Wi-Fi WakeLocks. */
+    /**
+     * Process action to release Power and Wi-Fi WakeLocks.
+     */
     private void actionReleaseWakeLock(boolean updateNotification) {
         if (mWakeLock == null && mWifiLock == null) {
             Log.d(LOG_TAG, "Ignoring releasing WakeLocks since none are already held");
@@ -230,13 +249,10 @@ public final class TermuxService extends Service {
         }
     }
 
-    /** Callback received when a TermuxTask finishes. */
-    public void onAppShellExited(@NonNull final TermuxAppShell termuxTask) {
-        mHandler.post(() -> {
-            Log.i(LOG_TAG, "The onTermuxTaskExited() callback called for TermuxTask command");
-            mShellManager.mTermuxTasks.remove(termuxTask);
-            updateNotification();
-        });
+    public void onAppShellExited(@NonNull final TermuxAppShell termuxTask, int exitCode) {
+        Log.i(LOG_TAG, "The onTermuxTaskExited() callback called for TermuxTask command");
+        mShellManager.mTermuxTasks.remove(termuxTask);
+        updateNotification();
     }
 
     /**
@@ -270,7 +286,6 @@ public final class TermuxService extends Service {
                 if (mTerminalSessionClient != null) {
                     mTerminalSessionClient.onSessionFinished(finishedSession);
                 }
-
             }
 
             @Override
@@ -285,7 +300,6 @@ public final class TermuxService extends Service {
                 if (mTerminalSessionClient != null) {
                     mTerminalSessionClient.onPasteTextFromClipboard(session);
                 }
-
             }
 
             @Override
@@ -309,12 +323,14 @@ public final class TermuxService extends Service {
                 }
             }
         };
+
         // If the execution command was started for a plugin, only then will the stdout be set
         // Otherwise if command was manually started by the user like by adding a new terminal session,
         // then no need to set stdout
         TermuxSession newTermuxSession = TermuxSession.execute(
             sessionClient,
             this,
+            executablePath,
             isFailSafe
         );
 
@@ -329,7 +345,9 @@ public final class TermuxService extends Service {
         return newTermuxSession;
     }
 
-    /** Remove a TermuxSession. */
+    /**
+     * Remove a TermuxSession.
+     */
     public synchronized int removeTermuxSession(TerminalSession sessionToRemove) {
         int index = getIndexOfSession(sessionToRemove);
         if (index >= 0) {
@@ -338,7 +356,9 @@ public final class TermuxService extends Service {
         return index;
     }
 
-    /** Callback received when a {@link TermuxSession} finishes. */
+    /**
+     * Callback received when a {@link TermuxSession} finishes.
+     */
     public void onTermuxSessionExited(@NonNull final TermuxSession termuxSession) {
         mShellManager.mTermuxSessions.remove(termuxSession);
         if (mTerminalSessionClient != null) {
@@ -384,17 +404,29 @@ public final class TermuxService extends Service {
         String actionTitle = res.getString(wakeLockHeld ? R.string.notification_action_wake_unlock : R.string.notification_action_wake_lock);
         int wakeLockIcon = wakeLockHeld ? android.R.drawable.ic_lock_idle_lock : android.R.drawable.ic_lock_lock;
 
-        return new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setPriority(priority)
-            .setContentText(notificationText)
-            .setContentIntent(contentIntent)
-            .setShowWhen(false)
-            .setSmallIcon(R.drawable.ic_service_notification)
-            .setColor(0xFF607D8B)
-            .setOngoing(true)
-            .addAction(android.R.drawable.ic_delete, res.getString(R.string.notification_action_exit), PendingIntent.getService(this, 0, exitIntent, PendingIntent.FLAG_IMMUTABLE))
-            .addAction(wakeLockIcon, actionTitle, PendingIntent.getService(this, 0, toggleWakeLockIntent, PendingIntent.FLAG_IMMUTABLE))
-            .build();
+        //Context context, int icon, CharSequence tickerText, long when, CharSequence contentTitle, CharSequence contentText, Intent contentIntent
+        if (Build.VERSION.SDK_INT >= 26) {
+            return new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setPriority(priority)
+                .setContentText(notificationText)
+                .setContentIntent(contentIntent)
+                .setShowWhen(false)
+                .setSmallIcon(R.drawable.ic_service_notification)
+                .setColor(0xFF607D8B)
+                .setOngoing(true)
+                //.addAction(android.R.drawable.ic_delete, res.getString(R.string.notification_action_exit), PendingIntent.getService(this, 0, exitIntent, PendingIntent.FLAG_IMMUTABLE))
+                //.addAction(wakeLockIcon, actionTitle, PendingIntent.getService(this, 0, toggleWakeLockIntent, PendingIntent.FLAG_IMMUTABLE))
+                .build();
+        } else {
+            Notification n = new Notification();
+            n.contentIntent = contentIntent;
+            n.icon = R.drawable.ic_service_notification;
+            n.color = 0xFF607D8B;
+            n.priority = priority;
+            n.when = 0;
+            n.flags = Notification.FLAG_ONGOING_EVENT;
+            return n;
+        }
     }
 
     private void setupNotificationChannel() {
@@ -404,23 +436,18 @@ public final class TermuxService extends Service {
         notificationManager.createNotificationChannel(channel);
     }
 
-    /** Update the shown foreground service notification after making any changes that affect it. */
+    /**
+     * Update the shown foreground service notification after making any changes that affect it.
+     */
     private synchronized void updateNotification() {
         if (mWakeLock == null && mShellManager.mTermuxSessions.isEmpty() && mShellManager.mTermuxTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
+            // TODO: Remove notification to avoid having to have and request dangerous notification permission,
+            // https://developer.android.com/develop/ui/views/notifications/notification-permission ?
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
         }
-    }
-
-    private void setCurrentStoredTerminalSession(TerminalSession terminalSession) {
-        if (terminalSession == null) return;
-        // Make the newly created session the current one to be displayed
-        //TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(this);
-        //jif (preferences == null) return;
-        //preferences.setCurrentSession(terminalSession.mHandle);
-        // TODO
     }
 
     public synchronized boolean isTermuxSessionsEmpty() {
@@ -437,10 +464,10 @@ public final class TermuxService extends Service {
 
     @Nullable
     public synchronized TermuxSession getTermuxSession(int index) {
-        if (index >= 0 && index < mShellManager.mTermuxSessions.size())
+        if (index >= 0 && index < mShellManager.mTermuxSessions.size()) {
             return mShellManager.mTermuxSessions.get(index);
-        else
-            return null;
+        }
+        return null;
     }
 
     @Nullable
@@ -483,8 +510,24 @@ public final class TermuxService extends Service {
         return mWantsToStop;
     }
 
-
     public void unsetTermuxTerminalSessionClient() {
         this.mTerminalSessionClient = null;
     }
+
+    private void runOnBoot() {
+        for (String scriptDirSuffix : new String[]{"/.config/termux/boot", "/.termux/boot"}) {
+            String bootScriptsPath = TermuxConstants.HOME_PATH + scriptDirSuffix;
+            File bootScriptsDir = new File(bootScriptsPath);
+            File[] files = bootScriptsDir.listFiles();
+            if (files == null) files = new File[0];
+            Arrays.sort(files, Comparator.comparing(File::getName));
+            Log.w(TermuxConstants.LOG_TAG, "Found " + files.length + " boot scripts in " + bootScriptsPath);
+            for (File scriptFile : files) {
+                if (scriptFile.canRead()) scriptFile.setReadable(true);
+                if (scriptFile.canExecute()) scriptFile.setExecutable(true);
+                // TODO:
+            }
+        }
+    }
+
 }

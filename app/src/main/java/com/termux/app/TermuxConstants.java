@@ -1,11 +1,14 @@
 package com.termux.app;
 
+import android.annotation.SuppressLint;
+
 import java.io.File;
 
 public class TermuxConstants {
 
     public static final String LOG_TAG = "termux";
 
+    @SuppressLint("SdCardPath")
     public static final String FILES_PATH = "/data/data/com.termux/files";
     public static final String PREFIX_PATH = FILES_PATH + "/usr";
     public static final String BIN_PATH = PREFIX_PATH + "/bin";

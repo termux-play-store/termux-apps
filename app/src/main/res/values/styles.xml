@@ -7,11 +7,9 @@
     </style>
 
     <style name="TermuxActivity.Drawer.ButtonBarStyle.Light" parent="@style/Widget.MaterialComponents.Button.TextButton">
-        <item name="android:textColor">@android:color/black</item>
     </style>
 
     <style name="TermuxActivity.Drawer.ButtonBarStyle.Dark" parent="@style/Widget.MaterialComponents.Button.TextButton">
-        <item name="android:textColor">@android:color/white</item>
     </style>
 
 </resources>

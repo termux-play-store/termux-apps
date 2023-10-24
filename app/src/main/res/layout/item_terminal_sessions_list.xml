@@ -4,6 +4,11 @@
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:background="@drawable/session_background_selected"
     android:ellipsize="marquee"
+    android:textColor="@android:color/black"
+    android:textColorHint="@android:color/black"
+    android:textColorLink="@android:color/black"
+    android:textAppearance="@android:color/black"
+    android:textColorHighlight="@android:color/black"
     android:gravity="start|center_vertical"
     android:padding="6dip"
     android:textSize="14sp" />

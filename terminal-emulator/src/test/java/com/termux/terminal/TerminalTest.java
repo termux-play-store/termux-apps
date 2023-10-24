@@ -51,17 +51,25 @@ public class TerminalTest extends TerminalTestCase {
 		assertTrue(mTerminal.isMouseTrackingActive());
 
 		enterString("\033[?1006h");
-		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, true);
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, true, false, false, false);
 		assertEquals("\033[<0;3;4M", mOutput.getOutputAndClear());
-		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, false);
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, false, false, false, false);
 		assertEquals("\033[<0;3;4m", mOutput.getOutputAndClear());
+        mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, true, true, false, false);
+        assertEquals("\033[<4;3;4M", mOutput.getOutputAndClear());
+        mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, true, false, true, false);
+        assertEquals("\033[<8;3;4M", mOutput.getOutputAndClear());
+        mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, true, false, false, true);
+        assertEquals("\033[<16;3;4M", mOutput.getOutputAndClear());
+        mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, true, true, true, true);
+        assertEquals("\033[<28;3;4M", mOutput.getOutputAndClear());
 
 		// When the client says that a click is outside (which could happen when pixels are outside
 		// the terminal area, see https://github.com/termux/termux-app/issues/501) the terminal
 		// sends a click at the edge.
-		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 0, 0, true);
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 0, 0, true, false, false, false);
 		assertEquals("\033[<0;1;1M", mOutput.getOutputAndClear());
-		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 11, 11, false);
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 11, 11, false, false, false, false);
 		assertEquals("\033[<0;10;10m", mOutput.getOutputAndClear());
 	}
 

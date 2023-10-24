@@ -1,6 +1,7 @@
 package com.termux.app;
 
-import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
@@ -16,14 +17,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public final class TermuxAppShell {
-    public class StreamGobbler extends Thread {
+
+    public static class StreamGobbler extends Thread {
         @NonNull
         private final String shell;
         @NonNull
         private final InputStream inputStream;
         @NonNull
         private final BufferedReader reader;
-        private static final String LOG_TAG = "termux-tasks";
 
         public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream) {
             super("TermuxStreamGobbler");
@@ -69,11 +70,14 @@ public final class TermuxAppShell {
     public static TermuxAppShell execute(String executable,
                                          String[] arguments,
                                          @NonNull final TermuxService termuxService) {
-        final String[] commandArray = TermuxShellUtils.setupShellCommandArguments(executable, arguments);
+        TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(executable, arguments, false);
         String[] environmentArray = TermuxShellUtils.setupEnvironment(false);
         final Process process;
         try {
-            process = Runtime.getRuntime().exec(commandArray, environmentArray, new File(TermuxConstants.HOME_PATH));
+            String[] runtimeExecArgs = new String[command.arguments.length+1];
+            runtimeExecArgs[0] = command.executablePath;
+            System.arraycopy(command.arguments, 0, runtimeExecArgs, 1, command.arguments.length);
+            process = Runtime.getRuntime().exec(runtimeExecArgs, environmentArray, new File(TermuxConstants.HOME_PATH));
         } catch (IOException e) {
             Log.e(TermuxConstants.LOG_TAG, "Error executing task", e);
             return null;
@@ -84,39 +88,31 @@ public final class TermuxAppShell {
             @Override
             public void run() {
                 try {
-                    appShell.executeInner(termuxService);
+                    int mPid = TermuxShellUtils.getPid(process);
+
+                    DataOutputStream STDIN = new DataOutputStream(process.getOutputStream());
+                    StreamGobbler STDOUT = new StreamGobbler(mPid + "-stdout-gobbler", process.getInputStream());
+                    StreamGobbler STDERR = new StreamGobbler(mPid + "-stderr-gobbler", process.getErrorStream());
+
+                    STDOUT.start();
+                    STDERR.start();
+
+                    int exitCode = process.waitFor();
+
+                    try {
+                        STDIN.close();
+                    } catch (IOException e) {
+                        // might be closed already
+                    }
+                    STDOUT.join();
+                    STDERR.join();
+                    new Handler(Looper.getMainLooper()).post(() -> termuxService.onAppShellExited(appShell, exitCode));
                 } catch (IllegalThreadStateException | InterruptedException e) {
-                    Log.e(TermuxConstants.LOG_TAG, "Error: " + e);
+                    Log.e(TermuxConstants.LOG_TAG, "Background task error: " + e);
                 }
             }
         }.start();
-
         return appShell;
-    }
-
-    private void executeInner(@NonNull final Context context) throws IllegalThreadStateException, InterruptedException {
-        int mPid = TermuxShellUtils.getPid(mProcess);
-
-        DataOutputStream STDIN = new DataOutputStream(mProcess.getOutputStream());
-        StreamGobbler STDOUT = new StreamGobbler(mPid + "-stdout-gobbler", mProcess.getInputStream());
-        StreamGobbler STDERR = new StreamGobbler(mPid + "-stderr-gobbler", mProcess.getErrorStream());
-
-        STDOUT.start();
-        STDERR.start();
-
-        int exitCode = mProcess.waitFor();
-
-        try {
-            STDIN.close();
-        } catch (IOException e) {
-            // might be closed already
-        }
-        STDOUT.join();
-        STDERR.join();
-        mProcess.destroy();
-
-        // TODO: handle exit code, (notify on success, show something more on error)?
-
     }
 
     /**

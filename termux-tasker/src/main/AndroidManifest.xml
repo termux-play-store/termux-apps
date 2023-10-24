@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:sharedUserLabel="@string/shared_user_label">
+
+    <application
+        android:label="@string/application_name"
+        android:icon="@drawable/ic_launcher"
+        android:allowBackup="true"
+        android:fullBackupOnly="false"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".activities.TermuxTaskerActivity"
+            android:exported="true"
+            android:theme="@style/Theme.BaseActivity.DayNight.NoActionBar"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!--
+        This is the "edit" Activity. Note that Locale will reject plug-in Activities for the following reasons:·
+         - Missing "android:label=[...]"
+         - Missing "android:icon=[...]"
+         - The Activity isn't exported (e.g. android:exported="false")
+         - The Activity isn't enabled (e.g. android:enabled="false")
+         - The Activity requires permissions not available to Locale
+        -->
+        <activity
+            android:name=".EditConfigurationActivity"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/plugin_name"
+            android:theme="@style/Theme.BaseActivity.DayNight.NoActionBar"
+            android:windowSoftInputMode="stateHidden"
+            android:uiOptions="splitActionBarWhenNarrow">
+            <!-- this Intent filter allows the plug-in to be discovered by Locale -->
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.EDIT_SETTING" />
+            </intent-filter>
+        </activity>
+
+        <!-- If you see "Unresolved package" errors for TextIOActivity with manifest placeholder, ignore it.
+        Android Studio linter is broken and correct package name will be used at build time." -->
+        <activity
+            android:name="${TERMUX_PACKAGE_NAME}.shared.activities.TextIOActivity"
+            android:exported="false"
+            android:theme="@style/Theme.BaseActivity.Light.NoActionBar"
+            tools:ignore="MissingClass" />
+
+        <!--
+         This is the "fire" BroadcastReceiver. Note that Locale will reject plug-in BroadcastReceivers
+         for the following reasons:
+        - The BroadcastReceiver isn't exported (e.g. android:exported="false")
+        - The BroadcastReceiver isn't enabled (e.g. android:enabled="false")
+        - The BroadcastReceiver requires permissions not available to Locale
+        - There are multiple BroadcastReceivers for com.twofortyfouram.locale.intent.action.FIRE_SETTING
+        -->
+        <receiver
+            android:name=".FireReceiver"
+            android:exported="true"
+            android:process=":background"
+            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND">
+            <!-- This Intent filter allows the plug-in to discovered by Locale. -->
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING" />
+            </intent-filter>
+        </receiver>
+
+        <!-- This is service that will receive execution result from the execution service via a PendingIntent -->
+        <service
+            android:name=".PluginResultsService"
+            android:exported="false" />
+    </application>
+
+</manifest>

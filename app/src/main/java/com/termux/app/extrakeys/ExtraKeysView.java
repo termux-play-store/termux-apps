@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,41 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public final class ExtraKeysView extends GridLayout {
-
-    /**
-     * The client for the {@link ExtraKeysView}.
-     */
-    public interface IExtraKeysView {
-
-        /**
-         * This is called by {@link ExtraKeysView} when a button is clicked. This is also called
-         * for {@link #mRepetitiveKeys} and {@link ExtraKeyButton} that have a popup set.
-         * However, this is not called for {@link #mSpecialButtons}, whose state can instead be read
-         * via a call to {@link #readSpecialButton(SpecialButton, boolean)}.
-         *
-         * @param view       The view that was clicked.
-         * @param buttonInfo The {@link ExtraKeyButton} for the button that was clicked.
-         *                   The button may be a {@link ExtraKeyButton#KEY_MACRO} set which can be
-         *                   checked with a call to {@link ExtraKeyButton#isMacro()}.
-         * @param button     The {@link MaterialButton} that was clicked.
-         */
-        void onExtraKeyButtonClick(View view, ExtraKeyButton buttonInfo, MaterialButton button);
-
-        /**
-         * This is called by {@link ExtraKeysView} when a button is clicked so that the client
-         * can perform any hepatic feedback. This is only called in the {@link OnClickListener}
-         * and not for every repeat. Its also called for {@link #mSpecialButtons}.
-         *
-         * @param view       The view that was clicked.
-         * @param buttonInfo The {@link ExtraKeyButton} for the button that was clicked.
-         * @param button     The {@link MaterialButton} that was clicked.
-         * @return Return {@code true} if the client handled the feedback, otherwise {@code false}
-         * so that {@link ExtraKeysView#performExtraKeyButtonHapticFeedback(View, ExtraKeyButton, MaterialButton)}
-         * can handle it depending on system settings.
-         */
-        boolean performExtraKeyButtonHapticFeedback(View view, ExtraKeyButton buttonInfo, MaterialButton button);
-
-    }
 
     /**
      * Defines the minimum allowed duration in milliseconds for {@link #mLongPressTimeout}.
@@ -93,40 +59,35 @@ public final class ExtraKeysView extends GridLayout {
      */
     public static final int DEFAULT_LONG_PRESS_REPEAT_DELAY = 80;
 
-    /**
-     * The implementation of the {@link IExtraKeysView} that acts as a client for the {@link ExtraKeysView}.
-     */
-    protected IExtraKeysView mExtraKeysViewClient;
+    TermuxTerminalExtraKeys mExtraKeysViewClient;
 
     /**
      * The map for the {@link SpecialButton} and their {@link SpecialButtonState}. Defaults to
      * the one returned by {@link #getDefaultSpecialButtons(ExtraKeysView)}.
      */
-    protected Map<SpecialButton, SpecialButtonState> mSpecialButtons;
+    private Map<SpecialButton, SpecialButtonState> mSpecialButtons;
 
     /**
      * The keys for the {@link SpecialButton} added to {@link #mSpecialButtons}. This is automatically
      * set when the call to {@link #setSpecialButtons(Map)} is made.
      */
-    protected Set<String> mSpecialButtonsKeys;
+    private Set<String> mSpecialButtonsKeys;
 
 
     /**
      * The list of keys for which auto repeat of key should be triggered if its extra keys button
-     * is long pressed. This is done by calling {@link IExtraKeysView#onExtraKeyButtonClick(View, ExtraKeyButton, MaterialButton)}
+     * is long pressed. This is done by calling {@link TermuxTerminalExtraKeys#onExtraKeyButtonClick(View, ExtraKeyButton, MaterialButton)}
      * every {@link #mLongPressRepeatDelay} seconds after {@link #mLongPressTimeout} has passed.
-     * The default keys are defined by {@link ExtraKeysConstants#PRIMARY_REPETITIVE_KEYS}.
      */
-    protected List<String> mRepetitiveKeys;
+    private List<String> mRepetitiveKeys = Arrays.asList(
+        "UP", "DOWN", "LEFT", "RIGHT",
+        "BKSP", "DEL",
+        "PGUP", "PGDN"
+    );
 
-
-    /**
-     * The text color for the extra keys button. Defaults to {@link #DEFAULT_BUTTON_TEXT_COLOR}.
-     */
-    protected int mButtonTextColor;
+    private int mButtonTextColor;
     /**
      * The text color for the extra keys button when its active.
-     * Defaults to {@link #DEFAULT_BUTTON_ACTIVE_TEXT_COLOR}.
      */
     protected int mButtonActiveTextColor;
     /**
@@ -178,28 +139,11 @@ public final class ExtraKeysView extends GridLayout {
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        setRepetitiveKeys(ExtraKeysConstants.PRIMARY_REPETITIVE_KEYS);
         setSpecialButtons(getDefaultSpecialButtons(this));
 
         setLongPressTimeout(ViewConfiguration.getLongPressTimeout());
         setLongPressRepeatDelay(DEFAULT_LONG_PRESS_REPEAT_DELAY);
     }
-
-
-    /**
-     * Get {@link #mExtraKeysViewClient}.
-     */
-    public IExtraKeysView getExtraKeysViewClient() {
-        return mExtraKeysViewClient;
-    }
-
-    /**
-     * Set {@link #mExtraKeysViewClient}.
-     */
-    public void setExtraKeysViewClient(IExtraKeysView extraKeysViewClient) {
-        mExtraKeysViewClient = extraKeysViewClient;
-    }
-
 
     /**
      * Get {@link #mRepetitiveKeys}.
@@ -249,70 +193,10 @@ public final class ExtraKeysView extends GridLayout {
     }
 
     /**
-     * Set {@link #mButtonTextColor}.
-     */
-    public void setButtonTextColor(int buttonTextColor) {
-        mButtonTextColor = buttonTextColor;
-    }
-
-
-    /**
-     * Get {@link #mButtonActiveTextColor}.
-     */
-    public int getButtonActiveTextColor() {
-        return mButtonActiveTextColor;
-    }
-
-    /**
-     * Set {@link #mButtonActiveTextColor}.
-     */
-    public void setButtonActiveTextColor(int buttonActiveTextColor) {
-        mButtonActiveTextColor = buttonActiveTextColor;
-    }
-
-
-    /**
-     * Get {@link #mButtonBackgroundColor}.
-     */
-    public int getButtonBackgroundColor() {
-        return mButtonBackgroundColor;
-    }
-
-    /**
-     * Set {@link #mButtonBackgroundColor}.
-     */
-    public void setButtonBackgroundColor(int buttonBackgroundColor) {
-        mButtonBackgroundColor = buttonBackgroundColor;
-    }
-
-
-    /**
-     * Get {@link #mButtonActiveBackgroundColor}.
-     */
-    public int getButtonActiveBackgroundColor() {
-        return mButtonActiveBackgroundColor;
-    }
-
-    /**
-     * Set {@link #mButtonActiveBackgroundColor}.
-     */
-    public void setButtonActiveBackgroundColor(int buttonActiveBackgroundColor) {
-        mButtonActiveBackgroundColor = buttonActiveBackgroundColor;
-    }
-
-    /**
      * Set {@link #mButtonTextAllCaps}.
      */
     public void setButtonTextAllCaps(boolean buttonTextAllCaps) {
         mButtonTextAllCaps = buttonTextAllCaps;
-    }
-
-
-    /**
-     * Get {@link #mLongPressTimeout}.
-     */
-    public int getLongPressTimeout() {
-        return mLongPressTimeout;
     }
 
     /**
@@ -326,16 +210,6 @@ public final class ExtraKeysView extends GridLayout {
         }
     }
 
-    /**
-     * Get {@link #mLongPressRepeatDelay}.
-     */
-    public int getLongPressRepeatDelay() {
-        return mLongPressRepeatDelay;
-    }
-
-    /**
-     * Set {@link #mLongPressRepeatDelay}.
-     */
     public void setLongPressRepeatDelay(int longPressRepeatDelay) {
         if (mLongPressRepeatDelay >= MIN_LONG_PRESS__REPEAT_DELAY && mLongPressRepeatDelay <= MAX_LONG_PRESS__REPEAT_DELAY) {
             mLongPressRepeatDelay = longPressRepeatDelay;
@@ -350,7 +224,7 @@ public final class ExtraKeysView extends GridLayout {
      */
     @NonNull
     public Map<SpecialButton, SpecialButtonState> getDefaultSpecialButtons(ExtraKeysView extraKeysView) {
-        return new HashMap<SpecialButton, SpecialButtonState>() {{
+        return new HashMap<>() {{
             put(SpecialButton.CTRL, new SpecialButtonState(extraKeysView));
             put(SpecialButton.ALT, new SpecialButtonState(extraKeysView));
             put(SpecialButton.SHIFT, new SpecialButtonState(extraKeysView));
@@ -644,14 +518,14 @@ public final class ExtraKeysView extends GridLayout {
         return button;
     }
 
-
     /**
      * General util function to compute the longest column length in a matrix.
      */
     public static int maximumLength(Object[][] matrix) {
         int m = 0;
-        for (Object[] row : matrix)
+        for (Object[] row : matrix) {
             m = Math.max(m, row.length);
+        }
         return m;
     }
 

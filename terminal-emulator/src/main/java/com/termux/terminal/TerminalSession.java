@@ -71,7 +71,7 @@ public final class TerminalSession extends TerminalOutput {
 
     final Handler mMainThreadHandler = new MainThreadHandler();
 
-    private final String mShellPath;
+    private final String mExecutablePath;
     private final String mCwd;
     private final String[] mArgs;
     private final String[] mEnv;
@@ -81,7 +81,7 @@ public final class TerminalSession extends TerminalOutput {
     private static final String LOG_TAG = "TerminalSession";
 
     public TerminalSession(String shellPath, String cwd, String[] args, String[] env, Integer transcriptRows, TerminalSessionClient client) {
-        this.mShellPath = shellPath;
+        this.mExecutablePath = shellPath;
         this.mCwd = cwd;
         this.mArgs = args;
         this.mEnv = env;
@@ -114,7 +114,7 @@ public final class TerminalSession extends TerminalOutput {
         mEmulator = new TerminalEmulator(this, columns, rows, mTranscriptRows, mClient);
 
         int[] processId = new int[1];
-        mTerminalFileDescriptor = JNI.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns);
+        mTerminalFileDescriptor = JNI.createSubprocess(mExecutablePath, mCwd, mArgs, mEnv, processId, rows, columns);
         mShellPid = processId[0];
 
         final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor, mClient);

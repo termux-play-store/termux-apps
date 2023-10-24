@@ -105,7 +105,7 @@ public class ExtraKeyButton {
             this.display = displayFromConfig;
         } else {
             this.display = Arrays.stream(keys)
-                .map(key -> extraKeyDisplayMap.get(key, key))
+                .map(key -> extraKeyDisplayMap.getOrDefault(key, key))
                 .collect(Collectors.joining(" "));
         }
 
@@ -145,7 +145,7 @@ public class ExtraKeyButton {
      * Replace the alias with its actual key name if found in extraKeyAliasMap.
      */
     public static String replaceAlias(@NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap, String key) {
-        return extraKeyAliasMap.get(key, key);
+        return extraKeyAliasMap.getOrDefault(key, key);
     }
 
 }

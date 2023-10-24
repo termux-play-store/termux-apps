@@ -462,7 +462,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
 
         final int indexOfSession = service.getIndexOfSession(session);
         if (indexOfSession < 0) return;
-        final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
+        final ListView termuxSessionsListView = null; // mActivity.findViewById(R.id.terminal_sessions_list);
         if (termuxSessionsListView == null) return;
 
         termuxSessionsListView.setItemChecked(indexOfSession, true);

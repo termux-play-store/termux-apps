@@ -22,6 +22,7 @@ import com.termux.terminal.TerminalSession;
 
 import java.util.List;
 
+// TODO: Remove?
 public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     final TermuxActivity mActivity;

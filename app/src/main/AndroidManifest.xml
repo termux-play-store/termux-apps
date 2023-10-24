@@ -86,7 +86,7 @@
             android:exported="true"
             android:noHistory="true"
             android:resizeableActivity="true"
-            android:taskAffinity="${TERMUX_PACKAGE_NAME}.filereceiver" >
+            android:taskAffinity="com.termux.filereceiver" >
             <!-- Accept multiple file types when sending. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -118,7 +118,7 @@
 
         <provider
             android:name=".app.TermuxDocumentsProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.documents"
+            android:authorities="com.termux.documents"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
@@ -129,10 +129,10 @@
 
         <provider
             android:name=".app.TermuxOpenReceiver$ContentProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.files"
+            android:authorities="com.termux.files"
             android:exported="true"
             android:grantUriPermissions="true"
-            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
+            android:permission="com.termux.permission.RUN_COMMAND" />
 
         <receiver
             android:name=".app.TermuxOpenReceiver"

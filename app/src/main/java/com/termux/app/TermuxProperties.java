@@ -33,7 +33,6 @@ public class TermuxProperties {
     }
 
     boolean isBackKeyTheEscapeKey() {
-        Log.e("termux", "isBackThe='" + properties.getProperty("back-key", "back"));
         return properties.getProperty("back-key", "back").equalsIgnoreCase("escape");
     }
 

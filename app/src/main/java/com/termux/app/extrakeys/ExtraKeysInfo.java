@@ -11,8 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * A {@link Class} that defines the info needed by {@link ExtraKeysView} to display the extra key
- * views.
+ * Defines the info needed by {@link ExtraKeysView} to display the extra key views.
  *
  * The {@code propertiesInfo} passed to the constructors of this class must be json array of arrays.
  * Each array element of the json array will be considered a separate row of keys.
@@ -94,12 +93,6 @@ public class ExtraKeysInfo {
                          String style,
                          @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap) throws JSONException {
         mButtons = initExtraKeysInfo(propertiesInfo, getCharDisplayMapForStyle(style), extraKeyAliasMap);
-    }
-
-    public ExtraKeysInfo(@NonNull String propertiesInfo,
-                         @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyDisplayMap,
-                         @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap) throws JSONException {
-        mButtons = initExtraKeysInfo(propertiesInfo, extraKeyDisplayMap, extraKeyAliasMap);
     }
 
     private ExtraKeyButton[][] initExtraKeysInfo(@NonNull String propertiesInfo,
