@@ -11,13 +11,13 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.util.ResultReturner.ResultJsonWriter;
-import com.termux.shared.logger.Logger;
 
 import java.io.IOException;
 
@@ -30,8 +30,6 @@ public class LocationAPI {
     private static final String REQUEST_UPDATES = "updates";
 
     public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         ResultReturner.returnData(apiReceiver, intent, new ResultJsonWriter() {
             @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
             @Override
@@ -82,7 +80,7 @@ public class LocationAPI {
                                 try {
                                     locationToJson(location, out);
                                 } catch (IOException e) {
-                                    Logger.logStackTraceWithMessage(LOG_TAG, "Writing json", e);
+                                    Log.e(LOG_TAG, "Writing json", e);
                                 } finally {
                                     Looper.myLooper().quit();
                                 }
@@ -115,7 +113,7 @@ public class LocationAPI {
                                     locationToJson(location, out);
                                     out.flush();
                                 } catch (IOException e) {
-                                    Logger.logStackTraceWithMessage(LOG_TAG, "Writing json", e);
+                                    Log.e(LOG_TAG, "Writing json", e);
                                 }
                             }
                         }, null);
@@ -126,7 +124,7 @@ public class LocationAPI {
                                 try {
                                     Thread.sleep(30 * 1000);
                                 } catch (InterruptedException e) {
-                                    Logger.logStackTraceWithMessage(LOG_TAG, "INTER", e);
+                                    Log.e(LOG_TAG, "INTER", e);
                                 }
                                 looper.quit();
                             }

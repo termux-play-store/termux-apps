@@ -6,12 +6,13 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.util.Log;
 
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * API that enables playback of standard audio formats such as:
@@ -25,8 +26,6 @@ public class MediaPlayerAPI {
      * Starts our MediaPlayerService
      */
     public static void onReceive(final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         // Create intent for starting our player service and make sure
         // we retain all relevant info from this intent
         Intent playerService = new Intent(context, MediaPlayerService.class);
@@ -89,8 +88,6 @@ public class MediaPlayerAPI {
          * What we received from TermuxApiReceiver but now within this service
          */
         public int onStartCommand(Intent intent, int flags, int startId) {
-            Logger.logDebug(LOG_TAG, "onStartCommand");
-
             String command = intent.getAction();
             MediaPlayer player = getMediaPlayer();
             Context context = getApplicationContext();
@@ -104,8 +101,6 @@ public class MediaPlayerAPI {
         }
 
         public void onDestroy() {
-            Logger.logDebug(LOG_TAG, "onDestroy");
-
             super.onDestroy();
             cleanUpMediaPlayer();
         }
@@ -128,7 +123,7 @@ public class MediaPlayerAPI {
 
         @Override
         public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
-            Logger.logVerbose(LOG_TAG, "onError: what: " + what + ", extra: "  + extra);
+            Log.e(LOG_TAG, "onError: what: " + what + ", extra: "  + extra);
             return false;
         }
 

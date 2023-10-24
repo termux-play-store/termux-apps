@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.termux.shared.termux.TermuxConstants;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,10 +79,8 @@ public final class TermuxWidgetService extends RemoteViewsService {
             // in its current state while work is being done here, so you don't need to worry about
             // locking up the widget.
             shortcutFiles.clear();
-            // Create directory if necessary so user more easily finds where to put shortcuts:
-            TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR.mkdirs();
 
-            ShortcutUtils.enumerateShortcutFiles(shortcutFiles, true);
+            //ShortcutUtils.enumerateShortcutFiles(shortcutFiles, true);
         }
     }
 

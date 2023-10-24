@@ -16,6 +16,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.text.InputType;
 import android.util.JsonWriter;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -45,12 +46,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.termux.api.R;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.activities.TermuxApiPermissionActivity;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.theme.TermuxThemeUtils;
-import com.termux.shared.theme.NightMode;
-import com.termux.shared.theme.ThemeUtils;
-import com.termux.shared.view.KeyboardUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,8 +62,6 @@ public class DialogAPI {
     private static final String LOG_TAG = "DialogAPI";
 
     public static void onReceive(final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         context.startActivity(new Intent(context, DialogActivity.class).putExtras(intent.getExtras()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
@@ -83,20 +76,12 @@ public class DialogAPI {
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
-            Logger.logDebug(LOG_TAG, "onCreate");
-
             super.onCreate(savedInstanceState);
             final Intent intent = getIntent();
             final Context context = this;
 
 
             String methodType = intent.hasExtra("input_method") ? intent.getStringExtra("input_method") : "";
-
-            // Set NightMode.APP_NIGHT_MODE
-            TermuxThemeUtils.setAppNightMode(context);
-            boolean shouldEnableDarkTheme = ThemeUtils.shouldEnableDarkTheme(this, NightMode.getAppNightMode().getName());
-            if (shouldEnableDarkTheme)
-                this.setTheme(R.style.DialogTheme_Dark);
 
             mInputMethod = InputMethodFactory.get(methodType, this);
             if (mInputMethod != null) {
@@ -166,10 +151,10 @@ public class DialogAPI {
          */
         protected synchronized void postResult(final Context context, final InputResult resultParam) {
             if (resultReturned) {
-                Logger.logDebug(LOG_TAG, "Ignoring call to postResult");
+                Log.d(LOG_TAG, "Ignoring call to postResult");
                 return;
             } else {
-                Logger.logDebug(LOG_TAG, "postResult");
+                Log.d(LOG_TAG, "postResult");
             }
 
             ResultReturner.returnData(context, getIntent(), new ResultReturner.ResultJsonWriter() {
@@ -713,11 +698,11 @@ public class DialogAPI {
              */
 
             protected void hideKeyboard() {
-                KeyboardUtils.setSoftKeyboardAlwaysHiddenFlags(getActivity());
+                //KeyboardUtils.setSoftKeyboardAlwaysHiddenFlags(getActivity());
             }
 
             protected void showKeyboard() {
-                KeyboardUtils.showSoftKeyboard(getActivity(), getView());
+                //KeyboardUtils.showSoftKeyboard(getActivity(), getView());
             }
 
             /**
@@ -729,9 +714,9 @@ public class DialogAPI {
                 for (final ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
                     if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
                         for (final String activeProcess : processInfo.pkgList) {
-                            if (activeProcess.equals(TermuxConstants.TERMUX_PACKAGE_NAME)) {
-                                return true;
-                            }
+                            //if (activeProcess.equals(TermuxConstants.TERMUX_PACKAGE_NAME)) {
+                                //return true;
+                            //}
                         }
                     }
                 }

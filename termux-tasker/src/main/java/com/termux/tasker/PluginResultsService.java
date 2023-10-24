@@ -2,9 +2,10 @@ package com.termux.tasker;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
-import com.termux.shared.logger.Logger;
 import com.termux.tasker.utils.PluginUtils;
 
 public class PluginResultsService extends IntentService {
@@ -26,8 +27,9 @@ public class PluginResultsService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         if (intent != null) {
-            if(intent.getComponent() != null)
-                Logger.logInfo(LOG_TAG, PLUGIN_SERVICE_LABEL + " received execution result");
+            if(intent.getComponent() != null) {
+                Log.i(LOG_TAG, PLUGIN_SERVICE_LABEL + " received execution result");
+            }
             PluginUtils.sendPendingResultToPluginHostApp(this, intent);
         }
     }

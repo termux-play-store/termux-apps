@@ -7,29 +7,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
-import android.view.Gravity;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.data.IntentUtils;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.file.TermuxFileUtils;
-import com.termux.shared.file.filesystem.FileType;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.models.ExecutionCommand;
-import com.termux.shared.models.ResultData;
-import com.termux.shared.models.errors.Error;
-import com.termux.shared.settings.preferences.TermuxWidgetAppSharedPreferences;
-import com.termux.shared.shell.ShellUtils;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.termux.TermuxConstants.TERMUX_WIDGET.TERMUX_WIDGET_PROVIDER;
-import com.termux.shared.termux.TermuxUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,17 +23,6 @@ import java.util.List;
  * See https://developer.android.com/guide/topics/appwidgets/index.html
  */
 public final class TermuxWidgetProvider extends AppWidgetProvider {
-
-    private static final String LOG_TAG = "TermuxWidgetProvider";
-
-    public void onEnabled(Context context) {
-        Logger.logDebug(LOG_TAG, "onEnabled");
-
-        String errmsg = TermuxUtils.isTermuxAppAccessible(context);
-        if (errmsg != null) {
-            Logger.logErrorAndShowToast(context, LOG_TAG, errmsg);
-        }
-    }
 
     /**
      * "This is called to update the App Widget at intervals defined by the updatePeriodMillis attribute in the
@@ -67,7 +37,6 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
 
-        Logger.logDebug(LOG_TAG, "onUpdate: " + Arrays.toString(appWidgetIds));
         if (appWidgetIds == null || appWidgetIds.length == 0) return;
 
         for (int appWidgetId : appWidgetIds) {
@@ -94,7 +63,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
 
         // Setup refresh button:
         Intent refreshIntent = new Intent(context, TermuxWidgetProvider.class);
-        refreshIntent.setAction(TERMUX_WIDGET_PROVIDER.ACTION_REFRESH_WIDGET);
+        refreshIntent.setAction(TermuxWidgetConstants.ACTION_REFRESH_WIDGET);
         refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         refreshIntent.setData(Uri.parse(refreshIntent.toUri(Intent.URI_INTENT_SCHEME)));
         PendingIntent refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent,
@@ -106,7 +75,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         // setup a pending intent template, and the individual items can set a fillInIntent
         // to create unique before on an item to item basis.
         Intent toastIntent = new Intent(context, TermuxWidgetProvider.class);
-        toastIntent.setAction(TERMUX_WIDGET_PROVIDER.ACTION_WIDGET_ITEM_CLICKED);
+        toastIntent.setAction(TermuxWidgetConstants.ACTION_WIDGET_ITEM_CLICKED);
         toastIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
         Intent startTerminalSessionIntent = new Intent();
@@ -120,42 +89,26 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
     }
 
     @Override
-    public void onDeleted(Context context, int[] appWidgetIds) {
-        Logger.logDebug(LOG_TAG, "onDeleted");
-    }
-
-    @Override
-    public void onDisabled(Context context) {
-        Logger.logDebug(LOG_TAG, "onDisabled");
-    }
-
-    @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent != null ? intent.getAction() : null;
         if (action == null) return;
-
-        Logger.logDebug(LOG_TAG, "onReceive(): " + action);
-        Logger.logVerbose(LOG_TAG, "Intent Received\n" + IntentUtils.getIntentString(intent));
 
         switch (action) {
             case AppWidgetManager.ACTION_APPWIDGET_UPDATE: {
                 // The super class already handles this to call onUpdate to update remove views, but
                 // we handle this ourselves and call notifyAppWidgetViewDataChanged as well afterwards.
-                if (!ShortcutUtils.isTermuxAppAccessible(context, LOG_TAG, false)) return;
-
                 refreshAppWidgets(context, intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS), true);
-
                 return;
-            } case TERMUX_WIDGET_PROVIDER.ACTION_WIDGET_ITEM_CLICKED: {
-                String clickedFilePath = intent.getStringExtra(TERMUX_WIDGET_PROVIDER.EXTRA_FILE_CLICKED);
+            } case TermuxWidgetConstants.ACTION_WIDGET_ITEM_CLICKED: {
+                String clickedFilePath = intent.getStringExtra(TermuxWidgetConstants.EXTRA_FILE_CLICKED);
                 Log.e("TERMUX", "CLICKED FILE: " + clickedFilePath);
                 if (clickedFilePath == null || clickedFilePath.isEmpty()) {
-                    Logger.logError(LOG_TAG, "Ignoring unset clicked file");
+                    Log.e(TermuxWidgetConstants.LOG_TAG, "Ignoring unset clicked file");
                     return;
                 }
 
-                if (FileUtils.getFileType(clickedFilePath, true) == FileType.DIRECTORY) {
-                    Logger.logError(LOG_TAG, "Ignoring clicked directory file");
+                if (new File(clickedFilePath).isDirectory()) {
+                    Log.e(TermuxWidgetConstants.LOG_TAG, "Ignoring clicked directory file");
                     return;
                 }
 
@@ -165,9 +118,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
                 //sendExecutionIntentToTermuxService(context, clickedFilePath, LOG_TAG);
                 return;
 
-            } case TERMUX_WIDGET_PROVIDER.ACTION_REFRESH_WIDGET: {
-                if (!ShortcutUtils.isTermuxAppAccessible(context, LOG_TAG, true)) return;
-
+            } case TermuxWidgetConstants.ACTION_REFRESH_WIDGET: {
                 int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
                 int[] appWidgetIds;
                 boolean updateRemoteViews = false;
@@ -175,7 +126,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
                     appWidgetIds = new int[]{appWidgetId};
                 } else {
                     appWidgetIds = AppWidgetManager.getInstance(context).getAppWidgetIds(new ComponentName(context, TermuxWidgetProvider.class));
-                    Logger.logDebug(LOG_TAG, "Refreshing all widget ids: " + Arrays.toString(appWidgetIds));
+                    Log.d(TermuxWidgetConstants.LOG_TAG, "Refreshing all widget ids: " + Arrays.toString(appWidgetIds));
 
                     // Only update remote views if sendIntentToRefreshAllWidgets() is called or if
                     // user sent intent with "am broadcast" command.
@@ -185,14 +136,15 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
                 }
 
                 List<Integer> updatedAppWidgetIds = refreshAppWidgets(context, appWidgetIds, updateRemoteViews);
-                if (updatedAppWidgetIds != null)
-                    Logger.logDebugAndShowToast(context, LOG_TAG, context.getString(R.string.msg_widgets_reloaded, Arrays.toString(appWidgetIds)));
-                else
-                    Logger.logDebugAndShowToast(context, LOG_TAG, context.getString(R.string.msg_no_widgets_found_to_reload));
+                if (updatedAppWidgetIds != null) {
+                    Log.d(TermuxWidgetConstants.LOG_TAG, context.getString(R.string.msg_widgets_reloaded, Arrays.toString(appWidgetIds)));
+                } else {
+                    Log.w(TermuxWidgetConstants.LOG_TAG, context.getString(R.string.msg_no_widgets_found_to_reload));
+                }
                 return;
 
             } default: {
-                Logger.logDebug(LOG_TAG, "Unhandled action: " + action);
+                Log.w(TermuxWidgetConstants.LOG_TAG, "Unhandled action: " + action);
                 break;
 
             }
@@ -224,6 +176,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
      * @param intent The {@link Intent} received for the shortcut file.
      */
     public static void handleTermuxShortcutExecutionIntent(Context context, Intent intent, String logTag) {
+        /*
         if (context == null || intent == null) return;
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
         String token = intent.getStringExtra(TermuxConstants.TERMUX_WIDGET.EXTRA_TOKEN_NAME);
@@ -305,6 +258,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
             } else {
                 context.startService(executionIntent);
             }
+         */
     }
 
 }

@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.termux.api.TermuxAPIConstants;
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.android.PermissionUtils;
 
 import java.util.ArrayList;
 
@@ -30,9 +29,9 @@ public class TermuxApiPermissionActivity extends Activity {
     public static boolean checkAndRequestPermissions(Context context, Intent intent, String... permissions) {
         final ArrayList<String> permissionsToRequest = new ArrayList<>();
         for (String permission : permissions) {
-            if (!PermissionUtils.checkPermission(context, permission)) {
-                permissionsToRequest.add(permission);
-            }
+            //TODO: if (!PermissionUtils.checkPermission(context, permission)) {
+                //permissionsToRequest.add(permission);
+            //}
         }
 
         if (permissionsToRequest.isEmpty()) {
@@ -70,7 +69,7 @@ public class TermuxApiPermissionActivity extends Activity {
         super.onResume();
         Log.v(LOG_TAG, "onResume");
         ArrayList<String> permissionValues = getIntent().getStringArrayListExtra(PERMISSIONS_EXTRA);
-        PermissionUtils.requestPermissions(this, permissionValues.toArray(new String[0]), 0);
+        //PermissionUtils.requestPermissions(this, permissionValues.toArray(new String[0]), 0);
         finish();
     }
 

@@ -7,9 +7,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,8 +26,6 @@ public class WallpaperAPI {
     private static final String LOG_TAG = "WallpaperAPI";
 
     public static void onReceive(final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         Intent wallpaperService = new Intent(context, WallpaperService.class);
         wallpaperService.putExtras(intent.getExtras());
         context.startService(wallpaperService);
@@ -44,8 +42,6 @@ public class WallpaperAPI {
         private static final String LOG_TAG = "WallpaperService";
 
         public int onStartCommand(Intent intent, int flags, int startId) {
-            Logger.logDebug(LOG_TAG, "onStartCommand");
-
             if (intent.hasExtra("file")) {
                 getWallpaperFromFile(intent);
             } else if (intent.hasExtra("url")) {
@@ -78,7 +74,7 @@ public class WallpaperAPI {
             try {
                 result = wallpaperDownload.get(DOWNLOAD_TIMEOUT, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                Logger.logInfo(LOG_TAG, "Wallpaper download interrupted");
+                Log.e(LOG_TAG, "Wallpaper download interrupted", e);
             } catch (ExecutionException e) {
                 result.error = "Unknown host!";
             } catch (TimeoutException e) {

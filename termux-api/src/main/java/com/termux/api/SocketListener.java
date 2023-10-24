@@ -33,7 +33,7 @@ public class SocketListener {
 
     private static final String LOG_TAG = "SocketListener";
 
-    public static void createSocketListener(Application app, Context context) {
+    public static void createSocketListener(Application app) {
         if (listener == null) {
             listener = new Thread(() -> {
                 try (LocalServerSocket listen = new LocalServerSocket(LISTEN_ADDRESS)) {

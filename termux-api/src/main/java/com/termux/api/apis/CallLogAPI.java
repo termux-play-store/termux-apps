@@ -20,8 +20,6 @@ import java.util.Locale;
  */
 public class CallLogAPI {
 
-    private static final String LOG_TAG = "CallLogAPI";
-
     public static void onReceive(final Context context, final Intent intent) {
         final int offset = intent.getIntExtra("offset", 0);
         final int limit = intent.getIntExtra("limit", 50);

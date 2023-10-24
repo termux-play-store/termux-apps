@@ -6,18 +6,16 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
 
 public class VibrateAPI {
 
     private static final String LOG_TAG = "VibrateAPI";
 
     public static void onReceive(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         new Thread() {
             @Override
             public void run() {
@@ -25,23 +23,13 @@ public class VibrateAPI {
                 int milliseconds = intent.getIntExtra("duration_ms", 1000);
                 boolean force = intent.getBooleanExtra("force", false);
 
-                AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                if (am == null) {
-                    Logger.logError(LOG_TAG, "Audio service null");
-                    return;
-                }
+                AudioManager am = context.getSystemService(AudioManager.class);
                 // Do not vibrate if in silent mode and -f/--force option is not used.
                 if (am.getRingerMode() != AudioManager.RINGER_MODE_SILENT || force) {
                     try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
-                        } else {
-                            vibrator.vibrate(milliseconds);
-                        }
+                        vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
                     } catch (Exception e) {
-                        // Issue on samsung devices on android 8
-                        // java.lang.NullPointerException: Attempt to read from field 'android.os.VibrationEffect com.android.server.VibratorService$Vibration.mEffect' on a null object reference
-                        Logger.logStackTraceWithMessage(LOG_TAG, "Failed to run vibrator", e);
+                        Log.e(LOG_TAG, "Failed to run vibrator", e);
                     }
                 }
             }

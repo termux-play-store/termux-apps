@@ -17,12 +17,12 @@ import android.telephony.CellSignalStrength;
 import android.telephony.CellSignalStrengthNr;
 import android.telephony.TelephonyManager;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
 
 import java.io.IOException;
 
@@ -52,8 +52,6 @@ public class TelephonyAPI {
     }
 
     public static void onReceiveTelephonyCellInfo(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveTelephonyCellInfo");
-
         ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
@@ -186,8 +184,6 @@ public class TelephonyAPI {
     }
 
     public static void onReceiveTelephonyDeviceInfo(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveTelephonyDeviceInfo");
-
         ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
             @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
             @SuppressLint("HardwareIds")
@@ -397,11 +393,9 @@ public class TelephonyAPI {
     }
 
     public static void onReceiveTelephonyCall(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveTelephonyCall");
-
         String numberExtra = intent.getStringExtra("number");
         if (numberExtra == null) {
-            Logger.logError(LOG_TAG, "No 'number' extra");
+            Log.e(LOG_TAG, "No 'number' extra");
             ResultReturner.noteDone(apiReceiver, intent);
             return;
         }
@@ -418,7 +412,7 @@ public class TelephonyAPI {
         try {
             context.startActivity(callIntent);
         } catch (SecurityException e) {
-            Logger.logStackTraceWithMessage(LOG_TAG, "Exception in phone call", e);
+            Log.e(LOG_TAG, "Exception in phone call", e);
         }
 
         ResultReturner.noteDone(apiReceiver, intent);

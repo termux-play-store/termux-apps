@@ -5,19 +5,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.util.ResultReturner.ResultJsonWriter;
-import com.termux.shared.logger.Logger;
 
 public class BatteryStatusAPI {
 
     private static final String LOG_TAG = "BatteryStatusAPI";
 
     public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         ResultReturner.returnData(apiReceiver, intent, new ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
@@ -98,7 +96,7 @@ public class BatteryStatusAPI {
                         batteryStatusString = "UNKNOWN";
                         break;
                     default:
-                        Logger.logError(LOG_TAG, "Invalid BatteryManager.EXTRA_STATUS value: " + status);
+                        Log.e(LOG_TAG, "Invalid BatteryManager.EXTRA_STATUS value: " + status);
                         batteryStatusString = "UNKNOWN";
                 }
 

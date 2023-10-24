@@ -1,20 +1,15 @@
 package com.termux.api.util;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.IntentService;
 import android.content.BroadcastReceiver;
 import android.content.BroadcastReceiver.PendingResult;
-import android.content.Context;
 import android.content.Intent;
 import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
 import android.os.ParcelFileDescriptor;
 import android.util.JsonWriter;
-
-import com.termux.shared.logger.Logger;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.plugins.TermuxPluginUtils;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
@@ -154,7 +149,6 @@ public abstract class ResultReturner {
                 String outputSocketAdress = intent.getStringExtra(SOCKET_OUTPUT_EXTRA);
                 if (outputSocketAdress == null || outputSocketAdress.isEmpty())
                     throw new IOException("Missing '" + SOCKET_OUTPUT_EXTRA + "' extra");
-                Logger.logDebug(LOG_TAG, "Connecting to output socket \"" + outputSocketAdress + "\"");
                 outputSocket.connect(new LocalSocketAddress(outputSocketAdress));
                 writer = new PrintWriter(outputSocket.getOutputStream());
 
@@ -196,7 +190,7 @@ public abstract class ResultReturner {
                 }
             } catch (Throwable t) {
                 String message = "Error in " + LOG_TAG;
-                Logger.logStackTraceWithMessage(LOG_TAG, message, t);
+                Log.e(LOG_TAG, message, t);
 
                 if (asyncResult != null) {
                     asyncResult.setResultCode(1);
@@ -210,7 +204,7 @@ public abstract class ResultReturner {
                     if (outputSocket != null)
                         outputSocket.close();
                 } catch (Exception e) {
-                    Logger.logStackTraceWithMessage(LOG_TAG, "Failed to close", e);
+                    Log.e(LOG_TAG, "Failed to close", e);
                 }
 
                 try {
@@ -220,7 +214,7 @@ public abstract class ResultReturner {
                         activity.finish();
                     }
                 } catch (Exception e) {
-                    Logger.logStackTraceWithMessage(LOG_TAG, "Failed to finish", e);
+                    Log.e(LOG_TAG, "Failed to finish", e);
                 }
             }
         };

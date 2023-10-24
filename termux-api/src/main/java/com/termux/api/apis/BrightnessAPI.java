@@ -10,8 +10,6 @@ import com.termux.api.util.ResultReturner;
 
 public class BrightnessAPI {
 
-    private static final String LOG_TAG = "BrightnessAPI";
-
     public static void onReceive(final TermuxApiReceiver receiver, final Context context, final Intent intent) {
         final ContentResolver contentResolver = context.getContentResolver();
         if (intent.hasExtra("auto")) {

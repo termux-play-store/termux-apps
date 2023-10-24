@@ -9,24 +9,10 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.errors.Errno;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.shell.command.ExecutionCommand;
-import com.termux.shared.shell.command.result.ResultConfig;
-import com.termux.shared.shell.command.result.ResultData;
-import com.termux.shared.shell.command.result.ResultSender;
-import com.termux.shared.shell.command.runner.app.AppShell;
-import com.termux.shared.termux.settings.preferences.TermuxPreferenceConstants.TERMUX_TASKER_APP;
-import com.termux.shared.termux.settings.preferences.TermuxTaskerAppSharedPreferences;
-import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 import com.termux.tasker.FireReceiver;
 import com.termux.tasker.PluginResultsService;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.settings.properties.SharedProperties;
 import com.termux.tasker.R;
 
 import java.util.regex.Pattern;
@@ -266,19 +252,19 @@ public class PluginUtils {
      */
     public static void sendPendingResultToPluginHostApp(final Context context, final Intent intent) {
         if (intent == null){
-            Logger.logWarn(LOG_TAG, "Ignoring null intent passed to sendPendingResultToPluginHostApp().");
+            Log.w(LOG_TAG, "Ignoring null intent passed to sendPendingResultToPluginHostApp().");
             return;
         }
 
         final Intent originalIntent = intent.getParcelableExtra(EXTRA_ORIGINAL_INTENT);
         if (originalIntent == null) {
-            Logger.logError(LOG_TAG, "The intent passed to sendPendingResultToPluginHostApp() must contain the original intent received by the FireReceiver at the " + EXTRA_ORIGINAL_INTENT + " key.");
+            Log.e(LOG_TAG, "The intent passed to sendPendingResultToPluginHostApp() must contain the original intent received by the FireReceiver at the " + EXTRA_ORIGINAL_INTENT + " key.");
             return;
         }
 
         final Bundle resultBundle = intent.getBundleExtra(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE);
         if (resultBundle == null) {
-            Logger.logError(LOG_TAG, "The intent passed to sendPendingResultToPluginHostApp() must contain the result bundle at the " + TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE + " key.");
+            Log.e(LOG_TAG, "The intent passed to sendPendingResultToPluginHostApp() must contain the result bundle at the " + TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE + " key.");
             return;
         }
 
@@ -327,18 +313,16 @@ public class PluginUtils {
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
 
         if (!executionCommand.isStateFailed()) {
-            Logger.logWarn(logTag, executionCommand.getCommandIdAndLabelLogString() + ": Ignoring call to processPluginExecutionCommandError() since the execution command is not in ExecutionState.FAILED");
+            Log.w(logTag, executionCommand.getCommandIdAndLabelLogString() + ": Ignoring call to processPluginExecutionCommandError() since the execution command is not in ExecutionState.FAILED");
             return;
         }
 
         boolean isExecutionCommandLoggingEnabled = Logger.shouldEnableLoggingForCustomLogLevel(executionCommand.backgroundCustomLogLevel);
 
         // Log the error and any exception
-        Logger.logErrorExtended(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true,
-                true, isExecutionCommandLoggingEnabled));
+        //Log.e(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true, isExecutionCommandLoggingEnabled));
 
-        PluginUtils.sendImmediateResultToPluginHostApp(receiver, originalIntent,
-                errCode, ResultData.getErrorsListMinimalString(executionCommand.resultData));
+        // TODO: PluginUtils.sendImmediateResultToPluginHostApp(receiver, originalIntent, errCode, ResultData.getErrorsListMinimalString(executionCommand.resultData));
     }
 
 
@@ -361,6 +345,7 @@ public class PluginUtils {
                                                String stderr, String stderrOriginalLength,
                                                String exitCode, int errCode, String errmsg) {
 
+        /*
         Logger.logDebugExtended(LOG_TAG, "Variables bundle for plugin host app:\n" +
                 PLUGIN_VARIABLE_STDOUT + ": `" + stdout + "`\n" +
                 PLUGIN_VARIABLE_STDOUT_ORIGINAL_LENGTH + ": `" + stdoutOriginalLength + "`\n" +
@@ -369,9 +354,10 @@ public class PluginUtils {
                 PLUGIN_VARIABLE_EXIT_CODE + ": `" + exitCode + "`\n" +
                 PLUGIN_VARIABLE_ERR + ": `" + errCode + "`\n" +
                 PLUGIN_VARIABLE_ERRMSG + ": `" + errmsg + "`");
+         */
 
         if (errCode == TaskerPlugin.Setting.RESULT_CODE_OK && errmsg != null && !errmsg.isEmpty()) {
-            Logger.logWarn(LOG_TAG, "Ignoring setting " + PLUGIN_VARIABLE_ERRMSG + " variable since " + PLUGIN_VARIABLE_ERR + " is set to RESULT_CODE_OK \"" + TaskerPlugin.Setting.RESULT_CODE_OK + "\", " + PLUGIN_VARIABLE_ERRMSG + ": \"" + errmsg + "\"");
+            Log.w(LOG_TAG, "Ignoring setting " + PLUGIN_VARIABLE_ERRMSG + " variable since " + PLUGIN_VARIABLE_ERR + " is set to RESULT_CODE_OK \"" + TaskerPlugin.Setting.RESULT_CODE_OK + "\", " + PLUGIN_VARIABLE_ERRMSG + ": \"" + errmsg + "\"");
             errmsg = "";
         }
 

@@ -7,11 +7,11 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,14 +30,10 @@ import static android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACH
  */
 public class MicRecorderAPI {
 
-    private static final String LOG_TAG = "MicRecorderAPI";
-
     /**
      * Starts our MicRecorder service
      */
     public static void onReceive(final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         Intent recorderService = new Intent(context, MicRecorderService.class);
         recorderService.setAction(intent.getAction());
         recorderService.putExtras(intent.getExtras());
@@ -69,8 +65,6 @@ public class MicRecorderAPI {
         }
 
         public int onStartCommand(Intent intent, int flags, int startId) {
-            Logger.logDebug(LOG_TAG, "onStartCommand");
-
             // get command handler and display result
             String command = intent.getAction();
             Context context = getApplicationContext();
@@ -123,8 +117,6 @@ public class MicRecorderAPI {
         }
 
         public void onDestroy() {
-            Logger.logDebug(LOG_TAG, "onDestroy");
-
             cleanupMediaRecorder();
         }
 
@@ -147,16 +139,12 @@ public class MicRecorderAPI {
 
         @Override
         public void onError(MediaRecorder mr, int what, int extra) {
-            Logger.logVerbose(LOG_TAG, "onError: what: " + what + ", extra: "  + extra);
-
             isRecording = false;
             this.stopSelf();
         }
 
         @Override
         public void onInfo(MediaRecorder mr, int what, int extra) {
-            Logger.logVerbose(LOG_TAG, "onInfo: what: " + what + ", extra: "  + extra);
-
             switch (what) {
                 case MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED: // intentional fallthrough
                 case MEDIA_RECORDER_INFO_MAX_DURATION_REACHED:
@@ -179,7 +167,7 @@ public class MicRecorderAPI {
                     info.put("outputFile", file.getAbsolutePath());
                 result = info.toString(2);
             } catch (JSONException e) {
-                Logger.logStackTraceWithMessage(LOG_TAG, "infoHandler json error", e);
+                Log.e(LOG_TAG, "infoHandler json error", e);
             }
             return result;
         }
@@ -249,7 +237,7 @@ public class MicRecorderAPI {
 
                 file = new File(filename);
 
-                Logger.logInfo(LOG_TAG, "MediaRecording file is: " + file.getAbsolutePath());
+                Log.e(LOG_TAG, "MediaRecording file is: " + file.getAbsolutePath());
 
                 if (file.exists()) {
                     result.error = String.format("File: %s already exists! Please specify a different filename", file.getName());
@@ -280,7 +268,7 @@ public class MicRecorderAPI {
                                                                                         1000));
 
                         } catch (IllegalStateException | IOException e) {
-                            Logger.logStackTraceWithMessage(LOG_TAG, "MediaRecorder error", e);
+                            Log.e(LOG_TAG, "MediaRecorder error", e);
                             result.error = "Recording error: " + e.getMessage();
                         }
                     }

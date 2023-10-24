@@ -14,7 +14,6 @@ import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,8 +67,6 @@ public class FingerprintAPI {
      * Handles setup of fingerprint sensor and writes Fingerprint result to console
      */
     public static void onReceive(final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         resetFingerprintResult();
 
         FingerprintManagerCompat fingerprintManagerCompat = FingerprintManagerCompat.from(context);
@@ -143,8 +140,6 @@ public class FingerprintAPI {
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
-            Logger.logDebug(LOG_TAG, "onCreate");
-
             super.onCreate(savedInstanceState);
             handleFingerprint();
         }
@@ -174,7 +169,6 @@ public class FingerprintAPI {
                     }
                     setAuthResult(AUTH_RESULT_FAILURE);
                     postFingerprintResult(context, intent, fingerprintResult);
-                    Logger.logError(LOG_TAG, errString.toString());
                 }
 
                 @Override

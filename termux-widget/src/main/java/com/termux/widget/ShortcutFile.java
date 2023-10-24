@@ -15,18 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.file.TermuxFileUtils;
-import com.termux.shared.file.filesystem.FileType;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.settings.preferences.TermuxWidgetAppSharedPreferences;
-import com.termux.shared.shell.ShellUtils;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.termux.TermuxConstants.TERMUX_WIDGET.TERMUX_WIDGET_PROVIDER;
-import com.termux.shared.termux.TermuxConstants.TERMUX_WIDGET;
-import com.termux.shared.termux.TermuxConstants;
-
 import java.io.File;
 
 public final class ShortcutFile {
@@ -60,66 +48,32 @@ public final class ShortcutFile {
     }
 
     @NonNull
-    public String getCanonicalPath() {
-        return FileUtils.getCanonicalPath(getPath(), null);
-    }
-
-    @NonNull
-    public String getUnExpandedPath() {
-        return TermuxFileUtils.getUnExpandedTermuxPath(getCanonicalPath());
-    }
-
-    @NonNull
     public String getLabel() {
         return mLabel;
     }
 
     @NonNull
     public String getLabelForShortcut(@Nullable String defaultLabel) {
-        if (!DataUtils.isNullOrEmpty(defaultLabel))
-            return defaultLabel;
-        else
-            return ShellUtils.getExecutableBasename(mPath);
+        return (defaultLabel == null || defaultLabel.isEmpty()) ? new File(mPath).getName() : defaultLabel;
     }
 
     public Intent getExecutionIntent(Context context) {
+        /*
         Uri scriptUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(getPath()).build();
         Intent executionIntent = new Intent(context, TermuxLaunchShortcutActivity.class);
         executionIntent.setAction(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE); // Mandatory for pinned shortcuts
         executionIntent.setData(scriptUri);
         executionIntent.putExtra(TERMUX_WIDGET.EXTRA_TOKEN_NAME, TermuxWidgetAppSharedPreferences.getGeneratedToken(context));
         return executionIntent;
+         */
+        return null;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N_MR1)
     public ShortcutInfo getShortcutInfo(Context context, boolean showToastForIconUsed) {
         ShortcutInfo.Builder builder = new ShortcutInfo.Builder(context, getPath());
         builder.setIntent(getExecutionIntent(context));
         builder.setShortLabel(getLabel());
-
-        // Set icon if existent.
-        File shortcutIconFile = getIconFile(context, showToastForIconUsed);
-        if (shortcutIconFile != null)
-            builder.setIcon(Icon.createWithBitmap(((BitmapDrawable) Drawable.createFromPath(shortcutIconFile.getAbsolutePath())).getBitmap()));
-        else
-            builder.setIcon(Icon.createWithResource(context, R.drawable.ic_launcher));
-
         return builder.build();
-    }
-
-    public Intent getStaticShortcutIntent(Context context) {
-        Intent intent = new Intent();
-        intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, getExecutionIntent(context));
-        intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, getLabel());
-
-        // Set icon if existent.
-        File shortcutIconFile = getIconFile(context, true);
-        if (shortcutIconFile != null)
-            intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, ((BitmapDrawable) Drawable.createFromPath(shortcutIconFile.getAbsolutePath())).getBitmap());
-        else
-            intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(context, R.drawable.ic_launcher));
-
-        return intent;
     }
 
     public RemoteViews getListWidgetView(Context context) {
@@ -131,45 +85,10 @@ public final class ShortcutFile {
         // Next, we set a fill-intent which will be used to fill-in the pending intent template
         // which is set on the collection view in TermuxAppWidgetProvider.
         Log.e("TERMUX", "FILLING IN: " + getPath());
-        Intent fillInIntent = new Intent().putExtra(TERMUX_WIDGET_PROVIDER.EXTRA_FILE_CLICKED, getPath());
+        Intent fillInIntent = new Intent().putExtra(TermuxWidgetConstants.EXTRA_FILE_CLICKED, getPath());
         remoteViews.setOnClickFillInIntent(R.id.widget_item_layout, fillInIntent);
 
         return remoteViews;
-    }
-
-    @Nullable
-    private File getIconFile(Context context, boolean showToastForIconUsed) {
-        String errmsg;
-        String shortcutIconFilePath = TermuxConstants.TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_PATH +
-                "/" + ShellUtils.getExecutableBasename(getPath()) + ".png";
-
-        FileType fileType = FileUtils.getFileType(shortcutIconFilePath, true);
-        //  Ensure file or symlink points to a regular file that exists
-        if (fileType != FileType.REGULAR) {
-            if (fileType != FileType.NO_EXIST) {
-                errmsg = context.getString(R.string.error_icon_not_a_regular_file, fileType.getName()) +
-                        "\n" + context.getString(R.string.msg_icon_absolute_path, shortcutIconFilePath);
-                Logger.logErrorAndShowToast(context, LOG_TAG, errmsg);
-            }
-            return null;
-        }
-
-        // Do not allow shortcut icons files not under SHORTCUT_ICONS_FILES_ALLOWED_PATHS_LIST
-        if (!FileUtils.isPathInDirPaths(shortcutIconFilePath, ShortcutUtils.SHORTCUT_ICONS_FILES_ALLOWED_PATHS_LIST, true)) {
-            // TODO: Duplicated with TermuxWidgetProvider
-            errmsg = context.getString(R.string.error_icon_not_under_shortcut_icons_directories,
-                    String.join(", ", TermuxFileUtils.getUnExpandedTermuxPaths(ShortcutUtils.SHORTCUT_ICONS_FILES_ALLOWED_PATHS_LIST))) +
-                    "\n" + context.getString(R.string.msg_icon_absolute_path, shortcutIconFilePath);
-            Logger.logErrorAndShowToast(context, LOG_TAG, errmsg);
-            return null;
-        }
-
-        Logger.logInfo(LOG_TAG, "Using file at \"" + shortcutIconFilePath + "\" as shortcut icon file");
-        if (showToastForIconUsed) {
-            Logger.showToast(context, context.getString(R.string.msg_shortcut_icon_file_used, shortcutIconFilePath), true);
-        }
-
-        return new File(shortcutIconFilePath);
     }
 
 }

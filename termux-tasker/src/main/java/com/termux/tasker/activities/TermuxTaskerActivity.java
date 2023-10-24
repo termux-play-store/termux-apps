@@ -6,10 +6,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.termux.shared.activity.media.AppCompatActivityUtils;
-import com.termux.shared.android.PackageUtils;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.termux.TermuxConstants;
 import com.termux.tasker.R;
 
 public class TermuxTaskerActivity extends AppCompatActivity {
@@ -21,20 +17,16 @@ public class TermuxTaskerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_termux_tasker);
 
-        AppCompatActivityUtils.setToolbar(this, R.id.toolbar);
-        AppCompatActivityUtils.setToolbarTitle(this, R.id.toolbar, TermuxConstants.TERMUX_TASKER_APP_NAME, 0);
+        //AppCompatActivityUtils.setToolbar(this, R.id.toolbar);
+        //AppCompatActivityUtils.setToolbarTitle(this, R.id.toolbar, TermuxConstants.TERMUX_TASKER_APP_NAME, 0);
 
         TextView pluginInfo = findViewById(R.id.textview_plugin_info);
-        pluginInfo.setText(getString(R.string.plugin_info, TermuxConstants.TERMUX_GITHUB_REPO_URL,
-                TermuxConstants.TERMUX_TASKER_GITHUB_REPO_URL));
+        //pluginInfo.setText(getString(R.string.plugin_info, TermuxConstants.TERMUX_GITHUB_REPO_URL, TermuxConstants.TERMUX_TASKER_GITHUB_REPO_URL));
 
         Button disableLauncherIconButton = findViewById(R.id.btn_disable_launcher_icon);
         disableLauncherIconButton.setOnClickListener(v -> {
-            String message = getString(R.string.msg_disabling_launcher_icon, TermuxConstants.TERMUX_TASKER_APP_NAME);
-            Logger.logInfo(LOG_TAG, message);
-            PackageUtils.setComponentState(TermuxTaskerActivity.this,
-                    TermuxConstants.TERMUX_TASKER_PACKAGE_NAME, TermuxConstants.TERMUX_TASKER.TERMUX_TASKER_ACTIVITY_NAME,
-                    false, message, true);
+            //String message = getString(R.string.msg_disabling_launcher_icon, TermuxConstants.TERMUX_TASKER_APP_NAME);
+            //PackageUtils.setComponentState(TermuxTaskerActivity.this, TermuxConstants.TERMUX_TASKER_PACKAGE_NAME, TermuxConstants.TERMUX_TASKER.TERMUX_TASKER_ACTIVITY_NAME, false, message, true);
         });
     }
 

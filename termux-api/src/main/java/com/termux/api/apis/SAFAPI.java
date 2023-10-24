@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.FileUtils;
 import android.provider.DocumentsContract;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,8 +18,6 @@ import androidx.documentfile.provider.DocumentFile;
 
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.data.IntentUtils;
-import com.termux.shared.logger.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,8 +37,6 @@ public class SAFAPI {
 
         @Override
         protected void onCreate(@Nullable Bundle savedInstanceState) {
-            Logger.logDebug(LOG_TAG, "onCreate");
-
             super.onCreate(savedInstanceState);
             Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             i.setFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -48,8 +45,6 @@ public class SAFAPI {
         
         @Override
         protected void onDestroy() {
-            Logger.logDebug(LOG_TAG, "onDestroy");
-
             super.onDestroy();
             finishAndRemoveTask();
             if (! resultReturned) {
@@ -60,8 +55,6 @@ public class SAFAPI {
         
         @Override
         protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-            Logger.logVerbose(LOG_TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: "  + resultCode + ", data: "  + IntentUtils.getIntentString(data));
-
             super.onActivityResult(requestCode, resultCode, data);
             if (data != null) {
                 Uri uri = data.getData();
@@ -76,11 +69,9 @@ public class SAFAPI {
     }
 
     public static void onReceive(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         String method = intent.getStringExtra("safmethod");
         if (method == null) {
-            Logger.logError(LOG_TAG, "safmethod extra null");
+            Log.e(LOG_TAG, "safmethod extra null");
             return;
         }
         try {
@@ -110,10 +101,10 @@ public class SAFAPI {
                     statURI(apiReceiver, context, intent);
                     break;
                 default:
-                    Logger.logError(LOG_TAG, "Unrecognized safmethod: " + "'" + method + "'");
+                    Log.e(LOG_TAG, "Unrecognized safmethod: " + "'" + method + "'");
             }
         } catch (Exception e) {
-            Logger.logStackTraceWithMessage(LOG_TAG, "Error in SAFAPI", e);
+            Log.e(LOG_TAG, "Error in SAFAPI", e);
         }
     }
     
@@ -141,7 +132,7 @@ public class SAFAPI {
     private static void writeDocument(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
         String uri = intent.getStringExtra("uri");
         if (uri == null) {
-            Logger.logError(LOG_TAG, "uri extra null");
+            Log.e(LOG_TAG, "uri extra null");
             return;
         }
         DocumentFile f = DocumentFile.fromSingleUri(context, Uri.parse(uri));
@@ -154,12 +145,12 @@ public class SAFAPI {
     private static void createDocument(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
         String treeURIString = intent.getStringExtra("treeuri");
         if (treeURIString == null) {
-            Logger.logError(LOG_TAG, "treeuri extra null");
+            Log.e(LOG_TAG, "treeuri extra null");
             return;
         }
         String name = intent.getStringExtra("filename");
         if (name == null) {
-            Logger.logError(LOG_TAG, "filename extra null");
+            Log.e(LOG_TAG, "filename extra null");
             return;
         }
         String mime = intent.getStringExtra("mimetype");
@@ -181,7 +172,7 @@ public class SAFAPI {
     private static void readDocument(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
         String uri = intent.getStringExtra("uri");
         if (uri == null) {
-            Logger.logError(LOG_TAG, "uri extra null");
+            Log.e(LOG_TAG, "uri extra null");
             return;
         }
         DocumentFile f = DocumentFile.fromSingleUri(context, Uri.parse(uri));
@@ -194,7 +185,7 @@ public class SAFAPI {
     private static void listDirectory(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
         String treeURIString = intent.getStringExtra("treeuri");
         if (treeURIString == null) {
-            Logger.logError(LOG_TAG, "treeuri extra null");
+            Log.e(LOG_TAG, "treeuri extra null");
             return;
         }
         Uri treeURI = Uri.parse(treeURIString);
@@ -223,7 +214,7 @@ public class SAFAPI {
     private static void statURI(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
         String uriString = intent.getStringExtra("uri");
         if (uriString == null) {
-            Logger.logError(LOG_TAG, "uri extra null");
+            Log.e(LOG_TAG, "uri extra null");
             return;
         }
         Uri docUri = treeUriToDocumentUri(Uri.parse(uriString));
@@ -240,7 +231,7 @@ public class SAFAPI {
     private static void removeDocument(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
         String uri = intent.getStringExtra("uri");
         if (uri == null) {
-            Logger.logError(LOG_TAG, "uri extra null");
+            Log.e(LOG_TAG, "uri extra null");
             return;
         }
         ResultReturner.returnData(apiReceiver, intent, out -> {

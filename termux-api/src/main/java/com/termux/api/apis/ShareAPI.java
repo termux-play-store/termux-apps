@@ -9,14 +9,13 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.termux.api.R;
 import com.termux.api.TermuxAPIConstants;
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.net.uri.UriUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,8 +27,6 @@ public class ShareAPI {
     private static final String LOG_TAG = "ShareAPI";
 
     public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         final String fileExtra = intent.getStringExtra("file");
         final String titleExtra = intent.getStringExtra("title");
         final String contentTypeExtra = intent.getStringExtra("content-type");
@@ -51,7 +48,7 @@ public class ShareAPI {
                     intentAction = Intent.ACTION_VIEW;
                     break;
                 default:
-                    Logger.logError(LOG_TAG, "Invalid action '" + actionExtra + "', using 'view'");
+                    Log.e(LOG_TAG, "Invalid action '" + actionExtra + "', using 'view'");
                     break;
             }
         }
@@ -92,7 +89,7 @@ public class ShareAPI {
                 sendIntent.setAction(finalIntentAction);
 
                 // Do not create Uri with Uri.parse() and use Uri.Builder().path(), check UriUtils.getUriFilePath().
-                Uri uriToShare = UriUtils.getContentUri(TermuxAPIConstants.TERMUX_API_FILE_SHARE_URI_AUTHORITY, fileToShare.getAbsolutePath());
+                Uri uriToShare = null; // TODO: UriUtils.getContentUri(TermuxAPIConstants.TERMUX_API_FILE_SHARE_URI_AUTHORITY, fileToShare.getAbsolutePath());
                 sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                 String contentTypeToUse;
@@ -199,7 +196,7 @@ public class ShareAPI {
             try {
                 String path = file.getCanonicalPath();
                 String callingPackageName = getCallingPackage();
-                Logger.logDebug(LOG_TAG, "Open file request received from " + callingPackageName + " for \"" + path + "\" with mode \"" + mode + "\"");
+                Log.d(LOG_TAG, "Open file request received from " + callingPackageName + " for \"" + path + "\" with mode \"" + mode + "\"");
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }

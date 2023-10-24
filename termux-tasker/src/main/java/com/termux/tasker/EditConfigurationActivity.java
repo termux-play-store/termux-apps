@@ -6,21 +6,6 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.termux.shared.activities.TextIOActivity;
-import com.termux.shared.activity.media.AppCompatActivityUtils;
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.data.IntentUtils;
-import com.termux.shared.errors.Error;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.models.TextIOInfo;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.termux.TermuxUtils;
-import com.termux.shared.termux.file.TermuxFileUtils;
-import com.termux.shared.termux.theme.TermuxThemeUtils;
-import com.termux.shared.theme.NightMode;
-import com.termux.tasker.utils.LoggerUtils;
 import com.termux.tasker.utils.PluginUtils;
 import com.termux.tasker.utils.TaskerPlugin;
 
@@ -29,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,7 +22,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.File;
@@ -93,15 +78,11 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Set NightMode.APP_NIGHT_MODE
-        TermuxThemeUtils.setAppNightMode(this);
-        AppCompatActivityUtils.setNightMode(this, NightMode.getAppNightMode().getName(), true);
-
         setContentView(R.layout.activity_edit_configuration);
 
-        AppCompatActivityUtils.setToolbar(this, R.id.toolbar);
-        AppCompatActivityUtils.setToolbarTitle(this, R.id.toolbar, TermuxConstants.TERMUX_TASKER_APP_NAME, 0);
-        AppCompatActivityUtils.setShowBackButtonInActionBar(this, true);
+        //AppCompatActivityUtils.setToolbar(this, R.id.toolbar);
+        //AppCompatActivityUtils.setToolbarTitle(this, R.id.toolbar, TermuxConstants.TERMUX_TASKER_APP_NAME, 0);
+        //jAppCompatActivityUtils.setShowBackButtonInActionBar(this, true);
 
         setStartTextIOActivityForResult();
 
@@ -110,10 +91,8 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
         final Bundle localeBundle = intent.getBundleExtra(com.twofortyfouram.locale.Intent.EXTRA_BUNDLE);
         BundleScrubber.scrub(localeBundle);
 
-        Logger.logInfo(LOG_TAG, "Bundle Received: " + IntentUtils.getBundleString(localeBundle));
-
         TextView mHelp = findViewById(R.id.textview_help);
-        mHelp.setText(this.getString(R.string.plugin_api_help, TermuxConstants.TERMUX_TASKER_GITHUB_REPO_URL));
+        //mHelp.setText(this.getString(R.string.plugin_api_help, TermuxConstants.TERMUX_TASKER_GITHUB_REPO_URL));
 
         mExecutablePathTextLayout = findViewById(R.id.layout_executable_path);
         mExecutablePathText = findViewById(R.id.executable_path);
@@ -143,7 +122,6 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
 
         // Currently savedInstanceState bundle is not supported
         if (savedInstanceState != null || localeBundle == null) {
-            Logger.logInfo(LOG_TAG, "Not loading values from null bundle");
             // Enable by default
             mInTerminalCheckbox.setChecked(false);
             mWaitForResult.setChecked(true);
@@ -157,7 +135,7 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
         // If bundle is valid, then load values from bundle
         errmsg = PluginBundleManager.parseBundle(this, localeBundle);
         if (errmsg != null) {
-            Logger.logError(LOG_TAG, errmsg);
+            Log.e(LOG_TAG, errmsg);
             return;
         }
 
@@ -216,7 +194,6 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
         int id = item.getItemId();
 
         if (id == R.id.menu_log_level) {
-            LoggerUtils.showSetLogLevelDialog(this);
             return true;
         }
 
@@ -687,13 +664,11 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
         final Bundle resultBundle = PluginBundleManager.generateBundle(getApplicationContext(),
                 executable, arguments, workingDirectory, mStdin, sessionAction, backgroundCustomLogLevel, inTerminal, waitForResult);
         if (resultBundle == null) {
-            Logger.showToast(this, getString(R.string.error_generate_plugin_bundle_failed), true);
+            Log.e(LOG_TAG, getString(R.string.error_generate_plugin_bundle_failed), true);
             setResult(RESULT_CODE_FAILED, resultIntent);
             super.finish();
             return;
         }
-
-        Logger.logDebug(LOG_TAG, "Result bundle size: " + PluginBundleManager.getBundleSize(resultBundle));
 
         // The blurb is a concise status text to be displayed in the host's UI.
         final String blurb = PluginBundleManager.generateBlurb(this, executable, arguments,

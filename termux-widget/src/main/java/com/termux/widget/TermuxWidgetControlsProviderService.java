@@ -15,11 +15,6 @@ import android.service.controls.templates.StatelessTemplate;
 
 import androidx.annotation.RequiresApi;
 
-import com.termux.shared.settings.preferences.TermuxWidgetAppSharedPreferences;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.termux.TermuxConstants.TERMUX_WIDGET;
-
 import org.reactivestreams.FlowAdapters;
 
 import java.io.File;
@@ -76,7 +71,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
             Control control;
 
             if (!shortcutFile.isFile() || !shortcutFile.exists()) {
-                control = createWidgetControlForInvalidShortcutFile(shortcutFile);
+                control = null; // createWidgetControlForInvalidShortcutFile(shortcutFile);
             } else {
                 control = createWidgetControlForValidShortcutFile(shortcutFile);
             }
@@ -129,25 +124,6 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
     }
 
     /**
-     * Creates Control widget that will display an error when interacted with (indicating
-     * that shortcut is invalid / missing).
-     * @param shortcutFile
-     * @return Control
-     */
-    private Control createWidgetControlForInvalidShortcutFile(File shortcutFile) {
-        // If user taps "Open App" in error popup, it will display the error in Termux session
-        PendingIntent pendingIntent = createPendingIntentForShortcutFile(shortcutFile);
-
-        return new Control.StatefulBuilder(shortcutFile.getAbsolutePath(), pendingIntent)
-                .setTitle(shortcutFile.getName())
-                .setSubtitle(createSubtitle(shortcutFile))
-                .setCustomIcon(createDefaultIcon())
-                .setDeviceType(DeviceTypes.TYPE_UNKNOWN)
-                .setStatus(Control.STATUS_NOT_FOUND) // will show native error popup on user interaction
-                .build();
-    }
-
-    /**
      * Creates Control widget that will fire off commands from the shortcutFile.
      * @param shortcutFile
      * @return Control
@@ -196,28 +172,8 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
         return PendingIntent.getActivity(getBaseContext(), 1, emptyIntent, 0);
     }
 
-    /**
-     * Creates PendingIntent to run our widget shortcut file which will run via {@link TermuxLaunchShortcutActivity}
-     * @param file
-     * @return PendingIntent
-     */
-    private PendingIntent createPendingIntentForShortcutFile(File file) {
-        Intent intent = new Intent(getBaseContext(), TermuxLaunchShortcutActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        addShortcutFileExtrasToIntent(file, intent);
-
-        return PendingIntent.getActivity(getBaseContext(), WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    private void addShortcutFileExtrasToIntent(File file, Intent intent) {
-        intent.putExtra(TERMUX_WIDGET.EXTRA_TOKEN_NAME, TermuxWidgetAppSharedPreferences.getGeneratedToken(getBaseContext()));
-
-        Uri scriptUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(file.getAbsolutePath()).build();
-        intent.setData(scriptUri);
-    }
-
     private List<File> createShortcutFilesList() {
-        File shortcutDir = TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR;
+        File shortcutDir = null;
 
         List<File> shortcutFiles = new ArrayList<>();
         addShortcutFile(shortcutDir, shortcutFiles, 0);
@@ -233,7 +189,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
             return;
         }
 
-        File[] files = dir.listFiles(ShortcutUtils.SHORTCUT_FILES_FILTER);
+        File[] files = null; // dir.listFiles(ShortcutUtils.SHORTCUT_FILES_FILTER);
         if (files == null) {
             return;
         }

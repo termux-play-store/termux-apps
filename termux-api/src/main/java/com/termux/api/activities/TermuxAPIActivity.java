@@ -3,6 +3,7 @@ package com.termux.api.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -11,19 +12,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.termux.api.util.ViewUtils;
-import com.termux.shared.activities.ReportActivity;
-import com.termux.shared.activity.media.AppCompatActivityUtils;
-import com.termux.shared.android.AndroidUtils;
-import com.termux.shared.android.PermissionUtils;
-import com.termux.shared.data.IntentUtils;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.models.ReportInfo;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxUtils;
 import com.termux.api.R;
 
 public class TermuxAPIActivity extends AppCompatActivity {
+
+    private static final int REQUEST_GRANT_DISPLAY_OVER_OTHER_APPS_PERMISSION = 1;
 
     private TextView mBatteryOptimizationNotDisabledWarning;
     private TextView mDisplayOverOtherAppsPermissionNotGrantedWarning;
@@ -35,19 +28,14 @@ public class TermuxAPIActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Logger.logDebug(LOG_TAG, "onCreate");
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_termux_api);
 
-        AppCompatActivityUtils.setToolbar(this, com.termux.shared.R.id.toolbar);
-        AppCompatActivityUtils.setToolbarTitle(this, com.termux.shared.R.id.toolbar, TermuxConstants.TERMUX_API_APP_NAME, 0);
+        //AppCompatActivityUtils.setToolbar(this, com.termux.shared.R.id.toolbar);
+        //AppCompatActivityUtils.setToolbarTitle(this, com.termux.shared.R.id.toolbar, TermuxConstants.TERMUX_API_APP_NAME, 0);
 
         TextView pluginInfo = findViewById(R.id.textview_plugin_info);
-        pluginInfo.setText(getString(R.string.plugin_info, TermuxConstants.TERMUX_GITHUB_REPO_URL,
-                TermuxConstants.TERMUX_API_GITHUB_REPO_URL, TermuxConstants.TERMUX_API_APT_PACKAGE_NAME,
-                TermuxConstants.TERMUX_API_APT_GITHUB_REPO_URL));
-
+        //pluginInfo.setText(getString(R.string.plugin_info, TermuxConstants.TERMUX_GITHUB_REPO_URL, TermuxConstants.TERMUX_API_GITHUB_REPO_URL, TermuxConstants.TERMUX_API_APT_PACKAGE_NAME, TermuxConstants.TERMUX_API_APT_GITHUB_REPO_URL));
         mBatteryOptimizationNotDisabledWarning = findViewById(R.id.textview_battery_optimization_not_disabled_warning);
         mDisableBatteryOptimization = findViewById(R.id.btn_disable_battery_optimizations);
         mDisableBatteryOptimization.setOnClickListener(v -> requestDisableBatteryOptimizations());
@@ -91,6 +79,7 @@ public class TermuxAPIActivity extends AppCompatActivity {
         new Thread() {
             @Override
             public void run() {
+                /*
                 String title = "About";
 
                 StringBuilder aboutString = new StringBuilder();
@@ -98,36 +87,32 @@ public class TermuxAPIActivity extends AppCompatActivity {
                 aboutString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(TermuxAPIActivity.this));
                 aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(TermuxAPIActivity.this));
 
-                ReportInfo reportInfo = new ReportInfo(title,
-                        TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title);
+                ReportInfo reportInfo = new ReportInfo(title, TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title);
                 reportInfo.setReportString(aboutString.toString());
-                reportInfo.setReportSaveFileLabelAndPath(title,
-                        Environment.getExternalStorageDirectory() + "/" +
-                                FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + title + ".log", true, true));
-
+                reportInfo.setReportSaveFileLabelAndPath(title, Environment.getExternalStorageDirectory() + "/" + FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + title + ".log", true, true));
                 ReportActivity.startReportActivity(TermuxAPIActivity.this, reportInfo);
+                 */
             }
         }.start();
     }
 
-
-
     private void checkIfBatteryOptimizationNotDisabled() {
         if (mBatteryOptimizationNotDisabledWarning == null) return;
 
+        /*
         // If battery optimizations not disabled
         if (!PermissionUtils.checkIfBatteryOptimizationsDisabled(this)) {
-            ViewUtils.setWarningTextViewAndButtonState(this, mBatteryOptimizationNotDisabledWarning,
-                    mDisableBatteryOptimization, true, getString(R.string.action_disable_battery_optimizations));
+            ViewUtils.setWarningTextViewAndButtonState(this, mBatteryOptimizationNotDisabledWarning, mDisableBatteryOptimization, true, getString(R.string.action_disable_battery_optimizations));
         } else {
             ViewUtils.setWarningTextViewAndButtonState(this, mBatteryOptimizationNotDisabledWarning,
                     mDisableBatteryOptimization, false, getString(R.string.action_already_disabled));
         }
+         */
     }
 
     private void requestDisableBatteryOptimizations() {
-        Logger.logDebug(LOG_TAG, "Requesting to disable battery optimizations");
-        PermissionUtils.requestDisableBatteryOptimizations(this, PermissionUtils.REQUEST_DISABLE_BATTERY_OPTIMIZATIONS);
+        Log.d(LOG_TAG, "Requesting to disable battery optimizations");
+        //PermissionUtils.requestDisableBatteryOptimizations(this, PermissionUtils.REQUEST_DISABLE_BATTERY_OPTIMIZATIONS);
     }
 
 
@@ -136,6 +121,7 @@ public class TermuxAPIActivity extends AppCompatActivity {
         if (mDisplayOverOtherAppsPermissionNotGrantedWarning == null) return;
 
         // If display over other apps permission not granted
+        /*
         if (!PermissionUtils.checkDisplayOverOtherAppsPermission(this)) {
             ViewUtils.setWarningTextViewAndButtonState(this, mDisplayOverOtherAppsPermissionNotGrantedWarning,
                     mGrantDisplayOverOtherAppsPermission, true, getString(R.string.action_grant_display_over_other_apps_permission));
@@ -143,11 +129,12 @@ public class TermuxAPIActivity extends AppCompatActivity {
             ViewUtils.setWarningTextViewAndButtonState(this, mDisplayOverOtherAppsPermissionNotGrantedWarning,
                     mGrantDisplayOverOtherAppsPermission, false, getString(R.string.action_already_granted));
         }
+         */
     }
 
     private void requestDisplayOverOtherAppsPermission() {
-        Logger.logDebug(LOG_TAG, "Requesting to grant display over other apps permission");
-        PermissionUtils.requestDisplayOverOtherAppsPermission(this, PermissionUtils.REQUEST_GRANT_DISPLAY_OVER_OTHER_APPS_PERMISSION);
+        Log.d(LOG_TAG, "Requesting to grant display over other apps permission");
+        //PermissionUtils.requestDisplayOverOtherAppsPermission(this, PermissionUtils.REQUEST_GRANT_DISPLAY_OVER_OTHER_APPS_PERMISSION);
     }
 
 
@@ -155,8 +142,8 @@ public class TermuxAPIActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Logger.logVerbose(LOG_TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: "  + resultCode + ", data: "  + IntentUtils.getIntentString(data));
 
+        /*
         switch (requestCode) {
             case PermissionUtils.REQUEST_DISABLE_BATTERY_OPTIMIZATIONS:
                 if(PermissionUtils.checkIfBatteryOptimizationsDisabled(this))
@@ -166,19 +153,20 @@ public class TermuxAPIActivity extends AppCompatActivity {
                 break;
             case PermissionUtils.REQUEST_GRANT_DISPLAY_OVER_OTHER_APPS_PERMISSION:
                 if(PermissionUtils.checkDisplayOverOtherAppsPermission(this))
-                    Logger.logDebug(LOG_TAG, "Display over other apps granted by user on request.");
+                    Log.d(LOG_TAG, "Display over other apps granted by user on request.");
                 else
-                    Logger.logDebug(LOG_TAG, "Display over other apps denied by user on request.");
+                    Log.d(LOG_TAG, "Display over other apps denied by user on request.");
                 break;
             default:
-                Logger.logError(LOG_TAG, "Unknown request code \"" + requestCode + "\" passed to onRequestPermissionsResult");
+                Log.d(LOG_TAG, "Unknown request code \"" + requestCode + "\" passed to onRequestPermissionsResult");
         }
+         */
     }
 
 
 
     private void openSettings() {
-        startActivity(new Intent().setClassName(TermuxConstants.TERMUX_PACKAGE_NAME, TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME));
+        //startActivity(new Intent().setClassName(TermuxConstants.TERMUX_PACKAGE_NAME, TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME));
     }
 
 }

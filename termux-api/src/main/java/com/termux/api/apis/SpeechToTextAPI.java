@@ -12,10 +12,9 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
 
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.data.IntentUtils;
-import com.termux.shared.logger.Logger;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -44,8 +43,6 @@ public class SpeechToTextAPI {
 
         @Override
         public void onCreate() {
-            Logger.logDebug(LOG_TAG, "onCreate");
-
             super.onCreate();
             final Context context = this;
 
@@ -60,7 +57,7 @@ public class SpeechToTextAPI {
                 @Override
                 public void onResults(Bundle results) {
                     List<String> recognitions = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                    Logger.logError(LOG_TAG, "RecognitionListener#onResults(" + recognitions + ")");
+                    Log.e(LOG_TAG, "RecognitionListener#onResults(" + recognitions + ")");
                     queueu.addAll(recognitions);
                 }
 
@@ -73,7 +70,7 @@ public class SpeechToTextAPI {
                 public void onPartialResults(Bundle partialResults) {
                     // Do nothing.
                     List<String> strings = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                    Logger.logError(LOG_TAG, "RecognitionListener#onPartialResults(" + strings + ")");
+                    Log.e(LOG_TAG, "RecognitionListener#onPartialResults(" + strings + ")");
                     queueu.addAll(strings);
                 }
 
@@ -101,13 +98,13 @@ public class SpeechToTextAPI {
                         default:
                             description = Integer.toString(error);
                     }
-                    Logger.logError(LOG_TAG, "RecognitionListener#onError(" + description + ")");
+                    Log.e(LOG_TAG, "RecognitionListener#onError(" + description + ")");
                     queueu.add(STOP_ELEMENT);
                 }
 
                 @Override
                 public void onEndOfSpeech() {
-                    Logger.logError(LOG_TAG, "RecognitionListener#onEndOfSpeech()");
+                    Log.e(LOG_TAG, "RecognitionListener#onEndOfSpeech()");
                     queueu.add(STOP_ELEMENT);
                 }
 
@@ -152,16 +149,12 @@ public class SpeechToTextAPI {
 
         @Override
         public void onDestroy() {
-            Logger.logDebug(LOG_TAG, "onDestroy");
-
             super.onDestroy();
             mSpeechRecognizer.destroy();
         }
 
         @Override
         protected void onHandleIntent(final Intent intent) {
-            Logger.logDebug(LOG_TAG, "onHandleIntent:\n" + IntentUtils.getIntentString(intent));
-
             ResultReturner.returnData(this, intent, new ResultReturner.WithInput() {
                 @Override
                 public void writeResult(PrintWriter out) throws Exception {
@@ -180,8 +173,6 @@ public class SpeechToTextAPI {
     }
 
     public static void onReceive(final Context context, Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         context.startService(new Intent(context, SpeechToTextService.class).putExtras(intent.getExtras()));
     }
 

@@ -7,7 +7,6 @@ import android.util.JsonWriter;
 
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
 
 /**
  * Exposing {@link ConsumerIrManager}.
@@ -17,8 +16,6 @@ public class InfraredAPI {
     private static final String LOG_TAG = "InfraredAPI";
 
     public static void onReceiveCarrierFrequency(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveCarrierFrequency");
-
         ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
@@ -47,8 +44,6 @@ public class InfraredAPI {
 
 
     public static void onReceiveTransmit(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveTransmit");
-
         ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {

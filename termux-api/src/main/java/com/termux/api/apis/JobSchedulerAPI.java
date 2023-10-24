@@ -15,10 +15,6 @@ import android.text.TextUtils;
 
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.shell.command.ExecutionCommand;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -61,8 +57,6 @@ public class JobSchedulerAPI {
     }
 
     public static void onReceive(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         final String scriptPath = intent.getStringExtra("script");
 
         final int jobId = intent.getIntExtra("job_id", 0);
@@ -171,7 +165,6 @@ public class JobSchedulerAPI {
         final int scheduleResponse = jobScheduler.schedule(job);
 
         final String message = String.format(Locale.ENGLISH, "Scheduling %s - response %d", formatJobInfo(job), scheduleResponse);
-        Logger.logInfo(LOG_TAG, message);
         ResultReturner.returnData(apiReceiver, intent, out -> out.println(message));
 
 
@@ -210,14 +203,12 @@ public class JobSchedulerAPI {
 
     public static class JobSchedulerService extends JobService {
 
-        public static final String SCRIPT_FILE_PATH = TermuxConstants.TERMUX_API_PACKAGE_NAME + ".jobscheduler_script_path";
+        public static final String SCRIPT_FILE_PATH = "com.termux.api.jobscheduler_script_path";
 
         private static final String LOG_TAG = "JobSchedulerService";
 
         @Override
         public boolean onStartJob(JobParameters params) {
-            Logger.logInfo(LOG_TAG, "onStartJob: " + params.toString());
-
             PersistableBundle extras = params.getExtras();
             String filePath = extras.getString(SCRIPT_FILE_PATH);
 
@@ -239,14 +230,11 @@ public class JobSchedulerAPI {
                 context.startService(executionIntent);
             }
 
-            Logger.logInfo(LOG_TAG, "Job started for \"" + filePath + "\"");
-
             return false;
         }
 
         @Override
         public boolean onStopJob(JobParameters params) {
-            Logger.logInfo(LOG_TAG, "onStopJob: " + params.toString());
             return false;
         }
     }

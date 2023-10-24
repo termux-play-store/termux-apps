@@ -16,16 +16,13 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Looper;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.WindowManager;
 
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
-import com.termux.shared.errors.Error;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.termux.file.TermuxFileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,8 +40,6 @@ public class CameraPhotoAPI {
     private static final String LOG_TAG = "CameraPhotoAPI";
 
     public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         final String filePath = intent.getStringExtra("file");
         final String cameraId = Objects.toString(intent.getStringExtra("camera"), "0");
 
@@ -55,20 +50,17 @@ public class CameraPhotoAPI {
             }
 
             // Get canonical path of photoFilePath
-            String photoFilePath = TermuxFileUtils.getCanonicalPath(filePath, null, true);
-            String photoDirPath = FileUtils.getFileDirname(photoFilePath);
-            Logger.logVerbose(LOG_TAG, "photoFilePath=\"" + photoFilePath + "\", photoDirPath=\"" + photoDirPath + "\"");
+            String photoFilePath = null; // TermuxFileUtils.getCanonicalPath(filePath, null, true);
+            String photoDirPath = null; // FileUtils.getFileDirname(photoFilePath);
 
             // If workingDirectory is not a directory, or is not readable or writable, then just return
             // Creation of missing directory and setting of read, write and execute permissions are only done if workingDirectory is
             // under allowed termux working directory paths.
             // We try to set execute permissions, but ignore if they are missing, since only read and write permissions are required
             // for working directories.
-            Error error = TermuxFileUtils.validateDirectoryFileExistenceAndPermissions("photo directory", photoDirPath,
-                    true, true, true,
-                    false, true);
+            Error error = null; // TermuxFileUtils.validateDirectoryFileExistenceAndPermissions("photo directory", photoDirPath, true, true, true, false, true);
             if (error != null) {
-                stdout.println("ERROR: " + error.getErrorLogString());
+                //stdout.println("ERROR: " + error.getErrorLogString());
                 return;
             }
 
@@ -90,26 +82,26 @@ public class CameraPhotoAPI {
                     try {
                         proceedWithOpenedCamera(context, manager, camera, outputFile, looper, stdout);
                     } catch (Exception e) {
-                        Logger.logStackTraceWithMessage(LOG_TAG, "Exception in onOpened()", e);
+                        Log.e(LOG_TAG, "Exception in onOpened()", e);
                         closeCamera(camera, looper);
                     }
                 }
 
                 @Override
                 public void onDisconnected(CameraDevice camera) {
-                    Logger.logInfo(LOG_TAG, "onDisconnected() from camera");
+                    //Logger.logInfo(LOG_TAG, "onDisconnected() from camera");
                 }
 
                 @Override
                 public void onError(CameraDevice camera, int error) {
-                    Logger.logError(LOG_TAG, "Failed opening camera: " + error);
+                    //Logger.logError(LOG_TAG, "Failed opening camera: " + error);
                     closeCamera(camera, looper);
                 }
             }, null);
 
             Looper.loop();
         } catch (Exception e) {
-            Logger.logStackTraceWithMessage(LOG_TAG, "Error getting camera", e);
+            Log.e(LOG_TAG, "Error getting camera", e);
         }
     }
 

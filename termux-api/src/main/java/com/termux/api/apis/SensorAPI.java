@@ -30,8 +30,6 @@ import java.util.concurrent.Semaphore;
  */
 public class SensorAPI {
 
-    private static final String LOG_TAG = "SensorAPI";
-
     /**
      * Starts our SensorReader service
      */
@@ -392,7 +390,7 @@ public class SensorAPI {
                                 try {
                                     Thread.sleep(this.delay);
                                 } catch (InterruptedException e) {
-                                    Logger.logInfo(LOG_TAG, "SensorOutputWriter interrupted: " + e.getMessage());
+                                    Log.e(LOG_TAG, "SensorOutputWriter interrupted: " + e.getMessage());
                                 }
                                 semaphore.acquire();
                                 writer.write(sensorReadout.toString(INDENTATION) + "\n");

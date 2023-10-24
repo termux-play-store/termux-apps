@@ -25,16 +25,6 @@
         </receiver>
 
         <activity
-            android:name=".TermuxCreateShortcutActivity"
-            android:exported="false"
-            android:label="@string/title_single_shortcut_name">
-            <intent-filter>
-                <action android:name="android.intent.action.CREATE_SHORTCUT" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
             android:name=".TermuxLaunchShortcutActivity"
             android:noHistory="true"
             android:launchMode="singleInstance"

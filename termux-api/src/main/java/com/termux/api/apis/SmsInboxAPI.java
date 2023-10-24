@@ -15,7 +15,6 @@ import android.util.JsonWriter;
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.util.ResultReturner.ResultJsonWriter;
-import com.termux.shared.logger.Logger;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -37,8 +36,6 @@ public class SmsInboxAPI {
     private static final String LOG_TAG = "SmsInboxAPI";
 
     public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         final int offset = intent.getIntExtra("offset", 0);
         final int limit = intent.getIntExtra("limit", 10);
         final String number = intent.hasExtra("from") ? intent.getStringExtra("from"):"";

@@ -4,16 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.ShortcutManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
-import androidx.annotation.RequiresApi;
-
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;
 import java.util.Arrays;
@@ -38,7 +32,7 @@ public class TermuxCreateShortcutActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        updateListview(TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR);
+        //updateListview(TermuxWidgetConstants.);
 
         mListView.setOnItemClickListener((parent, view, position, id) -> {
             final Context context = TermuxCreateShortcutActivity.this;
@@ -53,19 +47,20 @@ public class TermuxCreateShortcutActivity extends Activity {
     }
 
     private void updateListview(File directory) {
+        // NOTE: use open document provider?
         mCurrentDirectory = directory;
-        mCurrentFiles = directory.listFiles(ShortcutUtils.SHORTCUT_FILES_FILTER);
+        mCurrentFiles = null; // directory.listFiles(ShortcutUtils.SHORTCUT_FILES_FILTER);
 
         if (mCurrentFiles == null) mCurrentFiles = new File[0];
 
         Arrays.sort(mCurrentFiles, Comparator.comparing(File::getName));
 
-        final boolean isTopDir = directory.equals(TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR);
+        final boolean isTopDir = directory.getAbsolutePath().equals(TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH);
         getActionBar().setDisplayHomeAsUpEnabled(!isTopDir);
 
         if (isTopDir && mCurrentFiles.length == 0) {
             // Create if necessary so user can more easily add.
-            TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR.mkdirs();
+            //TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR.mkdirs();
             new AlertDialog.Builder(this)
                     .setMessage(R.string.msg_no_shortcut_scripts)
                     .setOnDismissListener(dialog -> finish()).show();
@@ -84,42 +79,25 @@ public class TermuxCreateShortcutActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            updateListview(DataUtils.getDefaultIfNull(mCurrentDirectory.getParentFile(), mCurrentDirectory));
+            //updateListview(DataUtils.getDefaultIfNull(mCurrentDirectory.getParentFile(), mCurrentDirectory));
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void createShortcut(Context context, File clickedFile) {
-        boolean isPinnedShortcutSupported = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ShortcutManager shortcutManager = ShortcutUtils.getShortcutManager(context, LOG_TAG, true);
-            if (shortcutManager != null && shortcutManager.isRequestPinShortcutSupported()) {
-                isPinnedShortcutSupported = true;
-            }
-        }
+        ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
 
         ShortcutFile shortcutFile = new ShortcutFile(clickedFile);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isPinnedShortcutSupported) {
-            createPinnedShortcut(context, shortcutFile);
+        if (shortcutManager.isRequestPinShortcutSupported()) {
+            shortcutManager.requestPinShortcut(shortcutFile.getShortcutInfo(context, true), null);
         } else {
-            createStaticShortcut(context, shortcutFile);
+            //createStaticShortcut(context, shortcutFile);
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void createPinnedShortcut(Context context, ShortcutFile shortcutFile) {
-        ShortcutManager shortcutManager = ShortcutUtils.getShortcutManager(context, LOG_TAG, true);
-        if (shortcutManager == null) return;
-
-        //Logger.showToast(context, context.getString(R.string.msg_request_create_pinned_shortcut, shortcutFile.getUnExpandedPath()),true);
-        shortcutManager.requestPinShortcut(shortcutFile.getShortcutInfo(context, true), null);
-    }
-
-    private void createStaticShortcut(Context context, ShortcutFile shortcutFile) {
-        //Logger.showToast(context, context.getString(R.string.msg_request_create_static_shortcut, shortcutFile.getUnExpandedPath()),true);
-        setResult(RESULT_OK, shortcutFile.getStaticShortcutIntent(context));
     }
 
 }

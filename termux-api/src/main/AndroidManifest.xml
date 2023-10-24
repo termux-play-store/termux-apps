@@ -61,7 +61,7 @@
 
         <activity
             android:name=".activities.TermuxAPIActivity"
-            android:theme="@style/Theme.BaseActivity.DayNight.NoActionBar"
+            android:theme="@android:style/Theme.DeviceDefault"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

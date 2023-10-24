@@ -5,19 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
-import com.termux.shared.data.DataUtils;
-import com.termux.shared.data.IntentUtils;
-import com.termux.shared.errors.Errno;
-import com.termux.shared.errors.Error;
-import com.termux.shared.file.filesystem.FileType;
-import com.termux.shared.logger.Logger;
-import com.termux.shared.shell.command.ExecutionCommand;
-import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.termux.TermuxUtils;
-import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.tasker.utils.PluginUtils;
 import com.termux.tasker.utils.TaskerPlugin;
 
@@ -34,11 +23,9 @@ public final class FireReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, final Intent intent) {
         // If wrong action passed, then just return
         if (!com.twofortyfouram.locale.Intent.ACTION_FIRE_SETTING.equals(intent.getAction())) {
-            Logger.logError(LOG_TAG, "Unexpected intent action: " + intent.getAction());
+            Log.e(LOG_TAG, "Unexpected intent action: " + intent.getAction());
             return;
         }
-
-        Logger.logInfo(LOG_TAG, "Received execution intent");
 
         String errmsg;
         Error error;
@@ -50,7 +37,7 @@ public final class FireReceiver extends BroadcastReceiver {
         // If bundle is not valid, then return RESULT_CODE_FAILED to plugin host app
         errmsg = PluginBundleManager.parseBundle(context, bundle);
         if (errmsg != null) {
-            Logger.logError(LOG_TAG, errmsg);
+            Log.e(LOG_TAG, errmsg);
             PluginUtils.sendImmediateResultToPluginHostApp(this, intent, TaskerPlugin.Setting.RESULT_CODE_FAILED, errmsg);
             return;
         }
@@ -160,10 +147,6 @@ public final class FireReceiver extends BroadcastReceiver {
         if (!DataUtils.isNullOrEmpty(arguments_string))
             arguments_list = ArgumentTokenizer.tokenize(arguments_string);
         executionCommand.arguments = arguments_list.toArray(new String[0]);
-
-
-        Logger.logVerboseExtended(LOG_TAG, executionCommand.toString());
-        Logger.logVerbose(LOG_TAG, "Wait For Result: `" + waitForResult + "`");
 
         // Create execution intent with the action TERMUX_SERVICE#ACTION_SERVICE_EXECUTE to be sentto the TERMUX_SERVICE
         Intent executionIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executionCommand.executableUri);
