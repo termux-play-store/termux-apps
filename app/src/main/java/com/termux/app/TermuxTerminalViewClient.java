@@ -131,7 +131,7 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
                 showUrlSelection();
             } else if (unicodeChar == 'v') {
                 doPaste();
-            } else if (unicodeChar == 'z') {
+            } else if (unicodeChar == 'z' /* Zecret */) {
                 mActivity.requestAutoFill();
             } else if (unicodeChar == '+' || e.getUnicodeChar(KeyEvent.META_SHIFT_ON) == '+') {
                 // We also check for the shifted char here since shift may be required to produce '+',

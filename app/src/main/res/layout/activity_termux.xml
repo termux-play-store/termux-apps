@@ -24,7 +24,6 @@
                 android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
                 android:scrollbars="vertical"
                 android:importantForAutofill="no"
-                android:autofillHints="password"
                 tools:ignore="UnusedAttribute" />
 
             <com.google.android.material.navigation.NavigationView

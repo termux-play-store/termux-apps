@@ -1,6 +1,5 @@
 package com.termux.app;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,16 +25,11 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
-import android.window.OnBackInvokedCallback;
-import android.window.OnBackInvokedDispatcher;
 
 import com.google.android.material.navigation.NavigationView;
 import com.termux.R;
@@ -59,14 +53,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * A terminal emulator activity.
@@ -502,11 +492,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (currentSession == null) return;
 
         boolean addAutoFillMenu = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            AutofillManager autofillManager = getSystemService(AutofillManager.class);
-            if (autofillManager != null && autofillManager.isEnabled()) {
-                addAutoFillMenu = true;
-            }
+        var autofillManager = getSystemService(AutofillManager.class);
+        if (autofillManager != null && autofillManager.isEnabled()) {
+            addAutoFillMenu = true;
         }
 
         menu.add(Menu.NONE, CONTEXT_MENU_SELECT_URL_ID, Menu.NONE, R.string.action_select_url);
@@ -626,11 +614,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     public void requestAutoFill() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            AutofillManager autofillManager = getSystemService(AutofillManager.class);
-            if (autofillManager != null && autofillManager.isEnabled()) {
-                autofillManager.requestAutofill(mTerminalView);
-            }
+        var autofillManager = getSystemService(AutofillManager.class);
+        if (autofillManager != null && autofillManager.isEnabled()) {
+            autofillManager.requestAutofill(mTerminalView);
         }
     }
 
