@@ -124,6 +124,10 @@ final class TermuxInstaller {
                                 if (isDirectory) {
                                     targetFile.mkdirs();
                                 } else {
+                                    File parentDir = targetFile.getParentFile();
+                                    if (!parentDir.exists() && !parentDir.mkdirs()) {
+                                        throw new RuntimeException("Cannot create parent dir for: " + targetFile.getAbsolutePath());
+                                    }
                                     try (FileOutputStream outStream = new FileOutputStream(targetFile)) {
                                         int readBytes;
                                         while ((readBytes = zipInput.read(buffer)) != -1)
@@ -140,6 +144,10 @@ final class TermuxInstaller {
                     }
 
                     for (Pair<String, String> symlink : symlinks) {
+                        var linkFile = new File(symlink.second);
+                        if (!linkFile.getParentFile().exists() && !linkFile.getParentFile().mkdirs()) {
+                            throw new RuntimeException("Cannot create dir: " + linkFile.getParentFile());
+                        }
                         Os.symlink(symlink.first, symlink.second);
                     }
 
