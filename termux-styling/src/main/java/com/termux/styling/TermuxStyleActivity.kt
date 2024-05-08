@@ -17,8 +17,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import java.io.IOException
-import java.nio.charset.StandardCharsets
-import java.util.*
 
 const val DEFAULT_FILENAME = "Default"
 
@@ -67,7 +65,7 @@ class TermuxStyleActivity : Activity() {
         val colorAdapter = ArrayAdapter<Selectable>(this, android.R.layout.simple_spinner_dropdown_item)
 
         colorSpinner.setOnClickListener {
-            val dialog = AlertDialog.Builder(this@TermuxStyleActivity).setAdapter(colorAdapter) { _, which -> sendFile(colorAdapter.getItem(which), true) }.create()
+            val dialog = AlertDialog.Builder(this@TermuxStyleActivity).setAdapter(colorAdapter) { _, which -> sendFile(colorAdapter.getItem(which)!!, true) }.create()
             dialog.setOnShowListener {
                 val lv = dialog.listView
                 lv.setOnItemLongClickListener { _, _, position, _ ->
@@ -80,7 +78,7 @@ class TermuxStyleActivity : Activity() {
 
         val fontAdapter = ArrayAdapter<Selectable>(this, android.R.layout.simple_spinner_dropdown_item)
         fontSpinner.setOnClickListener {
-            val dialog = AlertDialog.Builder(this@TermuxStyleActivity).setAdapter(fontAdapter) { _, which -> sendFile(fontAdapter.getItem(which), false) }.create()
+            val dialog = AlertDialog.Builder(this@TermuxStyleActivity).setAdapter(fontAdapter) { _, which -> sendFile(fontAdapter.getItem(which)!!, false) }.create()
             dialog.setOnShowListener {
                 val lv = dialog.listView
                 lv.setOnItemLongClickListener { _, _, position, _ ->
@@ -126,7 +124,7 @@ class TermuxStyleActivity : Activity() {
                 val buffer = ByteArray(`in`.available())
                 `in`.read(buffer)
                 val license = SpannableString(String(buffer))
-                Linkify.addLinks(license, Linkify.ALL)
+                Linkify.addLinks(license, Linkify.WEB_URLS)
                 val dialog = AlertDialog.Builder(this)
                         .setTitle(mCurrentSelectable.displayName)
                         .setMessage(license)
@@ -140,31 +138,15 @@ class TermuxStyleActivity : Activity() {
 
     }
 
-    private fun sendFile(mCurrentSelectable: Selectable?, colors: Boolean) {
+    private fun sendFile(mCurrentSelectable: Selectable, colors: Boolean) {
         try {
+            val assetsFolder = if (colors) "colors" else "fonts"
+
             // Note: Must match string in TermuxActivity#onCreate():
             val newStyleIntent = Intent("com.termux.app.NEW_STYLE")
-            newStyleIntent.setClassName("com.termux", "com.termux.app.TermuxActivityInternal")
-
-            val assetsFolder = if (colors) "colors" else "fonts"
-            var bytesToSend: ByteArray
-            val defaultChoice = mCurrentSelectable!!.fileName == DEFAULT_FILENAME
-            if (defaultChoice) {
-                if (colors) {
-                    bytesToSend = "# Using default color theme.".toByteArray(StandardCharsets.UTF_8)
-                } else {
-                    // Just leave an empty font file as a marker.
-                    bytesToSend = ByteArray(0)
-                }
-            } else {
-                bytesToSend = assets.open(assetsFolder + "/" + mCurrentSelectable.fileName).readBytes()
-            }
-
-            Log.e("termux", "SENDING BYTES: " + bytesToSend.size);
-            newStyleIntent.putExtra("com.termux.app.extra.NEW_" + if (colors) "COLORS" else "FONT", bytesToSend)
-            val fileName = if (defaultChoice) { "default" } else { mCurrentSelectable.fileName }
-            newStyleIntent.clipData = ClipData("style-bytes", arrayOf(), ClipData.Item(Uri.parse("content://com.termux.styling.fileprovider/${assetsFolder}/${mCurrentSelectable.fileName}")))
-            newStyleIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .setClassName("com.termux", "com.termux.app.TermuxActivityInternal")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            newStyleIntent.clipData = ClipData("style-bytes", arrayOf("application/octet-stream"), ClipData.Item(Uri.parse("${CONTENT_URI_PREFIX}/${assetsFolder}/${mCurrentSelectable.fileName}")))
             startActivity(newStyleIntent)
         } catch (e: Exception) {
             Log.w("termux", "Failed to sendFile", e)

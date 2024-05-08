@@ -52,6 +52,7 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -309,29 +310,33 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         super.onNewIntent(intent);
         try {
             if ("com.termux.app.NEW_STYLE".equals(intent.getAction())) {
-                byte[] newFont = intent.getByteArrayExtra("com.termux.app.extra.NEW_FONT");
-                if (newFont != null) {
-                    File fontFile = new File(TermuxConstants.FONT_PATH);
-                    if (newFont.length == 0) {
-                        fontFile.delete();
-                    } else {
-                        try (FileOutputStream fos = new FileOutputStream(fontFile)) {
-                            fos.write(newFont);
+                var clipData = intent.getClipData();
+                if (clipData != null && clipData.getItemCount() == 1) {
+                    var styleFileUri = clipData.getItemAt(0).getUri();
+                    try (var in = getContentResolver().openInputStream(styleFileUri)) {
+                        var out = new ByteArrayOutputStream();
+                        var buffer = new byte[8196];
+                        if (in != null) {
+                            // Null input stream means default style.
+                            int read;
+                            while ((read = in.read(buffer)) != -1) {
+                                out.write(buffer, 0, read);
+                            }
                         }
-                    }
-                }
-                byte[] newColors = intent.getByteArrayExtra("com.termux.app.extra.NEW_COLORS");
-                if (newColors != null) {
-                    File colorsFile = new File(TermuxConstants.COLORS_PATH);
-                    if (newColors.length == 0) {
-                        colorsFile.delete();
-                    } else {
-                        try (FileOutputStream fos = new FileOutputStream(colorsFile)) {
-                            fos.write(newColors);
+                        var bytesReceived = out.toByteArray();
+                        var isColors = styleFileUri.getPath().startsWith("/colors/");
+                        var fileToWrite = new File(isColors ? TermuxConstants.COLORS_PATH : TermuxConstants.FONT_PATH);
+                        if (bytesReceived.length == 0) {
+                            fileToWrite.delete();
+                        } else {
+                            try (var fos = new FileOutputStream(fileToWrite)) {
+                                fos.write(bytesReceived);
+                            }
                         }
+                        mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
                     }
+
                 }
-                mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
             }
         } catch (Exception e) {
             Log.e(TermuxConstants.LOG_TAG, "Error handling new intent", e);
@@ -750,15 +755,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         public void onReceive(Context context, Intent intent) {
             Log.e("termux", "ONRECEIVE: " + intent.getAction() + ", isVisible=" + isVisible());
             if (mIsVisible) {
-                switch (intent.getAction()) {
-                    case ACTION_RELOAD_STYLE:
-                        if ("storage".equals(intent.getStringExtra(ACTION_RELOAD_STYLE))) {
-                            TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
-                        } else {
-                            reloadActivityStyling();
-                        }
-                        return;
-                    default:
+                if (ACTION_RELOAD_STYLE.equals(intent.getAction())) {
+                    if ("storage".equals(intent.getStringExtra(ACTION_RELOAD_STYLE))) {
+                        TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
+                    } else {
+                        reloadActivityStyling();
+                    }
                 }
             }
         }
