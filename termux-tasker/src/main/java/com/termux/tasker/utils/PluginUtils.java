@@ -142,20 +142,20 @@ public class PluginUtils {
         if (context == null) return;
 
         if (executionIntent == null) {
-            Logger.logError(LOG_TAG, "The executionIntent passed to sendExecuteIntentToExecuteService() cannot be null.");
+            Log.e(LOG_TAG, "The executionIntent passed to sendExecuteIntentToExecuteService() cannot be null.");
             return;
         }
 
         if (executionIntent.getComponent() == null) {
-            Logger.logError(LOG_TAG, "The Component for the executionIntent passed to sendExecuteIntentToExecuteService() cannot be null.");
+            Log.e(LOG_TAG, "The Component for the executionIntent passed to sendExecuteIntentToExecuteService() cannot be null.");
             return;
         }
 
-        Logger.logVerbose(LOG_TAG, "Ordered Broadcast (timeout > 0): `" + (receiver != null && receiver.isOrderedBroadcast()) + "`");
+        Log.i(LOG_TAG, "Ordered Broadcast (timeout > 0): `" + (receiver != null && receiver.isOrderedBroadcast()) + "`");
 
         // If timeout for plugin action is greater than 0 and plugin action should wait for results
         waitForResult = (receiver != null && receiver.isOrderedBroadcast() && waitForResult);
-        Logger.logDebug(LOG_TAG, "Sending execution intent to " + executionIntent.getComponent().toString() + (waitForResult ? " and " : " without ") + "waiting for result");
+        Log.i(LOG_TAG, "Sending execution intent to " + executionIntent.getComponent().toString() + (waitForResult ? " and " : " without ") + "waiting for result");
 
         if (waitForResult) {
             // Notify plugin host app that result will be sent later
