@@ -210,12 +210,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         registerForContextMenu(mTerminalView);
 
         // Start the {@link TermuxService} and make it run regardless of who is bound to it
-        Intent serviceIntent = new Intent(this, TermuxService.class);
-        if (Build.VERSION.SDK_INT >= 26) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
-        }
+        var serviceIntent = new Intent(this, TermuxService.class);
+        startForegroundService(serviceIntent);
 
         // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
         // callback if it succeeds.
@@ -743,11 +739,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_RELOAD_STYLE);
         intentFilter.addAction(ACTION_REQUEST_PERMISSIONS);
-        if (Build.VERSION.SDK_INT >= 33) {
-            registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
-        }
+
+        var flag = Build.VERSION.SDK_INT >= 33 ? Context.RECEIVER_NOT_EXPORTED : 0;
+        registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter, flag);
     }
 
     class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
