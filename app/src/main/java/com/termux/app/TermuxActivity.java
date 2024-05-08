@@ -583,15 +583,18 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     private void showStylingDialog() {
-        Intent stylingIntent = new Intent();
-        stylingIntent.setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity");
         try {
-            startActivity(stylingIntent);
+            startActivity(new Intent().setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity"));
         } catch (ActivityNotFoundException | IllegalArgumentException e) {
-            Log.e(TermuxConstants.LOG_TAG, "Error starting Termux:Style", e);
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.
-            String installationUrl = isInstalledFromGooglePlay()
+            Log.i(TermuxConstants.LOG_TAG, "Error starting Termux:Style - app needs to be installed", e);
+
+            var validInstallers = Arrays.asList("com.android.vending", "com.google.android.feedback");
+            var installer = getPackageManager().getInstallerPackageName(getPackageName());
+            var installedFromGooglePlay = installer != null && validInstallers.contains(installer);
+
+            var installationUrl = installedFromGooglePlay
                 ? "https://play.google.com/store/apps/details?id=com.termux.styling"
                 : "https://f-droid.org/en/packages/com.termux.styling";
             new AlertDialog.Builder(this).setMessage(getString(R.string.error_styling_not_installed))
@@ -599,12 +602,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(installationUrl))))
                 .setNegativeButton(android.R.string.cancel, null).show();
         }
-    }
-
-    private boolean isInstalledFromGooglePlay() {
-        List<String> validInstallers = new ArrayList<>(Arrays.asList("com.android.vending", "com.google.android.feedback"));
-        final String installer = getPackageManager().getInstallerPackageName(getPackageName());
-        return installer != null && validInstallers.contains(installer);
     }
 
     private void toggleKeepScreenOn() {
