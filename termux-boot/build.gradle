@@ -5,9 +5,9 @@ android {
 
     defaultConfig {
         applicationId "com.termux.boot"
-        minSdkVersion 21
-        targetSdkVersion 28
-        compileSdk 34
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        compileSdk project.properties.compileSdkVersion.toInteger()
         versionCode 7
         versionName "0.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -35,17 +35,17 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 }
 
 dependencies {
-    implementation "androidx.annotation:annotation:1.7.0"
+    implementation "androidx.annotation:annotation:1.7.1"
 }
 
-task versionName {
-  doLast {
-    print android.defaultConfig.versionName
-  }
+tasks.register('versionName') {
+    doLast {
+        print android.defaultConfig.versionName
+    }
 }

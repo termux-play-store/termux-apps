@@ -8,9 +8,9 @@ android {
 
      defaultConfig {
         applicationId "com.termux.styling"
-        minSdkVersion 24
-        targetSdkVersion 34
-        compileSdk 34
+        minSdkVersion project.properties.minSdkVersion.toInteger()
+        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        compileSdk project.properties.compileSdkVersion.toInteger()
         versionCode 31
         versionName "0.31"
     }
@@ -43,6 +43,10 @@ android {
 
     kotlinOptions {
         jvmTarget = '11'
+    }
+
+    lintOptions {
+        warningsAsErrors true
     }
 }
 

@@ -102,6 +102,9 @@ android {
         }
     }
 
+    lintOptions {
+        warningsAsErrors true
+    }
 }
 
 dependencies {
@@ -167,18 +170,18 @@ clean {
     }
 }
 
-task downloadBootstraps() {
+tasks.register('downloadBootstraps') {
     doLast {
         def version = "1"
-        downloadBootstrap("aarch64", "c271bbb98fe3c1c8442b1e1ff19640714a38cec0d6a4077367c19aa2fbb62c35", version)
-        downloadBootstrap("x86_64", "d1a2250a1fc5ba47477c89a0c5b5a61777b57325e348cddcbee1cd63633f5feb", version)
+        downloadBootstrap("aarch64", "dbbb3c15357668fc1c70472977ff2d33ea2c9a0cbfaf45f0354ec82cee90cc9f", version)
+        downloadBootstrap("x86_64", "b11b948f294989992a2f9a0e5796e7bb0673d6319fa2a129b119c94a633e331a", version)
         //downloadBootstrap("arm", "TODO", version)
         //downloadBootstrap("i686", "TODO", version)
     }
 }
 
 afterEvaluate {
-    android.applicationVariants.all { variant ->
+    android.applicationVariants.configureEach { variant ->
         variant.javaCompileProvider.get().dependsOn(downloadBootstraps)
     }
 }
