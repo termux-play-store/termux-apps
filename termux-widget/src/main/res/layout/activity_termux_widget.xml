@@ -68,6 +68,7 @@
             android:textColorLink="?android:textColorLink"
             android:autoLink="web"/>
 
+        <!--
         <com.google.android.material.button.MaterialButton
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:id="@+id/btn_disable_launcher_icon"
@@ -80,6 +81,7 @@
             android:textColor="?android:textColorPrimary"
             app:strokeColor="?android:textColorPrimary"
             app:strokeWidth="2dp"/>
+            -->
 
 
 
