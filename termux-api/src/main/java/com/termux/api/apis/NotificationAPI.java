@@ -43,8 +43,6 @@ public class NotificationAPI {
      * Show a notification. Driven by the termux-show-notification script.
      */
     public static void onReceiveShowNotification(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveShowNotification");
-
         Pair<NotificationCompat.Builder, String> pair = buildNotification(context, intent);
         NotificationCompat.Builder notification = pair.first;
         String notificationId = pair.second;
@@ -75,8 +73,6 @@ public class NotificationAPI {
     }
 
     public static void onReceiveChannel(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveChannel");
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
                 NotificationManager m = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -313,8 +309,6 @@ public class NotificationAPI {
     }
 
     public static void onReceiveRemoveNotification(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveRemoveNotification");
-
         ResultReturner.noteDone(apiReceiver, intent);
         String notificationId = intent.getStringExtra("id");
         if (notificationId != null) {
@@ -371,8 +365,6 @@ public class NotificationAPI {
 
     public static void onReceiveReplyToNotification(TermuxApiReceiver termuxApiReceiver,
                                                     Context context, Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceiveReplyToNotification");
-
         CharSequence reply = getMessageText(intent);
 
         String action = intent.getStringExtra("action");

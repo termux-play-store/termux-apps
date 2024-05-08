@@ -98,16 +98,12 @@ public class DialogAPI {
 
         @Override
         protected void onNewIntent(Intent intent) {
-            Logger.logDebug(LOG_TAG, "onNewIntent");
-
             super.onNewIntent(intent);
             setIntent(intent);
         }
 
         @Override
         protected void onDestroy() {
-            Logger.logDebug(LOG_TAG, "onDestroy");
-
             super.onDestroy();
 
             postResult(this, null);

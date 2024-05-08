@@ -23,8 +23,6 @@ public class StorageGetAPI {
     private static final String LOG_TAG = "StorageGetAPI";
 
     public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        Logger.logDebug(LOG_TAG, "onReceive");
-
         ResultReturner.returnData(apiReceiver, intent, out -> {
             final String fileExtra = intent.getStringExtra("file");
             if (fileExtra == null || fileExtra.isEmpty()) {
@@ -59,15 +57,11 @@ public class StorageGetAPI {
 
         @Override
         protected void onCreate(@Nullable Bundle savedInstanceState) {
-            Logger.logDebug(LOG_TAG, "onCreate");
-
             super.onCreate(savedInstanceState);
         }
 
         @Override
         public void onResume() {
-            Logger.logVerbose(LOG_TAG, "onResume");
-
             super.onResume();
             outputFile = getIntent().getStringExtra(FILE_EXTRA);
 

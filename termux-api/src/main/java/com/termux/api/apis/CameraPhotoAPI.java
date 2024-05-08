@@ -21,6 +21,8 @@ import android.util.Size;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import androidx.annotation.NonNull;
+
 import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 
@@ -142,7 +144,7 @@ public class CameraPhotoAPI {
                         output.write(bytes);
                     } catch (Exception e) {
                         stdout.println("Error writing image: " + e.getMessage());
-                        Logger.logStackTraceWithMessage(LOG_TAG, "Error writing image", e);
+                        Log.e(LOG_TAG, "Error writing image", e);
                     }
                 } finally {
                     mImageReader.close();
@@ -171,10 +173,10 @@ public class CameraPhotoAPI {
 
                     // continous preview-capture for 1/2 second
                     session.setRepeatingRequest(previewReq.build(), null, null);
-                    Logger.logInfo(LOG_TAG, "preview started");
+                    Log.i(LOG_TAG, "preview started");
                     Thread.sleep(500);
                     session.stopRepeating();
-                    Logger.logInfo(LOG_TAG, "preview stoppend");
+                    Log.i(LOG_TAG, "preview stoppend");
 
                     final CaptureRequest.Builder jpegRequest = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                     // Render to our image reader:
@@ -186,7 +188,7 @@ public class CameraPhotoAPI {
 
                     saveImage(camera, session, jpegRequest.build());
                 } catch (Exception e) {
-                    Logger.logStackTraceWithMessage(LOG_TAG, "onConfigured() error in preview", e);
+                    Log.e(LOG_TAG, "onConfigured() error in preview", e);
                     mImageReader.close();
                     releaseSurfaces(outputSurfaces);
                     closeCamera(camera, looper);
@@ -194,8 +196,8 @@ public class CameraPhotoAPI {
             }
 
             @Override
-            public void onConfigureFailed(CameraCaptureSession session) {
-                Logger.logError(LOG_TAG, "onConfigureFailed() error in preview");
+            public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+                Log.e(LOG_TAG, "onConfigureFailed() error in preview");
                 mImageReader.close();
                 releaseSurfaces(outputSurfaces);
                 closeCamera(camera, looper);
@@ -206,8 +208,8 @@ public class CameraPhotoAPI {
     static void saveImage(final CameraDevice camera, CameraCaptureSession session, CaptureRequest request) throws CameraAccessException {
         session.capture(request, new CameraCaptureSession.CaptureCallback() {
             @Override
-            public void onCaptureCompleted(CameraCaptureSession completedSession, CaptureRequest request, TotalCaptureResult result) {
-                Logger.logInfo(LOG_TAG, "onCaptureCompleted()");
+            public void onCaptureCompleted(@NonNull CameraCaptureSession completedSession, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                Log.i(LOG_TAG, "onCaptureCompleted()");
             }
         }, null);
     }
@@ -219,13 +221,13 @@ public class CameraPhotoAPI {
     static int correctOrientation(final Context context, final CameraCharacteristics characteristics) {
         final Integer lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
         final boolean isFrontFacing = lensFacing != null && lensFacing == CameraCharacteristics.LENS_FACING_FRONT;
-        Logger.logInfo(LOG_TAG, (isFrontFacing ? "Using" : "Not using") + " a front facing camera.");
+        Log.i(LOG_TAG, (isFrontFacing ? "Using" : "Not using") + " a front facing camera.");
 
         Integer sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
         if (sensorOrientation != null) {
-            Logger.logInfo(LOG_TAG, String.format("Sensor orientation: %s degrees", sensorOrientation));
+            Log.i(LOG_TAG, String.format("Sensor orientation: %s degrees", sensorOrientation));
         } else {
-            Logger.logInfo(LOG_TAG, "CameraCharacteristics didn't contain SENSOR_ORIENTATION. Assuming 0 degrees.");
+            Log.i(LOG_TAG, "CameraCharacteristics didn't contain SENSOR_ORIENTATION. Assuming 0 degrees.");
             sensorOrientation = 0;
         }
 
@@ -246,11 +248,11 @@ public class CameraPhotoAPI {
                 deviceOrientation = 270;
                 break;
             default:
-                Logger.logInfo(LOG_TAG,
+                Log.i(LOG_TAG,
                         String.format("Default display has unknown rotation %d. Assuming 0 degrees.", deviceRotation));
                 deviceOrientation = 0;
         }
-        Logger.logInfo(LOG_TAG, String.format("Device orientation: %d degrees", deviceOrientation));
+        Log.i(LOG_TAG, String.format("Device orientation: %d degrees", deviceOrientation));
 
         int jpegOrientation;
         if (isFrontFacing) {
@@ -260,7 +262,7 @@ public class CameraPhotoAPI {
         }
         // Add an extra 360 because (-90 % 360) == -90 and Android won't accept a negative rotation.
         jpegOrientation = (jpegOrientation + 360) % 360;
-        Logger.logInfo(LOG_TAG, String.format("Returning JPEG orientation of %d degrees", jpegOrientation));
+        Log.i(LOG_TAG, String.format("Returning JPEG orientation of %d degrees", jpegOrientation));
         return jpegOrientation;
     }
 
@@ -268,14 +270,14 @@ public class CameraPhotoAPI {
         for (Surface outputSurface : outputSurfaces) {
             outputSurface.release();
         }
-        Logger.logInfo(LOG_TAG, "surfaces released");
+        Log.i(LOG_TAG, "surfaces released");
     }
 
     static void closeCamera(CameraDevice camera, Looper looper) {
         try {
             camera.close();
         } catch (RuntimeException e) {
-            Logger.logInfo(LOG_TAG, "Exception closing camera: " + e.getMessage());
+            Log.i(LOG_TAG, "Exception closing camera: " + e.getMessage());
         }
         if (looper != null) looper.quit();
     }
