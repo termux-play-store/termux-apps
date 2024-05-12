@@ -5,7 +5,6 @@ import android.app.job.JobService;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.PersistableBundle;
 import android.util.Log;
 
@@ -33,12 +32,8 @@ public class BootJobService extends JobService {
         executeIntent.putExtra(EXTRA_EXECUTE_IN_BACKGROUND, true);
 
         Context context = getApplicationContext();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // https://developer.android.com/about/versions/oreo/background.html
-            context.startForegroundService(executeIntent);
-        } else {
-            context.startService(executeIntent);
-        }
+        // https://developer.android.com/about/versions/oreo/background.html
+        context.startForegroundService(executeIntent);
 
         return false; // offloaded to Termux; job is done
     }

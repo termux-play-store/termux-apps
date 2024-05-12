@@ -3,7 +3,6 @@ package com.termux.boot;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.util.Log;
 
 public class BootReceiver extends BroadcastReceiver {
@@ -15,14 +14,10 @@ public class BootReceiver extends BroadcastReceiver {
         Intent executeIntent = new Intent("com.termux.app.ACTION_ON_BOOT");
         executeIntent.setClassName("com.termux", "com.termux.app.TermuxService");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // See https://developer.android.com/guide/components/foreground-services#background-start-restriction-exemptions
-            // - it is ok to start a foreground service from the background after the device reboots and receives
-            // the ACTION_BOOT_COMPLETED intent action in a broadcast receiver.
-            context.startForegroundService(executeIntent);
-        } else {
-            context.startService(executeIntent);
-        }
+        // See https://developer.android.com/guide/components/foreground-services#background-start-restriction-exemptions
+        // - it is ok to start a foreground service from the background after the device reboots and receives
+        // the ACTION_BOOT_COMPLETED intent action in a broadcast receiver.
+        context.startForegroundService(executeIntent);
 
         Log.i("termux", "Termux:Boot done");
     }
