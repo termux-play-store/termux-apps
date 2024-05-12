@@ -64,7 +64,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 }
 
-task<Exec>("versionName") {
+task("versionName") {
     doLast {
         print(android.defaultConfig.versionName)
     }
