@@ -14,8 +14,7 @@
         android:shortcutId="new_session"
         android:enabled="true"
         android:icon="@drawable/ic_new_session"
-        android:shortcutShortLabel="@string/action_new_session"
-        tools:targetApi="n_mr1">
+        android:shortcutShortLabel="@string/action_new_session">
         <intent
             android:action="android.intent.action.RUN"
             android:targetPackage="com.termux"
@@ -27,8 +26,7 @@
         android:shortcutId="new_failsafe_session"
         android:enabled="true"
         android:icon="@drawable/ic_new_session"
-        android:shortcutShortLabel="@string/action_new_session_failsafe"
-        tools:targetApi="n_mr1">
+        android:shortcutShortLabel="@string/action_new_session_failsafe">
         <intent
             android:action="android.intent.action.RUN"
             android:targetPackage="com.termux"
