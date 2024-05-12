@@ -40,7 +40,8 @@
     -->
 
     <application
-        android:allowBackup="false"
+        android:dataExtractionRules="@xml/backup"
+        android:fullBackupContent="@xml/backup"
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -151,7 +152,7 @@
                     https://developer.android.com/guide/components/fg-service-types#special-use
             -->
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="explanation_for_special_use"/>
+                android:value="As a terminal emulator Termux needs to ensure that spawned tasks are not killed while the app is in the background. Having a special foreground service type ensures this."/>
         </service>
 
         <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
