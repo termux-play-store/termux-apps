@@ -210,7 +210,7 @@ public final class TerminalSession extends TerminalOutput {
     }
 
     /** Notify the {@link #mClient} that the screen has changed. */
-    protected void notifyScreenUpdate() {
+    private void notifyScreenUpdate() {
         mClient.onTextChanged(this);
     }
 
