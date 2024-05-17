@@ -28,6 +28,7 @@ public class TermuxPermissionUtils {
     public static final int REQUEST_GRANT_STORAGE_PERMISSION = 1000;
     public static final int REQUEST_DISABLE_BATTERY_OPTIMIZATIONS = 2000;
     public static final int REQUEST_GRANT_DISPLAY_OVER_OTHER_APPS_PERMISSION = 2001;
+    public static final int REQUEST_POST_NOTIFICATIONS = 1001;
 
     private static final String LOG_TAG = "PermissionUtils";
 
@@ -53,7 +54,7 @@ public class TermuxPermissionUtils {
     public static boolean checkPermissions(@NonNull Context context, @NonNull String[] permissions) {
         // checkSelfPermission may return true for permissions not even requested
         List<String> permissionsNotRequested = getPermissionsNotRequested(context, permissions);
-        if (permissionsNotRequested.size() > 0) {
+        if (!permissionsNotRequested.isEmpty()) {
             Log.e(LOG_TAG, "Attempted to check for permissions that have not been requested in app manifest: " + permissionsNotRequested);
             return false;
         }
@@ -71,7 +72,7 @@ public class TermuxPermissionUtils {
 
     public static boolean requestPermissions(@NonNull Context context, @NonNull String[] permissions, int requestCode) {
         List<String> permissionsNotRequested = getPermissionsNotRequested(context, permissions);
-        if (permissionsNotRequested.size() > 0) {
+        if (!permissionsNotRequested.isEmpty()) {
             throw new RuntimeException("Requested permissions not in the manifest: " + permissionsNotRequested);
         }
 
