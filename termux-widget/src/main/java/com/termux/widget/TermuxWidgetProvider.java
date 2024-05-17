@@ -36,11 +36,10 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
-
-        if (appWidgetIds == null || appWidgetIds.length == 0) return;
-
-        for (int appWidgetId : appWidgetIds) {
-            updateAppWidgetRemoteViews(context, appWidgetManager, appWidgetId);
+        if (appWidgetIds != null) {
+            for (int appWidgetId : appWidgetIds) {
+                updateAppWidgetRemoteViews(context, appWidgetManager, appWidgetId);
+            }
         }
     }
 
@@ -142,11 +141,9 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
                     Log.w(TermuxWidgetConstants.LOG_TAG, context.getString(R.string.msg_no_widgets_found_to_reload));
                 }
                 return;
-
             } default: {
                 Log.w(TermuxWidgetConstants.LOG_TAG, "Unhandled action: " + action);
                 break;
-
             }
         }
 
