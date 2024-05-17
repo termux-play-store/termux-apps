@@ -2,6 +2,7 @@ package com.termux.app.extrakeys;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -85,7 +86,7 @@ public final class ExtraKeysView extends GridLayout {
         "PGUP", "PGDN"
     );
 
-    private int mButtonTextColor;
+    private int mButtonTextColor = Color.WHITE;
     /**
      * The text color for the extra keys button when its active.
      */
@@ -349,21 +350,14 @@ public final class ExtraKeysView extends GridLayout {
     public void performExtraKeyButtonHapticFeedback(View view, ExtraKeyButton buttonInfo, MaterialButton button) {
         if (mExtraKeysViewClient != null) {
             // If client handled the feedback, then just return
-            if (mExtraKeysViewClient.performExtraKeyButtonHapticFeedback(view, buttonInfo, button))
+            if (mExtraKeysViewClient.performExtraKeyButtonHapticFeedback(view, buttonInfo, button)) {
                 return;
+            }
         }
 
         if (Settings.System.getInt(getContext().getContentResolver(),
             Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0) {
-
-            if (Build.VERSION.SDK_INT >= 28) {
-                button.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
-            } else {
-                // Perform haptic feedback only if no total silence mode enabled.
-                if (Settings.Global.getInt(getContext().getContentResolver(), "zen_mode", 0) != 2) {
-                    button.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
-                }
-            }
+            button.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
         }
     }
 
