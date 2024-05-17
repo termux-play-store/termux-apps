@@ -1,5 +1,6 @@
 package com.termux.app;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -29,9 +30,10 @@ import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.termux.R;
 import com.termux.app.extrakeys.ExtraKeysView;
 import com.termux.app.extrakeys.TermuxTerminalExtraKeys;
@@ -131,11 +133,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
      * The {@link TermuxActivity} broadcast receiver for various things like terminal style configuration changes.
      */
     private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new TermuxActivityBroadcastReceiver();
-
-    /**
-     * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
-     */
-    Toast mLastToast;
 
     /**
      * If between onStart() and onStop(). Note that only one session is in the foreground of the terminal view at the
@@ -239,12 +236,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == 2332 && resultCode == Activity.RESULT_OK) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK) {
+            Log.e("termux", "Failed activity result - request=" + requestCode + ", result=" + resultCode);
+            return;
+        }
+        if (requestCode == 2332) {
             Log.e("termux", "OK: " + data.getData());
             DocumentFile pickedDir = DocumentFile.fromTreeUri(this, data.getData());
             Log.e("termux", "Environment.getExternalStorageDirectory().getPath(): " + Environment.getExternalStorageDirectory().getPath());
         }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -266,6 +267,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTerminalView.requestFocus();
         }
         applyFullscreenSetting(mPreferences.isFullscreen());
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            TermuxPermissionUtils.requestPermission(this, Manifest.permission.POST_NOTIFICATIONS, TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS);
+        }
     }
 
     @Override
@@ -323,7 +328,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                         var isColors = styleFileUri.getPath().startsWith("/colors/");
                         var fileToWrite = new File(isColors ? TermuxConstants.COLORS_PATH : TermuxConstants.FONT_PATH);
                         if (bytesReceived.length == 0) {
-                            fileToWrite.delete();
+                            if (!fileToWrite.delete()) {
+                                Log.e("termux", "Unable to delete file: " + fileToWrite.getAbsolutePath());
+                            }
                         } else {
                             try (var fos = new FileOutputStream(fileToWrite)) {
                                 fos.write(bytesReceived);
@@ -481,10 +488,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
      */
     public void showToast(String text, boolean longDuration) {
         if (text == null || text.isEmpty()) return;
-        if (mLastToast != null) mLastToast.cancel();
-        mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
-        mLastToast.setGravity(Gravity.TOP, 0, 0);
-        mLastToast.show();
+        Snackbar.make(mTerminalView, text, longDuration ? BaseTransientBottomBar.LENGTH_LONG : BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -585,6 +589,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void showStylingDialog() {
         try {
+            //noinspection deprecation
             startActivity(new Intent().setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity"));
         } catch (ActivityNotFoundException | IllegalArgumentException e) {
             // The startActivity() call is not documented to throw IllegalArgumentException.
