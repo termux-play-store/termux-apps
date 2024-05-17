@@ -79,7 +79,6 @@ public class TermuxShellUtils {
 
         List<String> actualArguments = new ArrayList<>();
         String processName = (isLoginShell ? "-" : "") + new File(executable).getName();
-        Log.e("termux", "processName=" + processName);
         actualArguments.add(processName);
 
         String actualFileToExecute;
