@@ -9,6 +9,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
@@ -404,33 +405,19 @@ public final class TermuxService extends Service {
         String actionTitle = res.getString(wakeLockHeld ? R.string.notification_action_wake_unlock : R.string.notification_action_wake_lock);
         int wakeLockIcon = wakeLockHeld ? android.R.drawable.ic_lock_idle_lock : android.R.drawable.ic_lock_lock;
 
-        //Context context, int icon, CharSequence tickerText, long when, CharSequence contentTitle, CharSequence contentText, Intent contentIntent
-        if (Build.VERSION.SDK_INT >= 26) {
-            return new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setPriority(priority)
-                .setContentText(notificationText)
-                .setContentIntent(contentIntent)
-                .setShowWhen(false)
-                .setSmallIcon(R.drawable.ic_service_notification)
-                .setColor(0xFF607D8B)
-                .setOngoing(true)
-                //.addAction(android.R.drawable.ic_delete, res.getString(R.string.notification_action_exit), PendingIntent.getService(this, 0, exitIntent, PendingIntent.FLAG_IMMUTABLE))
-                //.addAction(wakeLockIcon, actionTitle, PendingIntent.getService(this, 0, toggleWakeLockIntent, PendingIntent.FLAG_IMMUTABLE))
-                .build();
-        } else {
-            Notification n = new Notification();
-            n.contentIntent = contentIntent;
-            n.icon = R.drawable.ic_service_notification;
-            n.color = 0xFF607D8B;
-            n.priority = priority;
-            n.when = 0;
-            n.flags = Notification.FLAG_ONGOING_EVENT;
-            return n;
-        }
+        return new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentText(notificationText)
+            .setContentIntent(contentIntent)
+            .setShowWhen(false)
+            .setSmallIcon(R.drawable.ic_service_notification)
+            .setColor(0xFF607D8B)
+            .setOngoing(true)
+            .addAction(new Notification.Action.Builder(Icon.createWithResource("", android.R.drawable.ic_delete), res.getString(R.string.notification_action_exit), PendingIntent.getService(this, 0, exitIntent, PendingIntent.FLAG_IMMUTABLE)).build())
+            .addAction(new Notification.Action.Builder(Icon.createWithResource("", wakeLockIcon), actionTitle, PendingIntent.getService(this, 0, toggleWakeLockIntent, PendingIntent.FLAG_IMMUTABLE)).build())
+            .build();
     }
 
     private void setupNotificationChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationChannel channel = new NotificationChannel(TermuxService.NOTIFICATION_CHANNEL_ID, "Termux", NotificationManager.IMPORTANCE_HIGH);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
