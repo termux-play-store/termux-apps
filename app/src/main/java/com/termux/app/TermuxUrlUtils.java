@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.LinkedHashSet;
@@ -118,8 +119,8 @@ public class TermuxUrlUtils {
      * @param context The context for operations.
      * @param url The url to open.
      */
-    public static void openUrl(final Context context, final String url) {
-        if (context == null || url == null || url.isEmpty()) return;
+    public static void openUrl(@NonNull Context context, @NonNull String url) {
+        if (url.isEmpty()) return;
         Uri uri = Uri.parse(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         try {
@@ -132,13 +133,11 @@ public class TermuxUrlUtils {
         }
     }
 
-    public static void openSystemAppChooser(final Context context, final Intent intent, final String title) {
-        if (context == null) return;
-
-        final Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
-        chooserIntent.putExtra(Intent.EXTRA_INTENT, intent);
-        chooserIntent.putExtra(Intent.EXTRA_TITLE, title);
-        chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    public static void openSystemAppChooser(@NonNull Context context, final Intent intent, final String title) {
+        var chooserIntent = new Intent(Intent.ACTION_CHOOSER)
+            .putExtra(Intent.EXTRA_INTENT, intent)
+            .putExtra(Intent.EXTRA_TITLE, title)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             context.startActivity(chooserIntent);
         } catch (Exception e) {
@@ -154,13 +153,11 @@ public class TermuxUrlUtils {
      * @param text The text to share.
      * @param title The title for share menu.
      */
-    public static void shareText(final Context context, final String subject, final String text, @Nullable final String title) {
-        if (context == null || text == null) return;
-
-        final Intent shareTextIntent = new Intent(Intent.ACTION_SEND);
-        shareTextIntent.setType("text/plain");
-        shareTextIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        shareTextIntent.putExtra(Intent.EXTRA_TEXT, text);
+    public static void shareText(@NonNull Context context, String subject, @NonNull String text, @Nullable final String title) {
+        var shareTextIntent = new Intent(Intent.ACTION_SEND)
+            .setType("text/plain")
+            .putExtra(Intent.EXTRA_SUBJECT, subject)
+            .putExtra(Intent.EXTRA_TEXT, text);
 
         openSystemAppChooser(context, shareTextIntent, (title == null) ? context.getString(com.termux.R.string.title_share_with) : title);
     }
