@@ -10,6 +10,11 @@
         android:name="android.software.leanback"
         android:required="false" />
 
+    <!--
+        See https://blog.oversecured.com/Common-mistakes-when-using-permissions-in-Android/
+        regarding securing permissions.
+    -->
+
     <permission
         android:name="com.termux.permission.RUN_COMMAND"
         android:description="@string/permission_run_command_description"
