@@ -79,9 +79,9 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             return;
         }
 
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(intentAction);
-        sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        var sendIntent = new Intent()
+            .setAction(intentAction)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         String contentTypeToUse;
         if (contentTypeExtra == null) {
@@ -138,6 +138,21 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 };
             }
 
+            MatrixCursor cursor = new MatrixCursor(projection);
+            addFileRow(cursor, file, projection);
+            return cursor;
+        }
+
+        private void addFileRow(MatrixCursor cursor, File file, String[] projection) {
+            if (file.isDirectory()) {
+                var contentFiles = file.listFiles();
+                if (contentFiles != null) {
+                    for (var contentFile : contentFiles) {
+                        addFileRow(cursor, contentFile, projection);
+                    }
+                }
+                return;
+            }
             Object[] row = new Object[projection.length];
             for (int i = 0; i < projection.length; i++) {
                 String column = projection[i];
@@ -145,6 +160,10 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 switch (column) {
                     case MediaStore.MediaColumns.DISPLAY_NAME:
                         value = file.getName();
+                        break;
+                    case MediaStore.MediaColumns.RELATIVE_PATH:
+                        // TODO: Test and validate
+                        value = file.getParentFile().getAbsolutePath().substring(TermuxConstants.FILES_PATH.length()) + "/";
                         break;
                     case MediaStore.MediaColumns.SIZE:
                         value = (int) file.length();
@@ -157,10 +176,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
                 }
                 row[i] = value;
             }
-
-            MatrixCursor cursor = new MatrixCursor(projection);
             cursor.addRow(row);
-            return cursor;
         }
 
         @Override

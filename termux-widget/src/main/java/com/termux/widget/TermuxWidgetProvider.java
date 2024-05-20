@@ -36,10 +36,8 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
-        if (appWidgetIds != null) {
-            for (int appWidgetId : appWidgetIds) {
-                updateAppWidgetRemoteViews(context, appWidgetManager, appWidgetId);
-            }
+        for (int appWidgetId : appWidgetIds) {
+            updateAppWidgetRemoteViews(context, appWidgetManager, appWidgetId);
         }
     }
 
