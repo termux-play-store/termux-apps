@@ -133,4 +133,19 @@ public class UnicodeInputTest extends TerminalTestCase {
 		enterString("a枝").assertLinesAre("枝a", "   ", "   ");
 	}
 
+    public void testManyZeroWidths() throws Exception {
+        var input = new StringBuilder("a");
+        for (var i = 0; i < 1000; i++) {
+            input.append("\u0302");
+        }
+
+        var expectedFirstRow = new StringBuilder("a");
+        for (var i = 0; i < 14; i++) {
+            expectedFirstRow.append("\u0302");
+        }
+        expectedFirstRow.append("  ");
+
+        withTerminalSized(3, 2).enterString(input.toString()).assertLinesAre(expectedFirstRow.toString(), "   ");
+    }
+
 }

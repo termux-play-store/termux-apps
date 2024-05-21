@@ -15,7 +15,7 @@ public final class TerminalRow {
     private final int mColumns;
     /** The text filling this terminal row. */
     public char[] mText;
-    /** The number of java char:s used in {@link #mText}. */
+    /** The number of java chars used in {@link #mText}. */
     private short mSpaceUsed;
     /** If this row has been line wrapped due to text output at the end of line. */
     boolean mLineWrap;
@@ -163,7 +163,8 @@ public final class TerminalRow {
         // Get the number of elements in the mText array this column uses now
         int oldCharactersUsedForColumn;
         if (columnToSet + oldCodePointDisplayWidth < mColumns) {
-            oldCharactersUsedForColumn = findStartOfColumn(columnToSet + oldCodePointDisplayWidth) - oldStartOfColumnIndex;
+            int oldEndOfColumnIndex = findStartOfColumn(columnToSet + oldCodePointDisplayWidth);
+            oldCharactersUsedForColumn = oldEndOfColumnIndex - oldStartOfColumnIndex;
         } else {
             // Last character.
             oldCharactersUsedForColumn = mSpaceUsed - oldStartOfColumnIndex;
@@ -174,8 +175,11 @@ public final class TerminalRow {
         if (newIsCombining) {
             // Combining characters are added to the contents of the column instead of overwriting them, so that they
             // modify the existing contents.
-            // FIXME: Put a limit of combining characters.
             // FIXME: Unassigned characters also get width=0.
+            if (newCharactersUsedForColumn + oldCharactersUsedForColumn > 15) {
+                // Protect against too many combining characters.
+                return;
+            }
             newCharactersUsedForColumn += oldCharactersUsedForColumn;
         }
 
