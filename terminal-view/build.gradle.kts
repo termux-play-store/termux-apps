@@ -12,10 +12,8 @@ android {
 
     defaultConfig {
         val minSdkVersion: String by project
-        val targetSdkVersion: String by project
         val compileSdkVersion: String by project
         minSdk = minSdkVersion.toInt()
-        targetSdk = targetSdkVersion.toInt()
         compileSdk = compileSdkVersion.toInt()
 
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
