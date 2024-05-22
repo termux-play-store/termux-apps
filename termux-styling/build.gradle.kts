@@ -7,15 +7,15 @@ android {
     namespace = "com.termux.styling"
 
     defaultConfig {
-        applicationId = "com.termux.styling"
+        versionCode = 31
+        versionName = "0.31"
+
         val minSdkVersion: String by project
         val targetSdkVersion: String by project
         val compileSdkVersion: String by project
         minSdk = minSdkVersion.toInt()
         targetSdk = targetSdkVersion.toInt()
         compileSdk = compileSdkVersion.toInt()
-        versionCode = 31
-        versionName = "0.31"
     }
 
     androidResources {
