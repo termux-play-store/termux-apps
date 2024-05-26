@@ -90,16 +90,15 @@ public final class ExtraKeysView extends GridLayout {
     /**
      * The text color for the extra keys button when its active.
      */
-    protected int mButtonActiveTextColor;
+    int mButtonActiveTextColor = 0xFF80DEEA;
     /**
-     * The background color for the extra keys button. Defaults to {@link #DEFAULT_BUTTON_BACKGROUND_COLOR}.
+     * The background color for the extra keys button.
      */
-    protected int mButtonBackgroundColor;
+    private int mButtonBackgroundColor = 0x00000000;
     /**
-     * The background color for the extra keys button when its active. Defaults to
-     * {@link #DEFAULT_BUTTON_ACTIVE_BACKGROUND_COLOR}.
+     * The background color for the extra keys button when its active.
      */
-    protected int mButtonActiveBackgroundColor;
+    private int mButtonActiveBackgroundColor = 0xFF7F7F7F;
 
     /**
      * Defines whether text for the extra keys button should be all capitalized automatically.
