@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import androidx.annotation.NonNull;
+
 import java.io.File;
 import java.util.Locale;
 
@@ -23,7 +25,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             return;
         }
 
-        Log.v(LOG_TAG, "uri: \"" + data + "\", path: \"" + data.getPath() + "\", fragment: \"" + data.getFragment() + "\"");
+        Log.v(LOG_TAG, "uri: \"" + data + "\", path: \"" + data.getPath() + "\", fragment: \"" + data.getFragment() + "\", scheme: \"" + data.getScheme() + "\"");
 
         final String contentTypeExtra = intent.getStringExtra("content-type");
         final boolean useChooser = intent.getBooleanExtra("chooser", false);
@@ -73,21 +75,14 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             .setAction(intentAction)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        String contentTypeToUse;
-        if (contentTypeExtra == null) {
-            String fileName = fileToShare.getName();
-            int lastDotIndex = fileName.lastIndexOf('.');
-            String fileExtension = fileName.substring(lastDotIndex + 1);
-            MimeTypeMap mimeTypes = MimeTypeMap.getSingleton();
-            // Lower casing makes it work with e.g. "JPG":
-            contentTypeToUse = mimeTypes.getMimeTypeFromExtension(fileExtension.toLowerCase(Locale.ROOT));
-            if (contentTypeToUse == null) contentTypeToUse = "application/octet-stream";
-        } else {
-            contentTypeToUse = contentTypeExtra;
-        }
+        String contentTypeToUse = (contentTypeExtra == null) ? decideContentType(fileToShare) : contentTypeExtra;
 
         // Do not create Uri with Uri.parse() and use Uri.Builder().path(), check UriUtils.getUriFilePath().
-        Uri uriToShare = new Uri.Builder().scheme("content").authority("com.termux.files").path(fileToShare.getAbsolutePath()).build();
+        var uriToShare = new Uri.Builder()
+            .scheme("content")
+            .authority(TermuxContentProvider.URI_AUTHORITY)
+            .path(fileToShare.getAbsolutePath())
+            .build();
 
         if (Intent.ACTION_SEND.equals(intentAction)) {
             sendIntent.putExtra(Intent.EXTRA_STREAM, uriToShare);
@@ -105,6 +100,18 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
         } catch (ActivityNotFoundException e) {
             Log.e(LOG_TAG, "No app handles the url " + data);
         }
+    }
+
+    private static @NonNull String decideContentType(@NonNull File fileToShare) {
+        var fileName = fileToShare.getName();
+        var lastDotIndex = fileName.lastIndexOf('.');
+        var fileExtension = fileName
+            .substring(lastDotIndex + 1)
+            // Lower casing makes it work with e.g. "JPG":
+            .toLowerCase(Locale.ROOT);
+        var mimeTypes = MimeTypeMap.getSingleton();
+        var fromExtension = mimeTypes.getMimeTypeFromExtension(fileExtension);
+        return (fromExtension == null) ? "application/octet-stream" : fromExtension;
     }
 
 }

@@ -17,7 +17,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Locale;
 
+/**
+ * A {@link ContentProvider} providing access to files inside the Termux environment.
+ * Used by {@link TermuxOpenReceiver} when opening a file with an external app.
+ */
 public class TermuxContentProvider extends ContentProvider {
+
+    public static final String URI_AUTHORITY = "com.termux.files";
 
     @Override
     public boolean onCreate() {
