@@ -6,6 +6,9 @@ android {
     namespace = "com.termux.boot"
 
     defaultConfig {
+        versionCode = 10
+        versionName = "0.$versionCode"
+
         applicationId = "com.termux.boot"
         val minSdkVersion: String by project
         val targetSdkVersion: String by project
@@ -13,8 +16,6 @@ android {
         minSdk = minSdkVersion.toInt()
         targetSdk = targetSdkVersion.toInt()
         compileSdk = compileSdkVersion.toInt()
-        versionCode = 10
-        versionName = "0.10"
     }
 
     signingConfigs {
