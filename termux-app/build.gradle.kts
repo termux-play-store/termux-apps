@@ -119,7 +119,7 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
             digest.update(buffer, 0, readBytes)
         }
         var checksum = BigInteger(1, digest.digest()).toString(16)
-        while (checksum.length < 64) { checksum = "0" + checksum }
+        while (checksum.length < 64) { checksum = "0$checksum" }
         if (checksum == expectedChecksum) {
             return
         } else {

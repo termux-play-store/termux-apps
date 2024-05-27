@@ -5,7 +5,6 @@ import android.content.ContentValues
 import android.content.res.AssetFileDescriptor
 import android.database.Cursor
 import android.net.Uri
-import android.util.Log
 
 const val CONTENT_URI_AUTHORITY = "com.termux.styling.fileprovider"
 const val CONTENT_URI_PREFIX = "content://$CONTENT_URI_AUTHORITY"
@@ -29,7 +28,7 @@ class TermuxStyleFileProvider: ContentProvider() {
     }
 
     override fun getType(uri: Uri): String {
-        return "application/octet-stream";
+        return "application/octet-stream"
     }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
@@ -50,12 +49,10 @@ class TermuxStyleFileProvider: ContentProvider() {
     }
 
     override fun openAssetFile(uri: Uri, mode: String): AssetFileDescriptor? {
-        Log.e("termux", "openAssetFile: $uri")
-        val path = uri.path?.substring(1);
-        Log.e("termux", "path: $path")
+        val path = uri.path?.substring(1)
         if (path != null) {
             if (path.endsWith("/Default")) {
-                return null;
+                return null
             }
             return context?.assets?.openFd(path)
         }
