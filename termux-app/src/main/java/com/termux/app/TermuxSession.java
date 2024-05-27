@@ -1,7 +1,5 @@
 package com.termux.app;
 
-import android.os.Build;
-import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.NonNull;

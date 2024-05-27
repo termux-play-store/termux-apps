@@ -13,11 +13,11 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,13 +27,14 @@ import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
 /**
- * A service holding a list of {@link TermuxSession} in {@link TermuxShellManager#mTermuxSessions} and background {@link TermuxAppShell}
- * in {@link TermuxShellManager#mTermuxTasks}, showing a foreground notification while running so that it is not terminated.
+ * A service holding a list of {@link TermuxSession} in {@link #mTermuxSessions} and background {@link TermuxAppShell}
+ * in {@link #mTermuxTasks}, showing a foreground notification while running so that it is not terminated.
  * The user interacts with the session through {@link TermuxActivity}, but this service may outlive
  * the activity when the user or the system disposes of the activity. In that case the user may
  * restart {@link TermuxActivity} later to yet again access the sessions.
@@ -78,9 +79,17 @@ public final class TermuxService extends Service {
     private TermuxTerminalSessionActivityClient mTerminalSessionClient;
 
     /**
-     * Termux app shell manager
+     * The foreground TermuxSessions which this service manages.
+     * Note that this list is observed by an activity, like TermuxActivity.mTermuxSessionListViewController,
+     * so any changes must be made on the UI thread and followed by a call to
+     * {@link ArrayAdapter#notifyDataSetChanged()}.
      */
-    private TermuxShellManager mShellManager;
+    public final List<TermuxSession> mTermuxSessions = new ArrayList<>();
+
+    /**
+     * The background TermuxTasks which this service manages.
+     */
+    public final List<TermuxAppShell> mTermuxTasks = new ArrayList<>();
 
     /**
      * The wake lock and wifi lock are always acquired and released together.
@@ -91,11 +100,6 @@ public final class TermuxService extends Service {
     boolean mWantsToStop = false;
 
     private static final String LOG_TAG = "TermuxService";
-
-    @Override
-    public void onCreate() {
-        mShellManager = new TermuxShellManager(this);
-    }
 
     @SuppressLint("Wakelock")
     @Override
@@ -175,10 +179,10 @@ public final class TermuxService extends Service {
     }
 
     private synchronized void killAllTermuxExecutionCommands() {
-        for (TermuxSession session : mShellManager.mTermuxSessions) {
+        for (TermuxSession session : mTermuxSessions) {
             session.killIfExecuting();
         }
-        for (TermuxAppShell session : mShellManager.mTermuxTasks) {
+        for (TermuxAppShell session : mTermuxTasks) {
             session.kill();
         }
     }
@@ -245,14 +249,14 @@ public final class TermuxService extends Service {
 
         TermuxAppShell newTermuxTask = TermuxAppShell.execute(executable, arguments, this);
         if (newTermuxTask != null) {
-            mShellManager.mTermuxTasks.add(newTermuxTask);
+            mTermuxTasks.add(newTermuxTask);
             updateNotification();
         }
     }
 
     public void onAppShellExited(@NonNull final TermuxAppShell termuxTask, int exitCode) {
         Log.i(LOG_TAG, "The onTermuxTaskExited() callback called for TermuxTask command");
-        mShellManager.mTermuxTasks.remove(termuxTask);
+        mTermuxTasks.remove(termuxTask);
         updateNotification();
     }
 
@@ -335,7 +339,7 @@ public final class TermuxService extends Service {
             isFailSafe
         );
 
-        mShellManager.mTermuxSessions.add(newTermuxSession);
+        mTermuxSessions.add(newTermuxSession);
 
         if (mTerminalSessionClient != null) {
             mTerminalSessionClient.termuxSessionListNotifyUpdated();
@@ -352,7 +356,7 @@ public final class TermuxService extends Service {
     public synchronized int removeTermuxSession(TerminalSession sessionToRemove) {
         int index = getIndexOfSession(sessionToRemove);
         if (index >= 0) {
-            mShellManager.mTermuxSessions.get(index).finish();
+            mTermuxSessions.get(index).finish();
         }
         return index;
     }
@@ -361,7 +365,7 @@ public final class TermuxService extends Service {
      * Callback received when a {@link TermuxSession} finishes.
      */
     public void onTermuxSessionExited(@NonNull final TermuxSession termuxSession) {
-        mShellManager.mTermuxSessions.remove(termuxSession);
+        mTermuxSessions.remove(termuxSession);
         if (mTerminalSessionClient != null) {
             mTerminalSessionClient.termuxSessionListNotifyUpdated();
         }
@@ -383,7 +387,7 @@ public final class TermuxService extends Service {
 
         // Set notification text
         int sessionCount = getTermuxSessionsSize();
-        int taskCount = mShellManager.mTermuxTasks.size();
+        int taskCount = mTermuxTasks.size();
         String notificationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
         if (taskCount > 0) {
             notificationText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
@@ -427,7 +431,7 @@ public final class TermuxService extends Service {
      * Update the shown foreground service notification after making any changes that affect it.
      */
     private synchronized void updateNotification() {
-        if (mWakeLock == null && mShellManager.mTermuxSessions.isEmpty() && mShellManager.mTermuxTasks.isEmpty()) {
+        if (mWakeLock == null && mTermuxSessions.isEmpty() && mTermuxTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
@@ -438,21 +442,21 @@ public final class TermuxService extends Service {
     }
 
     public synchronized boolean isTermuxSessionsEmpty() {
-        return mShellManager.mTermuxSessions.isEmpty();
+        return mTermuxSessions.isEmpty();
     }
 
     public synchronized int getTermuxSessionsSize() {
-        return mShellManager.mTermuxSessions.size();
+        return mTermuxSessions.size();
     }
 
     public synchronized List<TermuxSession> getTermuxSessions() {
-        return mShellManager.mTermuxSessions;
+        return mTermuxSessions;
     }
 
     @Nullable
     public synchronized TermuxSession getTermuxSession(int index) {
-        if (index >= 0 && index < mShellManager.mTermuxSessions.size()) {
-            return mShellManager.mTermuxSessions.get(index);
+        if (index >= 0 && index < mTermuxSessions.size()) {
+            return mTermuxSessions.get(index);
         }
         return null;
     }
@@ -461,23 +465,23 @@ public final class TermuxService extends Service {
     public synchronized TermuxSession getTermuxSessionForTerminalSession(TerminalSession terminalSession) {
         if (terminalSession == null) return null;
 
-        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
-            if (mShellManager.mTermuxSessions.get(i).mTerminalSession.equals(terminalSession))
-                return mShellManager.mTermuxSessions.get(i);
+        for (int i = 0; i < mTermuxSessions.size(); i++) {
+            if (mTermuxSessions.get(i).mTerminalSession.equals(terminalSession))
+                return mTermuxSessions.get(i);
         }
 
         return null;
     }
 
     public synchronized TermuxSession getLastTermuxSession() {
-        return mShellManager.mTermuxSessions.isEmpty() ? null : mShellManager.mTermuxSessions.get(mShellManager.mTermuxSessions.size() - 1);
+        return mTermuxSessions.isEmpty() ? null : mTermuxSessions.get(mTermuxSessions.size() - 1);
     }
 
     public synchronized int getIndexOfSession(TerminalSession terminalSession) {
         if (terminalSession == null) return -1;
 
-        for (int i = 0; i < mShellManager.mTermuxSessions.size(); i++) {
-            if (mShellManager.mTermuxSessions.get(i).mTerminalSession.equals(terminalSession))
+        for (int i = 0; i < mTermuxSessions.size(); i++) {
+            if (mTermuxSessions.get(i).mTerminalSession.equals(terminalSession))
                 return i;
         }
         return -1;
@@ -485,8 +489,8 @@ public final class TermuxService extends Service {
 
     public synchronized TerminalSession getTerminalSessionForHandle(String sessionHandle) {
         TerminalSession terminalSession;
-        for (int i = 0, len = mShellManager.mTermuxSessions.size(); i < len; i++) {
-            terminalSession = mShellManager.mTermuxSessions.get(i).mTerminalSession;
+        for (int i = 0, len = mTermuxSessions.size(); i < len; i++) {
+            terminalSession = mTermuxSessions.get(i).mTerminalSession;
             if (terminalSession.mHandle.equals(sessionHandle))
                 return terminalSession;
         }
@@ -502,14 +506,14 @@ public final class TermuxService extends Service {
     }
 
     private void runOnBoot() {
-        for (String scriptDirSuffix : new String[]{"/.config/termux/boot", "/.termux/boot"}) {
-            String bootScriptsPath = TermuxConstants.HOME_PATH + scriptDirSuffix;
-            File bootScriptsDir = new File(bootScriptsPath);
-            File[] files = bootScriptsDir.listFiles();
-            if (files == null) files = new File[0];
+        for (var scriptDirSuffix : new String[]{"/.config/termux/boot", "/.termux/boot"}) {
+            var bootScriptsPath = TermuxConstants.HOME_PATH + scriptDirSuffix;
+            var bootScriptsDir = new File(bootScriptsPath);
+            var files = bootScriptsDir.listFiles();
+            if (files == null) continue;
             Arrays.sort(files, Comparator.comparing(File::getName));
             Log.w(TermuxConstants.LOG_TAG, "Found " + files.length + " boot scripts in " + bootScriptsPath);
-            for (File scriptFile : files) {
+            for (var scriptFile : files) {
                 if (scriptFile.canRead()) scriptFile.setReadable(true);
                 if (scriptFile.canExecute()) scriptFile.setExecutable(true);
                 // TODO:
