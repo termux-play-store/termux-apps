@@ -15,10 +15,6 @@ android {
         minSdk = minSdkVersion.toInt()
         targetSdk = targetSdkVersion.toInt()
         compileSdk = compileSdkVersion.toInt()
-
-        //manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux"
-        //manifestPlaceholders.TERMUX_APP_NAME = "Termux"
-        //manifestPlaceholders.TERMUX_API_APP_NAME = "Termux:API"
     }
 
     signingConfigs {
