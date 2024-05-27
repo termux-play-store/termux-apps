@@ -1,1 +1,1 @@
-include(":app", ":terminal-emulator", ":terminal-view", ":termux-styling", ":termux-boot", ":termux-widget")
+include(":app", ":terminal-emulator", ":terminal-view", ":termux-api", ":termux-boot", ":termux-styling", ":termux-tasker", ":termux-widget")
