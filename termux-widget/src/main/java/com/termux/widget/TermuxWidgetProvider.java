@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,12 +37,14 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
+        Log.e("termux", "ONUPDATE: " + Arrays.toString(appWidgetIds));
         for (int appWidgetId : appWidgetIds) {
             updateAppWidgetRemoteViews(context, appWidgetManager, appWidgetId);
         }
     }
 
     public static void updateAppWidgetRemoteViews(@NonNull Context context, @NonNull AppWidgetManager appWidgetManager, int appWidgetId) {
+        Log.e("termux", "UPDATE APP WIDGET REMOVE VIEWS: " + appWidgetId);
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return;
 
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
@@ -87,6 +90,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.e("termux", "TERMUX WIDGET PROVIDER: on receive " + intent);
         String action = intent != null ? intent.getAction() : null;
         if (action == null) return;
 
@@ -98,7 +102,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
                 return;
             } case TermuxWidgetConstants.ACTION_WIDGET_ITEM_CLICKED: {
                 String clickedFilePath = intent.getStringExtra(TermuxWidgetConstants.EXTRA_FILE_CLICKED);
-                Log.e("TERMUX", "CLICKED FILE: " + clickedFilePath);
+                Log.e("termux", "CLICKED FILE: " + clickedFilePath);
                 if (clickedFilePath == null || clickedFilePath.isEmpty()) {
                     Log.e(TermuxWidgetConstants.LOG_TAG, "Ignoring unset clicked file");
                     return;
@@ -132,11 +136,11 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
                     updateRemoteViews = true;
                 }
 
-                List<Integer> updatedAppWidgetIds = refreshAppWidgets(context, appWidgetIds, updateRemoteViews);
-                if (updatedAppWidgetIds != null) {
-                    Log.d(TermuxWidgetConstants.LOG_TAG, context.getString(R.string.msg_widgets_reloaded, Arrays.toString(appWidgetIds)));
-                } else {
+                var updatedAppWidgetIds = refreshAppWidgets(context, appWidgetIds, updateRemoteViews);
+                if (updatedAppWidgetIds.isEmpty()) {
                     Log.w(TermuxWidgetConstants.LOG_TAG, context.getString(R.string.msg_no_widgets_found_to_reload));
+                } else {
+                    Log.d(TermuxWidgetConstants.LOG_TAG, context.getString(R.string.msg_widgets_reloaded, Arrays.toString(appWidgetIds)));
                 }
                 return;
             } default: {
@@ -149,19 +153,20 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         super.onReceive(context, intent);
     }
 
-    public static List<Integer> refreshAppWidgets(@NonNull Context context, int[] appWidgetIds, boolean updateRemoteViews) {
-        if (appWidgetIds == null || appWidgetIds.length == 0) return null;
+    public static @NonNull List<Integer> refreshAppWidgets(@NonNull Context context, int[] appWidgetIds, boolean updateRemoteViews) {
+        if (appWidgetIds == null) return Collections.emptyList();
         List<Integer> updatedAppWidgetIds = new ArrayList<>();
         for (int appWidgetId : appWidgetIds) {
             if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) continue;
             updatedAppWidgetIds.add(appWidgetId);
-            if (updateRemoteViews)
+            if (updateRemoteViews) {
                 updateAppWidgetRemoteViews(context, AppWidgetManager.getInstance(context), appWidgetId);
+            }
 
             AppWidgetManager.getInstance(context).notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_list);
         }
 
-        return updatedAppWidgetIds.size() > 0 ? updatedAppWidgetIds : null;
+        return updatedAppWidgetIds;
     }
 
     /**

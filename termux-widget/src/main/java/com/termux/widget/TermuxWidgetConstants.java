@@ -1,5 +1,7 @@
 package com.termux.widget;
 
+import android.annotation.SuppressLint;
+
 public class TermuxWidgetConstants {
 
     public static final String LOG_TAG = "termux";
@@ -10,6 +12,7 @@ public class TermuxWidgetConstants {
 
     public static final String EXTRA_FILE_CLICKED = "com.termux.widget.EXTRA_FILE_CLICKED";
 
+    @SuppressLint("SdCardPath")
     public static final String TERMUX_SHORTCUT_SCRIPTS_DIR_PATH = "/data/data/com.termux/files/home/.shortcuts";
 
 }

@@ -46,6 +46,7 @@
 
     <application
         android:dataExtractionRules="@xml/backup"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup"
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"
@@ -53,7 +54,8 @@
         android:label="@string/application_name"
         android:requestLegacyExternalStorage="true"
         android:supportsRtl="false"
-        android:theme="@style/Theme.TermuxActivity.DayNight.NoActionBar">
+        android:theme="@style/Theme.TermuxActivity.DayNight.NoActionBar"
+        tools:targetApi="tiramisu">
 
         <activity
             android:name=".app.TermuxActivity"
@@ -138,7 +140,7 @@
             android:authorities="com.termux.files"
             android:exported="true"
             android:grantUriPermissions="true"
-            android:permission="com.termux.permission.RUN_COMMAND" />
+            android:permission="com.termux.permission.TERMUX_INTERNAL" />
 
         <receiver
             android:name=".app.TermuxOpenReceiver"

@@ -24,6 +24,7 @@ import java.util.Locale;
 public class TermuxContentProvider extends ContentProvider {
 
     public static final String URI_AUTHORITY = "com.termux.files";
+    public static final String TERMUX_PATH_COLUMN_NAME = "termux_path";
 
     @Override
     public boolean onCreate() {
@@ -36,9 +37,10 @@ public class TermuxContentProvider extends ContentProvider {
 
         if (projection == null) {
             projection = new String[]{
+                MediaStore.MediaColumns._ID,
                 MediaStore.MediaColumns.DISPLAY_NAME,
                 MediaStore.MediaColumns.SIZE,
-                MediaStore.MediaColumns._ID
+                TERMUX_PATH_COLUMN_NAME,
             };
         }
 
@@ -65,9 +67,8 @@ public class TermuxContentProvider extends ContentProvider {
                 case MediaStore.MediaColumns.DISPLAY_NAME:
                     value = file.getName();
                     break;
-                case MediaStore.MediaColumns.RELATIVE_PATH:
-                    // TODO: Test and validate
-                    value = file.getParentFile().getAbsolutePath().substring(TermuxConstants.FILES_PATH.length()) + "/";
+                case TERMUX_PATH_COLUMN_NAME:
+                    value = file.getAbsolutePath();
                     break;
                 case MediaStore.MediaColumns.SIZE:
                     value = (int) file.length();

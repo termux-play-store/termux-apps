@@ -85,19 +85,23 @@ public final class TermuxWidgetService extends RemoteViewsService {
             // locking up the widget.
             shortcutFiles.clear();
 
-            var contentUri = Uri.parse("com.termux.files://" + TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH);
+            var contentUri = new Uri.Builder()
+                .scheme("content")
+                .authority("com.termux.files")
+                .path(TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH)
+                .build();
             try (var cursor = mContext.getContentResolver().query(contentUri, null, null, null, null)) {
                 if (cursor == null) {
                     Log.e("termux", "WIDGET: Null cursor");
                     return;
                 }
                 var displayNameIdx = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
-                var relativePathIdx = cursor.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH);
+                var relativePathIdx = cursor.getColumnIndex("termux_path");
                 while (cursor.moveToNext()) {
                     var displayName = cursor.getString(displayNameIdx);
-                    var relativePath = cursor.getString(relativePathIdx);
-                    Log.e("termux", "WIDGET: path=" + relativePath + ", name=" + displayName);
-                    var shortcutFile = new ShortcutFile()
+                    var termuxPath = (relativePathIdx == -1) ? "-1" : cursor.getString(relativePathIdx);
+                    Log.e("termux", "WIDGET: path=" + termuxPath + ", name=" + displayName);
+                    shortcutFiles.add(new ShortcutFile(termuxPath));
                 }
             }
 
