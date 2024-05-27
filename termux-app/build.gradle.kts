@@ -108,7 +108,7 @@ task("versionName") {
 fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
     val digest = MessageDigest.getInstance("SHA-256")
 
-    val localUrl = "src/main/cpp/bootstrap-" + arch + ".zip"
+    val localUrl = "src/main/cpp/bootstrap-$arch.zip"
     val file = File(projectDir, localUrl)
     if (file.exists()) {
         val buffer = ByteArray(8192)
@@ -123,14 +123,14 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
         if (checksum == expectedChecksum) {
             return
         } else {
-            logger.quiet("Deleting old local file with wrong hash: " + localUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
+            logger.quiet("Deleting old local file with wrong hash: $localUrl: expected: $expectedChecksum, actual: $checksum")
             file.delete()
         }
     }
 
     // def remoteUrl = "https://github.com/termux/termux-packages/releases/download/bootstrap-" + version + "/bootstrap-" + arch + ".zip"
-    val remoteUrl = "https://bootstrap.termux.net/bootstrap-" + arch + "-v" + version + ".zip"
-    logger.quiet("Downloading " + remoteUrl + " ...")
+    val remoteUrl = "https://bootstrap.termux.net/bootstrap-$arch-v$version.zip"
+    logger.quiet("Downloading $remoteUrl ...")
 
     file.parentFile.mkdirs()
     val out = BufferedOutputStream(FileOutputStream(file))
@@ -143,10 +143,10 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
     out.close()
 
     var checksum = BigInteger(1, digest.digest()).toString(16)
-    while (checksum.length < 64) { checksum = "0" + checksum }
+    while (checksum.length < 64) { checksum = "0$checksum" }
     if (checksum != expectedChecksum) {
         file.delete()
-        throw GradleException("Wrong checksum for " + remoteUrl + ": expected: " + expectedChecksum + ", actual: " + checksum)
+        throw GradleException("Wrong checksum for $remoteUrl:\n Expected: $expectedChecksum\n Actual:   $checksum")
     }
 }
 
@@ -160,9 +160,9 @@ tasks {
 
 task("downloadBootstraps") {
     doLast {
-        val version = "2"
-        downloadBootstrap("aarch64", "f95520191fb3fba98b7eec1e1fcf0b14590534cbb63d291116888c78a4fda141", version)
-        downloadBootstrap("x86_64", "99245e3f416e7b9e5dea0d3c223bd49ffdd6fd3e0c2c68425a142ba069c72f87", version)
+        val version = "3"
+        downloadBootstrap("aarch64", "45ca2ae0445eedc1b23c9d139cb7ba5d4011c261d845882f0980f07b1428be28", version)
+        downloadBootstrap("x86_64", "407d630946de2466abddfa77d30bd9f59442a91867700d3e08fd95942fab0b6c", version)
         //downloadBootstrap("arm", "TODO", version)
         //downloadBootstrap("i686", "TODO", version)
     }
