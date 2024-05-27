@@ -1,7 +1,6 @@
 package com.termux.view;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -37,7 +36,6 @@ import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
@@ -1080,7 +1078,6 @@ public final class TerminalView extends View {
     /**
      * Define functions required for AutoFill API
      */
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void autofill(AutofillValue value) {
         if (value.isText()) {
@@ -1088,13 +1085,11 @@ public final class TerminalView extends View {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public int getAutofillType() {
         return AUTOFILL_TYPE_TEXT;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public AutofillValue getAutofillValue() {
         return AutofillValue.forText("");
