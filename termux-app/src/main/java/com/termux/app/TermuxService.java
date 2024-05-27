@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * A service holding a list of {@link TermuxSession} in {@link #mTermuxSessions} and background {@link TermuxAppShell}
+ * A service holding a list of {@link TerminalSession} in {@link #mTerminalSessions} and background {@link TermuxAppShell}
  * in {@link #mTermuxTasks}, showing a foreground notification while running so that it is not terminated.
  * The user interacts with the session through {@link TermuxActivity}, but this service may outlive
  * the activity when the user or the system disposes of the activity. In that case the user may
@@ -84,7 +84,7 @@ public final class TermuxService extends Service {
      * so any changes must be made on the UI thread and followed by a call to
      * {@link ArrayAdapter#notifyDataSetChanged()}.
      */
-    public final List<TermuxSession> mTermuxSessions = new ArrayList<>();
+    public final List<TerminalSession> mTerminalSessions = new ArrayList<>();
 
     /**
      * The background TermuxTasks which this service manages.
@@ -179,8 +179,8 @@ public final class TermuxService extends Service {
     }
 
     private synchronized void killAllTermuxExecutionCommands() {
-        for (TermuxSession session : mTermuxSessions) {
-            session.killIfExecuting();
+        for (TerminalSession session : mTerminalSessions) {
+            session.finishIfRunning();
         }
         for (TermuxAppShell session : mTermuxTasks) {
             session.kill();
@@ -247,7 +247,11 @@ public final class TermuxService extends Service {
         String executable = executableUri.getPath();
         String[] arguments = intent.getStringArrayExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS);
 
-        TermuxAppShell newTermuxTask = TermuxAppShell.execute(executable, arguments, this);
+        executeBackgroundTask(executable, arguments);
+    }
+
+    private void executeBackgroundTask(String executable, String[] arguments) {
+        var newTermuxTask = TermuxAppShell.execute(executable, arguments, this);
         if (newTermuxTask != null) {
             mTermuxTasks.add(newTermuxTask);
             updateNotification();
@@ -261,11 +265,10 @@ public final class TermuxService extends Service {
     }
 
     /**
-     * Create a {@link TermuxSession}.
+     * Create a {@link TerminalSession}.
      * Currently called by {@link TermuxTerminalSessionActivityClient#addNewSession(boolean, String)} to add a new {@link TermuxSession}.
      */
-    @Nullable
-    public TermuxSession createTermuxSession(String executablePath,
+    public @NonNull TerminalSession createTermuxSession(String executablePath,
                                              String[] arguments,
                                              String stdin,
                                              String workingDirectory,
@@ -332,14 +335,14 @@ public final class TermuxService extends Service {
         // If the execution command was started for a plugin, only then will the stdout be set
         // Otherwise if command was manually started by the user like by adding a new terminal session,
         // then no need to set stdout
-        TermuxSession newTermuxSession = TermuxSession.execute(
+        var newTermuxSession = TermuxShellUtils.executeTerminalSession(
             sessionClient,
             this,
             executablePath,
             isFailSafe
         );
 
-        mTermuxSessions.add(newTermuxSession);
+        mTerminalSessions.add(newTermuxSession);
 
         if (mTerminalSessionClient != null) {
             mTerminalSessionClient.termuxSessionListNotifyUpdated();
@@ -356,16 +359,20 @@ public final class TermuxService extends Service {
     public synchronized int removeTermuxSession(TerminalSession sessionToRemove) {
         int index = getIndexOfSession(sessionToRemove);
         if (index >= 0) {
-            mTermuxSessions.get(index).finish();
+            var session = mTerminalSessions.get(index);
+            // If process is still running, then ignore the call:
+            if (!session.isRunning()) {
+                this.onTermuxSessionExited(session);
+            }
         }
         return index;
     }
 
     /**
-     * Callback received when a {@link TermuxSession} finishes.
+     * Callback received when a {@link TerminalSession} finishes.
      */
-    public void onTermuxSessionExited(@NonNull final TermuxSession termuxSession) {
-        mTermuxSessions.remove(termuxSession);
+    public void onTermuxSessionExited(@NonNull final TerminalSession termuxSession) {
+        mTerminalSessions.remove(termuxSession);
         if (mTerminalSessionClient != null) {
             mTerminalSessionClient.termuxSessionListNotifyUpdated();
         }
@@ -399,7 +406,9 @@ public final class TermuxService extends Service {
         // Set notification priority
         // If holding a wake or wifi lock consider the notification of high priority since it's using power,
         // otherwise use a low priority
-        int priority = (wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_LOW;
+        // int priority = (wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_LOW;
+        // TODO: This has moved to the notification channel - see setupNotificationChannel(), where we currently
+        //       always use NotificationManager.IMPORTANCE_HIGH
 
         Intent exitIntent = new Intent(this, TermuxService.class).setAction(TermuxService.ACTION_STOP_SERVICE);
 
@@ -422,8 +431,8 @@ public final class TermuxService extends Service {
     }
 
     private void setupNotificationChannel() {
-        NotificationChannel channel = new NotificationChannel(TermuxService.NOTIFICATION_CHANNEL_ID, "Termux", NotificationManager.IMPORTANCE_HIGH);
-        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        var channel = new NotificationChannel(TermuxService.NOTIFICATION_CHANNEL_ID, "Termux", NotificationManager.IMPORTANCE_HIGH);
+        var notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
     }
 
@@ -431,7 +440,7 @@ public final class TermuxService extends Service {
      * Update the shown foreground service notification after making any changes that affect it.
      */
     private synchronized void updateNotification() {
-        if (mWakeLock == null && mTermuxSessions.isEmpty() && mTermuxTasks.isEmpty()) {
+        if (mWakeLock == null && mTerminalSessions.isEmpty() && mTermuxTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
@@ -442,46 +451,46 @@ public final class TermuxService extends Service {
     }
 
     public synchronized boolean isTermuxSessionsEmpty() {
-        return mTermuxSessions.isEmpty();
+        return mTerminalSessions.isEmpty();
     }
 
     public synchronized int getTermuxSessionsSize() {
-        return mTermuxSessions.size();
+        return mTerminalSessions.size();
     }
 
-    public synchronized List<TermuxSession> getTermuxSessions() {
-        return mTermuxSessions;
+    public synchronized List<TerminalSession> getTermuxSessions() {
+        return mTerminalSessions;
     }
 
     @Nullable
-    public synchronized TermuxSession getTermuxSession(int index) {
-        if (index >= 0 && index < mTermuxSessions.size()) {
-            return mTermuxSessions.get(index);
+    public synchronized TerminalSession getTermuxSession(int index) {
+        if (index >= 0 && index < mTerminalSessions.size()) {
+            return mTerminalSessions.get(index);
         }
         return null;
     }
 
     @Nullable
-    public synchronized TermuxSession getTermuxSessionForTerminalSession(TerminalSession terminalSession) {
+    public synchronized TerminalSession getTermuxSessionForTerminalSession(TerminalSession terminalSession) {
         if (terminalSession == null) return null;
 
-        for (int i = 0; i < mTermuxSessions.size(); i++) {
-            if (mTermuxSessions.get(i).mTerminalSession.equals(terminalSession))
-                return mTermuxSessions.get(i);
+        for (int i = 0; i < mTerminalSessions.size(); i++) {
+            if (mTerminalSessions.get(i).equals(terminalSession))
+                return mTerminalSessions.get(i);
         }
 
         return null;
     }
 
-    public synchronized TermuxSession getLastTermuxSession() {
-        return mTermuxSessions.isEmpty() ? null : mTermuxSessions.get(mTermuxSessions.size() - 1);
+    public synchronized TerminalSession getLastTermuxSession() {
+        return mTerminalSessions.isEmpty() ? null : mTerminalSessions.get(mTerminalSessions.size() - 1);
     }
 
     public synchronized int getIndexOfSession(TerminalSession terminalSession) {
         if (terminalSession == null) return -1;
 
-        for (int i = 0; i < mTermuxSessions.size(); i++) {
-            if (mTermuxSessions.get(i).mTerminalSession.equals(terminalSession))
+        for (int i = 0; i < mTerminalSessions.size(); i++) {
+            if (mTerminalSessions.get(i).equals(terminalSession))
                 return i;
         }
         return -1;
@@ -489,8 +498,8 @@ public final class TermuxService extends Service {
 
     public synchronized TerminalSession getTerminalSessionForHandle(String sessionHandle) {
         TerminalSession terminalSession;
-        for (int i = 0, len = mTermuxSessions.size(); i < len; i++) {
-            terminalSession = mTermuxSessions.get(i).mTerminalSession;
+        for (int i = 0, len = mTerminalSessions.size(); i < len; i++) {
+            terminalSession = mTerminalSessions.get(i);
             if (terminalSession.mHandle.equals(sessionHandle))
                 return terminalSession;
         }
@@ -506,17 +515,24 @@ public final class TermuxService extends Service {
     }
 
     private void runOnBoot() {
+        Log.e("termux", "RUN ON BOOT");
         for (var scriptDirSuffix : new String[]{"/.config/termux/boot", "/.termux/boot"}) {
             var bootScriptsPath = TermuxConstants.HOME_PATH + scriptDirSuffix;
             var bootScriptsDir = new File(bootScriptsPath);
             var files = bootScriptsDir.listFiles();
+            Log.e("termux", "BOOT SCRIPTS in " + bootScriptsPath + ": " + (files == null ? null : Arrays.toString(files)));
             if (files == null) continue;
             Arrays.sort(files, Comparator.comparing(File::getName));
             Log.w(TermuxConstants.LOG_TAG, "Found " + files.length + " boot scripts in " + bootScriptsPath);
             for (var scriptFile : files) {
-                if (scriptFile.canRead()) scriptFile.setReadable(true);
-                if (scriptFile.canExecute()) scriptFile.setExecutable(true);
-                // TODO:
+                if (scriptFile.canRead()) {
+                    scriptFile.setReadable(true);
+                }
+                if (scriptFile.canExecute()) {
+                    scriptFile.setExecutable(true);
+                }
+
+                executeBackgroundTask(scriptFile.getAbsolutePath(), new String[0]);
             }
         }
     }

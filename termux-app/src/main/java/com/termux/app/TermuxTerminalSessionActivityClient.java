@@ -226,7 +226,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         // For plugin commands that expect the result back, we should immediately close the session
         // and send the result back instead of waiting fo the user to press enter.
         // The plugin can handle/show errors itself.
-        TermuxSession termuxSession = service.getTermuxSession(index);
+        var termuxSession = service.getTermuxSession(index);
 
         if (mActivity.isVisible() && finishedSession != mActivity.getCurrentSession()) {
             // Show toast for non-current sessions that exit.
@@ -351,18 +351,20 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
             if (--index < 0) index = size - 1;
         }
 
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.mTerminalSession);
+        var termuxSession = service.getTermuxSession(index);
+        if (termuxSession != null) {
+            setCurrentSession(termuxSession);
+        }
     }
 
     public void switchToSession(int index) {
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
 
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.mTerminalSession);
+        var termuxSession = service.getTermuxSession(index);
+        if (termuxSession != null) {
+            setCurrentSession(termuxSession);
+        }
     }
 
     @SuppressLint("InflateParams")
@@ -396,11 +398,9 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
             TerminalSession currentSession = mActivity.getCurrentSession();
 
             String workingDirectory = currentSession == null ? TermuxConstants.HOME_PATH : currentSession.getCwd();
-            TermuxSession newTermuxSession = service.createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);
-            if (newTermuxSession == null) return;
+            var newTermuxSession = service.createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);
 
-            TerminalSession newTerminalSession = newTermuxSession.mTerminalSession;
-            setCurrentSession(newTerminalSession);
+            setCurrentSession(newTermuxSession);
 
             mActivity.getDrawer().closeDrawers();
         }
@@ -418,8 +418,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         TerminalSession currentSession = service.getTerminalSessionForHandle(currentSessionHandle);
 
         if (currentSession == null) {
-            TermuxSession termuxSession = service.getLastTermuxSession();
-            return termuxSession == null ? null : termuxSession.mTerminalSession;
+            return service.getLastTermuxSession();
         } else {
             return currentSession;
         }
@@ -440,9 +439,9 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
             if (index >= size) {
                 index = size - 1;
             }
-            TermuxSession termuxSession = service.getTermuxSession(index);
+            var termuxSession = service.getTermuxSession(index);
             if (termuxSession != null) {
-                setCurrentSession(termuxSession.mTerminalSession);
+                setCurrentSession(termuxSession);
             }
         }
     }

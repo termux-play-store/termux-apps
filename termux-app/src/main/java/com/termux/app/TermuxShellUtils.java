@@ -4,12 +4,17 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.termux.terminal.TerminalSession;
+import com.termux.terminal.TerminalSessionClient;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -156,6 +161,46 @@ public class TermuxShellUtils {
         } catch (Throwable e) {
             return -1;
         }
+    }
+
+    public static @NonNull TerminalSession executeTerminalSession(@NonNull TerminalSessionClient terminalSessionClient,
+                                                                  TermuxService termuxSessionClient,
+                                                                  @Nullable String executablePath,
+                                                                  boolean failSafe) {
+        String loginShellPath = null;
+        if (!failSafe) {
+            File shellFile = new File(com.termux.app.TermuxConstants.BIN_PATH, "login");
+            if (shellFile.isFile()) {
+                if (!shellFile.canExecute()) {
+                    shellFile.setExecutable(true);
+                }
+                loginShellPath = shellFile.getAbsolutePath();
+            } else {
+                Log.e(TermuxConstants.LOG_TAG, "bin/login not found");
+            }
+        }
+
+        boolean isLoginShell = false;
+        if (loginShellPath == null) {
+            loginShellPath = "/system/bin/sh";
+        } else {
+            isLoginShell = true;
+        }
+
+        String[] arguments = new String[0];
+        TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(loginShellPath, arguments, isLoginShell);
+        Log.e("termux", "command.executablePath=" + command.executablePath + ", arguments=" + Arrays.toString(command.arguments));
+
+        var environmentArray = TermuxShellUtils.setupEnvironment(failSafe);
+
+        return new TerminalSession(
+            command.executablePath,
+            com.termux.app.TermuxConstants.HOME_PATH,
+            command.arguments,
+            environmentArray,
+            4000,
+            terminalSessionClient
+        );
     }
 
 

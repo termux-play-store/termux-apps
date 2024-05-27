@@ -8,6 +8,7 @@ import android.system.OsConstants;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -67,9 +68,9 @@ public final class TermuxAppShell {
         this.mAppShellClient = appShellClient;
     }
 
-    public static TermuxAppShell execute(String executable,
-                                         String[] arguments,
-                                         @NonNull final TermuxService termuxService) {
+    public static @Nullable TermuxAppShell execute(String executable,
+                                                   String[] arguments,
+                                                   @NonNull final TermuxService termuxService) {
         TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(executable, arguments, false);
         String[] environmentArray = TermuxShellUtils.setupEnvironment(false);
         final Process process;
@@ -84,34 +85,31 @@ public final class TermuxAppShell {
         }
 
         final TermuxAppShell appShell = new TermuxAppShell(process, termuxService);
-        new Thread() {
-            @Override
-            public void run() {
+        new Thread(() -> {
+            try {
+                int mPid = TermuxShellUtils.getPid(process);
+
+                DataOutputStream STDIN = new DataOutputStream(process.getOutputStream());
+                StreamGobbler STDOUT = new StreamGobbler(mPid + "-stdout-gobbler", process.getInputStream());
+                StreamGobbler STDERR = new StreamGobbler(mPid + "-stderr-gobbler", process.getErrorStream());
+
+                STDOUT.start();
+                STDERR.start();
+
+                int exitCode = process.waitFor();
+
                 try {
-                    int mPid = TermuxShellUtils.getPid(process);
-
-                    DataOutputStream STDIN = new DataOutputStream(process.getOutputStream());
-                    StreamGobbler STDOUT = new StreamGobbler(mPid + "-stdout-gobbler", process.getInputStream());
-                    StreamGobbler STDERR = new StreamGobbler(mPid + "-stderr-gobbler", process.getErrorStream());
-
-                    STDOUT.start();
-                    STDERR.start();
-
-                    int exitCode = process.waitFor();
-
-                    try {
-                        STDIN.close();
-                    } catch (IOException e) {
-                        // might be closed already
-                    }
-                    STDOUT.join();
-                    STDERR.join();
-                    new Handler(Looper.getMainLooper()).post(() -> termuxService.onAppShellExited(appShell, exitCode));
-                } catch (IllegalThreadStateException | InterruptedException e) {
-                    Log.e(TermuxConstants.LOG_TAG, "Background task error: " + e);
+                    STDIN.close();
+                } catch (IOException e) {
+                    // might be closed already
                 }
+                STDOUT.join();
+                STDERR.join();
+                new Handler(Looper.getMainLooper()).post(() -> termuxService.onAppShellExited(appShell, exitCode));
+            } catch (IllegalThreadStateException | InterruptedException e) {
+                Log.e(TermuxConstants.LOG_TAG, "Background task error: " + e);
             }
-        }.start();
+        }).start();
         return appShell;
     }
 

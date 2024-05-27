@@ -589,7 +589,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void showStylingDialog() {
         try {
-            //noinspection deprecation
             startActivity(new Intent().setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity"));
         } catch (ActivityNotFoundException | IllegalArgumentException e) {
             // The startActivity() call is not documented to throw IllegalArgumentException.
@@ -680,17 +679,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mTermuxService != null) {
             int i = 0;
-            for (TermuxSession session : mTermuxService.getTermuxSessions()) {
+            for (var session : mTermuxService.getTermuxSessions()) {
                 i++;
 
                 String numberPart = "[" + i + "] ";
-                String sessionNamePart = (TextUtils.isEmpty(session.mTerminalSession.mSessionName) ? "" : session.mTerminalSession.mSessionName);
-                String sessionTitlePart = (TextUtils.isEmpty(session.mTerminalSession.getTitle()) ? "" : ((sessionNamePart.isEmpty() ? "" : "\n") + session.mTerminalSession.getTitle()));
+                String sessionNamePart = (TextUtils.isEmpty(session.mSessionName) ? "" : session.mSessionName);
+                String sessionTitlePart = (TextUtils.isEmpty(session.getTitle()) ? "" : ((sessionNamePart.isEmpty() ? "" : "\n") + session.getTitle()));
 
                 String title = numberPart + sessionTitlePart;
                 MenuItem sessionsItem = mSessionsSubMenu.add(title);
                 sessionsItem.setOnMenuItemClickListener(item -> {
-                    getTermuxTerminalSessionClient().setCurrentSession(session.mTerminalSession);
+                    getTermuxTerminalSessionClient().setCurrentSession(session);
                     getDrawer().closeDrawers();
                     return true;
                 });
