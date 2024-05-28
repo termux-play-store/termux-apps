@@ -19,7 +19,7 @@ public class BootReceiver extends BroadcastReceiver {
         // the ACTION_BOOT_COMPLETED intent action in a broadcast receiver.
         context.startForegroundService(executeIntent);
 
-        Log.i("termux", "Termux:Boot done");
+        Log.e("termux", "Termux:Boot done");
     }
 
 }

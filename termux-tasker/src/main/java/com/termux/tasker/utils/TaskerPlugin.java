@@ -697,7 +697,7 @@ public class TaskerPlugin {
             return id;
         }
 
-        /*
+        /**
          * Retrieve the pass through data from a QUERY_REQUEST from the host which was generated
          * by a REQUEST_QUERY from the plugin.
          *
