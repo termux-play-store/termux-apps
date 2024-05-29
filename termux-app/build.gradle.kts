@@ -123,7 +123,7 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
         if (checksum == expectedChecksum) {
             return
         } else {
-            logger.quiet("Deleting old local file with wrong hash: $localUrl: expected: $expectedChecksum, actual: $checksum")
+            logger.warn("Deleting old local file with wrong hash: $localUrl: expected: $expectedChecksum, actual: $checksum")
             file.delete()
         }
     }
@@ -152,9 +152,11 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
 
 tasks {
     getByName<Delete>("clean") {
-        val tree = fileTree(File(projectDir, "src/main/cpp"))
-        tree.include("bootstrap-*.zip")
-        tree.forEach { it.delete() }
+        doLast {
+            val tree = fileTree(File(projectDir, "src/main/cpp"))
+            tree.include("bootstrap-*.zip")
+            tree.forEach { it.delete() }
+        }
     }
 }
 
