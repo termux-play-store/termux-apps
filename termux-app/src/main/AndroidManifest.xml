@@ -149,6 +149,7 @@
         <service
             android:name=".app.TermuxService"
             android:foregroundServiceType="specialUse"
+            android:exported="true"
             android:permission="com.termux.permission.TERMUX_INTERNAL">
             <!--
                 About android:foregroundServiceType: Starting with Android 14 foreground
