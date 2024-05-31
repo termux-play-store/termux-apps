@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -34,7 +35,7 @@ public class NotificationAPI {
 
     private static final String LOG_TAG = "NotificationAPI";
 
-    public static final String BIN_SH = TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/bin/sh";
+    // public static final String BIN_SH = TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/bin/sh";
     private static final String CHANNEL_ID = "termux-notification";
     private static final String CHANNEL_TITLE = "Termux API notification channel";
     private static final String KEY_TEXT_REPLY = "TERMUX_TEXT_REPLY";
@@ -158,7 +159,7 @@ public class NotificationAPI {
             try {
                 ledColor = Integer.parseInt(lightsArgbExtra, 16) | 0xff000000;
             } catch (NumberFormatException e) {
-                Logger.logError(LOG_TAG, "Invalid LED color format! Ignoring!");
+                Log.e(LOG_TAG, "Invalid LED color format! Ignoring!");
             }
         }
 
@@ -344,7 +345,7 @@ public class NotificationAPI {
                                                 String buttonText, String buttonAction,
                                                 String notificationId) {
         return oldIntent.
-                setClassName(TermuxConstants.TERMUX_API_PACKAGE_NAME, TermuxAPIConstants.TERMUX_API_RECEIVER_NAME).
+                //setClassName(TermuxConstants.TERMUX_API_PACKAGE_NAME, TermuxAPIConstants.TERMUX_API_RECEIVER_NAME).
                 putExtra("api_method", "NotificationReply").
                 putExtra("id", notificationId).
                 putExtra("action", buttonAction);
@@ -375,7 +376,7 @@ public class NotificationAPI {
         try {
             createAction(context, action).send();
         } catch (PendingIntent.CanceledException e) {
-            Logger.logError(LOG_TAG, "CanceledException when performing action: " + action);
+            Log.e(LOG_TAG, "CanceledException when performing action: " + action);
         }
 
         String notificationId = intent.getStringExtra("id");
@@ -393,6 +394,7 @@ public class NotificationAPI {
     }
 
     static Intent createExecuteIntent(String action){
+        /* TODO
         ExecutionCommand executionCommand = new ExecutionCommand();
         executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(BIN_SH).build();
         executionCommand.arguments = new String[]{"-c", action};
@@ -405,6 +407,8 @@ public class NotificationAPI {
         executionIntent.putExtra(TERMUX_SERVICE.EXTRA_RUNNER, executionCommand.runner);
         executionIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, true); // Also pass in case user using termux-app version < 0.119.0
         return executionIntent;
+         */
+        return null;
     }
 
     static PendingIntent createAction(final Context context, String action){

@@ -212,6 +212,7 @@ public class JobSchedulerAPI {
             PersistableBundle extras = params.getExtras();
             String filePath = extras.getString(SCRIPT_FILE_PATH);
 
+            /*
             ExecutionCommand executionCommand = new ExecutionCommand();
             executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(filePath).build();
             executionCommand.runner = ExecutionCommand.Runner.APP_SHELL.getName();
@@ -223,12 +224,8 @@ public class JobSchedulerAPI {
             executionIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, true); // Also pass in case user using termux-app version < 0.119.0
 
             Context context = getApplicationContext();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // https://developer.android.com/about/versions/oreo/background.html
-                context.startForegroundService(executionIntent);
-            } else {
-                context.startService(executionIntent);
-            }
+            context.startForegroundService(executionIntent);
+             */
 
             return false;
         }

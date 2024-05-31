@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -18,7 +19,7 @@ import java.io.OutputStream;
 
 public class StorageGetAPI {
 
-    private static final String FILE_EXTRA = TermuxConstants.TERMUX_API_PACKAGE_NAME + ".storage.file";
+    //private static final String FILE_EXTRA = TermuxConstants.TERMUX_API_PACKAGE_NAME + ".storage.file";
 
     private static final String LOG_TAG = "StorageGetAPI";
 
@@ -32,18 +33,20 @@ public class StorageGetAPI {
             }
 
             // Get canonical path of fileExtra
+            /*
             String filePath = TermuxFileUtils.getCanonicalPath(fileExtra, null, true);
             String fileParentDirPath = FileUtils.getFileDirname(filePath);
-            Logger.logVerbose(LOG_TAG, "filePath=\"" + filePath + "\", fileParentDirPath=\"" + fileParentDirPath + "\"");
+            Log.v(LOG_TAG, "filePath=\"" + filePath + "\", fileParentDirPath=\"" + fileParentDirPath + "\"");
 
             Error error = FileUtils.checkMissingFilePermissions("file parent directory", fileParentDirPath, "rw-", true);
             if (error != null) {
                 out.println("ERROR: " + error.getErrorLogString());
                 return;
             }
+             */
 
             Intent intent1 = new Intent(context, StorageActivity.class);
-            intent1.putExtra(FILE_EXTRA, filePath);
+            //intent1.putExtra(FILE_EXTRA, filePath);
             intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent1);
         });
@@ -63,7 +66,7 @@ public class StorageGetAPI {
         @Override
         public void onResume() {
             super.onResume();
-            outputFile = getIntent().getStringExtra(FILE_EXTRA);
+            outputFile = null; //getIntent().getStringExtra(FILE_EXTRA);
 
             // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file browser.
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -79,7 +82,7 @@ public class StorageGetAPI {
 
         @Override
         protected void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-            Logger.logVerbose(LOG_TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: "  + resultCode + ", data: "  + IntentUtils.getIntentString(resultData));
+            Log.v(LOG_TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: "  + resultCode + ", data: "  + resultData);
 
             super.onActivityResult(requestCode, resultCode, resultData);
             if (resultCode == RESULT_OK) {
@@ -99,7 +102,7 @@ public class StorageGetAPI {
                         }
                     }
                 } catch (IOException e) {
-                    Logger.logStackTraceWithMessage(LOG_TAG, "Error copying " + data + " to " + outputFile, e);
+                    Log.e(LOG_TAG, "Error copying " + data + " to " + outputFile, e);
                 }
             }
             finish();

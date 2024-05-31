@@ -119,7 +119,7 @@ public class DialogAPI {
                 if (dialog != null)
                     dialog.dismiss();
             } catch (Exception e) {
-                Logger.logStackTraceWithMessage(LOG_TAG, "Failed tp dismiss dialog", e);
+                Log.e(LOG_TAG, "Failed tp dismiss dialog", e);
             }
         }
 

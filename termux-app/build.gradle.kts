@@ -128,7 +128,6 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
         }
     }
 
-    // def remoteUrl = "https://github.com/termux/termux-packages/releases/download/bootstrap-" + version + "/bootstrap-" + arch + ".zip"
     val remoteUrl = "https://bootstrap.termux.net/bootstrap-$arch-v$version.zip"
     logger.quiet("Downloading $remoteUrl ...")
 
@@ -136,8 +135,6 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
     val out = BufferedOutputStream(FileOutputStream(file))
 
     val connection = URL(remoteUrl).openConnection()
-    //connection.instanceFollowRedirects = true
-    //connection.setInstanceFollowRedirects(true)
     val digestStream = DigestInputStream(connection.inputStream, digest)
     digestStream.transferTo(out)
     out.close()

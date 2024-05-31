@@ -14,6 +14,9 @@
     <string name="keep_alive_service">This service keeps Termux:API running in the background for faster startup of termux-* commands.</string>
     <string name="permission_description">This app needs the following permission(s):\n</string>
 
+    <string name="permission_termux_internal_command_label">Run commands in the Termux environment</string>
+    <string name="permission_termux_internal_command_description">execute arbitrary commands within Termux environment and access files</string>
+
     <string name="plugin_info">&TERMUX_API_APP_NAME; is a plugin app for the &TERMUX_APP_NAME; app
         that executes termux-api package commands.
         Check &TERMUX_APP_NAME; app github %1$s, &TERMUX_API_APP_NAME; app github %2$s and
