@@ -343,6 +343,8 @@ public final class TermuxService extends Service {
             isFailSafe
         );
 
+        newTermuxSession.mSessionName = sessionName;
+
         mTerminalSessions.add(newTermuxSession);
 
         if (mTerminalSessionClient != null) {
