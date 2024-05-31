@@ -269,7 +269,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         applyFullscreenSetting(mPreferences.isFullscreen());
 
         if (Build.VERSION.SDK_INT >= 33) {
-            TermuxPermissionUtils.requestPermission(this, Manifest.permission.POST_NOTIFICATIONS, TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS);
+            //TermuxPermissionUtils.requestPermission(this, Manifest.permission.POST_NOTIFICATIONS, TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS);
         }
     }
 

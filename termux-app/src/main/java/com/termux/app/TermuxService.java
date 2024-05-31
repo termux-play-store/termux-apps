@@ -50,8 +50,8 @@ public final class TermuxService extends Service {
     public static final String ACTION_STOP_SERVICE = "com.termux.service.action.service_stop";
     public static final String ACTION_SERVICE_EXECUTE = "com.termux.service.action.service_execute";
     public static final String ACTION_ON_BOOT = "com.termux.app.ACTION_ON_BOOT";
-    public static final String ACTION_WAKE_LOCK = "com.termux.service.action.wake_lock";
-    public static final String ACTION_WAKE_UNLOCK = "com.termux.service.action.wake_unlock";
+    public static final String ACTION_WAKE_LOCK = "com.termux.service_wake_lock";
+    public static final String ACTION_WAKE_UNLOCK = "com.termux.service_wake_unlock";
 
     public static final String TERMUX_EXECUTE_EXTRA_ARGUMENTS = "com.termux.execute.arguments";
     public static final String TERMUX_EXECUTE_WORKDIR = "com.termux.execute.workdir";
@@ -447,7 +447,7 @@ public final class TermuxService extends Service {
         } else {
             // TODO: Remove notification to avoid having to have and request dangerous notification permission,
             // https://developer.android.com/develop/ui/views/notifications/notification-permission ?
-            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
+            //((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
         }
     }
 
