@@ -26,15 +26,6 @@
                 android:importantForAutofill="no"
                 tools:ignore="UnusedAttribute" />
 
-            <com.google.android.material.navigation.NavigationView
-                android:id="@+id/nav_view"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="start"
-                android:fitsSystemWindows="true"
-                app:menu="@menu/drawer_menu" />
-
-            <!--
             <LinearLayout
                 android:id="@+id/left_drawer"
                 android:layout_width="240dp"
@@ -92,7 +83,6 @@
                         />
                 </LinearLayout>
             </LinearLayout>
-                -->
 
         </androidx.drawerlayout.widget.DrawerLayout>
 

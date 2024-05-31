@@ -4,12 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -447,7 +445,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
     }
 
     public void termuxSessionListNotifyUpdated() {
-        mActivity.termuxSessionListNotifyUpdated();
+        mActivity.mTermuxSessionListViewController.notifyDataSetChanged();
     }
 
     public void checkAndScrollToSession(TerminalSession session) {
@@ -457,8 +455,8 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
 
         final int indexOfSession = service.getIndexOfSession(session);
         if (indexOfSession < 0) return;
-        final ListView termuxSessionsListView = null; // mActivity.findViewById(R.id.terminal_sessions_list);
-        if (termuxSessionsListView == null) return;
+        final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
+        // TODO: Can this be null? if (termuxSessionsListView == null) return;
 
         termuxSessionsListView.setItemChecked(indexOfSession, true);
         // Delay is necessary otherwise sometimes scroll to newly added session does not happen

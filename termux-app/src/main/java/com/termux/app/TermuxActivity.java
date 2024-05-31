@@ -1,6 +1,5 @@
 package com.termux.app;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -14,7 +13,6 @@ import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
@@ -31,8 +29,8 @@ import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ListView;
 
-import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.termux.R;
@@ -51,16 +49,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * A terminal emulator activity.
@@ -170,32 +165,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setTerminalToolbarView(savedInstanceState);
 
-        setupDrawerMenu();
-
-        /*
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        Menu menu = navigationView.getMenu();
-        MenuItem newSessionItem = menu.findItem(R.id.new_session);
-        newSessionItem.setOnMenuItemClickListener(item -> {
-            mTermuxTerminalSessionActivityClient.addNewSession(false, null);
-            return true;
-        });
-        View newSessionButton = findViewById()
+        View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
             TermuxMessageDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
-                R.string.action_create_named_session_confirm, text -> mTermuxTerminalSessionActivityClient.addNewSession(false, text),
-                R.string.action_new_session_failsafe, text -> mTermuxTerminalSessionActivityClient.addNewSession(true, text),
+                R.string.action_create_named_session_confirm, sessionName -> mTermuxTerminalSessionActivityClient.addNewSession(false, sessionName),
+                R.string.action_new_session_failsafe, sessionName -> mTermuxTerminalSessionActivityClient.addNewSession(true, sessionName),
                 -1, null, null);
             return true;
         });
-        MenuItem toggleKeyboardButton = menu.findItem(R.id.toggle_keyboard);
-        toggleKeyboardButton.setOnMenuItemClickListener(item -> {
-            mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
-            getDrawer().closeDrawers();
-            return true;
-        });
-        toggleKeyboardButton.setOnClickListener(v -> {
+        View toggleKeyboardButton = findViewById(R.id.toggle_keyboard_button);
+        toggleKeyboardButton.setOnClickListener(item -> {
             mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
             getDrawer().closeDrawers();
         });
@@ -203,7 +183,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             toggleTerminalToolbar();
             return true;
         });
-         */
 
         registerForContextMenu(mTerminalView);
 
@@ -362,13 +341,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onServiceConnected(ComponentName componentName, IBinder service) {
         mTermuxService = ((TermuxService.LocalBinder) service).service;
 
-/*
         ListView termuxSessionsListView = findViewById(R.id.terminal_sessions_list);
         mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getTermuxSessions());
         termuxSessionsListView.setAdapter(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemClickListener(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
- */
 
         final Intent intent = getIntent();
         setIntent(null);
@@ -402,7 +379,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Update the {@link TerminalSession} and {@link TerminalEmulator} clients.
         mTermuxService.setTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
 
-        termuxSessionListNotifyUpdated();
+        // TODO: mTermuxSessionListViewController.notifyDataSetChanged();
     }
 
     @Override
@@ -655,69 +632,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     public boolean isTerminalToolbarTextInputViewSelected() {
         return getTerminalToolbarViewPager().getCurrentItem() == 1;
-    }
-
-
-    private SubMenu mSessionsSubMenu;
-    private SubMenu mTasksSubMenu;
-
-    public void setupDrawerMenu() {
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        Menu menu = navigationView.getMenu();
-        menu.clear();
-        navigationView.inflateMenu(R.menu.drawer_menu);
-        menu = navigationView.getMenu();
-
-        navigationView.getRootView().setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Log.e("termux", "ON LONG CLICK: " + v);
-                return false;
-            }
-        });
-
-        mSessionsSubMenu = menu.addSubMenu("Sessions");
-        SubMenu toolsSubMenu = menu.addSubMenu("Tools");
-
-        if (mTermuxService != null) {
-            int i = 0;
-            for (var session : mTermuxService.getTermuxSessions()) {
-                i++;
-
-                String numberPart = "[" + i + "] ";
-                String sessionNamePart = (TextUtils.isEmpty(session.mSessionName) ? "" : session.mSessionName);
-                String sessionTitlePart = (TextUtils.isEmpty(session.getTitle()) ? "" : ((sessionNamePart.isEmpty() ? "" : "\n") + session.getTitle()));
-
-                String title = numberPart + sessionTitlePart;
-                MenuItem sessionsItem = mSessionsSubMenu.add(title);
-                sessionsItem.setOnMenuItemClickListener(item -> {
-                    getTermuxTerminalSessionClient().setCurrentSession(session);
-                    getDrawer().closeDrawers();
-                    return true;
-                });
-            }
-        }
-
-        MenuItem keyboardItem = toolsSubMenu.add("Keyboard");
-        keyboardItem.setIcon(R.drawable.icon_keyboard);
-        keyboardItem.setOnMenuItemClickListener(item -> {
-            mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
-            getDrawer().closeDrawers();
-            return true;
-        });
-
-        MenuItem newSessionItem = toolsSubMenu.add("New session");
-        newSessionItem.setIcon(R.drawable.icon_add);
-        newSessionItem.setOnMenuItemClickListener(item -> {
-            mTermuxTerminalSessionActivityClient.addNewSession(false, null);
-            getDrawer().closeDrawers();
-            return true;
-        });
-        mTasksSubMenu = menu.addSubMenu("Sessions");
-    }
-
-    public void termuxSessionListNotifyUpdated() {
-        setupDrawerMenu();
     }
 
     public boolean isVisible() {

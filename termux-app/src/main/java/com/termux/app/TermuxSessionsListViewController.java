@@ -22,7 +22,6 @@ import com.termux.terminal.TerminalSession;
 
 import java.util.List;
 
-// TODO: Remove?
 public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     final TermuxActivity mActivity;
@@ -74,7 +73,7 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSessi
         } else {
             sessionTitleView.setPaintFlags(sessionTitleView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
-        int defaultColor = Color.WHITE;
+        int defaultColor = Color.BLACK;
         int color = sessionRunning || sessionAtRow.getExitStatus() == 0 ? defaultColor : Color.RED;
         sessionTitleView.setTextColor(color);
         return sessionRowView;
