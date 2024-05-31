@@ -270,11 +270,11 @@ public final class TermuxService extends Service {
      * Currently called by {@link TermuxTerminalSessionActivityClient#addNewSession(boolean, String)} to add a new {@link TerminalSession}.
      */
     public @NonNull TerminalSession createTermuxSession(String executablePath,
-                                             String[] arguments,
-                                             String stdin,
-                                             String workingDirectory,
-                                             boolean isFailSafe,
-                                             String sessionName) {
+                                                        String[] arguments,
+                                                        String stdin,
+                                                        String workingDirectory,
+                                                        boolean isFailSafe,
+                                                        String sessionName) {
         TerminalSessionClient sessionClient = new TerminalSessionClient() {
             @Override
             public void onTextChanged(@NonNull TerminalSession changedSession) {
@@ -516,23 +516,21 @@ public final class TermuxService extends Service {
     }
 
     private void runOnBoot() {
-        Log.e("termux", "RUN ON BOOT");
+        Log.i(TermuxConstants.LOG_TAG, "Running on boot check");
         for (var scriptDirSuffix : new String[]{"/.config/termux/boot", "/.termux/boot"}) {
             var bootScriptsPath = TermuxConstants.HOME_PATH + scriptDirSuffix;
             var bootScriptsDir = new File(bootScriptsPath);
             var files = bootScriptsDir.listFiles();
-            Log.e("termux", "BOOT SCRIPTS in " + bootScriptsPath + ": " + (files == null ? null : Arrays.toString(files)));
+            Log.e(TermuxConstants.LOG_TAG, "Boot  in " + bootScriptsPath + ": " + (files == null ? "[]" : Arrays.toString(files)));
             if (files == null) continue;
             Arrays.sort(files, Comparator.comparing(File::getName));
-            Log.w(TermuxConstants.LOG_TAG, "Found " + files.length + " boot scripts in " + bootScriptsPath);
             for (var scriptFile : files) {
-                if (scriptFile.canRead()) {
-                    scriptFile.setReadable(true);
+                if (!scriptFile.canRead() && !scriptFile.setReadable(true)) {
+                    Log.e(TermuxConstants.LOG_TAG, "Cannot set file readable: " + scriptFile.getAbsolutePath());
                 }
-                if (scriptFile.canExecute()) {
-                    scriptFile.setExecutable(true);
+                if (!scriptFile.canExecute() && !scriptFile.setExecutable(true)) {
+                    Log.e(TermuxConstants.LOG_TAG, "Cannot set file executable: " + scriptFile.getAbsolutePath());
                 }
-
                 executeBackgroundTask(scriptFile, new String[0]);
             }
         }

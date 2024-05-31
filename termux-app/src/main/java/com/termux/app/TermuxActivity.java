@@ -249,13 +249,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode != Activity.RESULT_OK) {
-            Log.e("termux", "Failed activity result - request=" + requestCode + ", result=" + resultCode);
-            return;
-        }
-        if (requestCode == 2332) {
-            Log.e("termux", "OK: " + data.getData());
-            DocumentFile pickedDir = DocumentFile.fromTreeUri(this, data.getData());
-            Log.e("termux", "Environment.getExternalStorageDirectory().getPath(): " + Environment.getExternalStorageDirectory().getPath());
+            Log.e(TermuxConstants.LOG_TAG, "Failed activity result - request=" + requestCode + ", result=" + resultCode);
         }
     }
 
