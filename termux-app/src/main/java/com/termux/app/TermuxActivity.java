@@ -573,13 +573,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             // However, crash reporting shows that it sometimes does, so catch it here.
             Log.i(TermuxConstants.LOG_TAG, "Error starting Termux:Style - app needs to be installed", e);
 
-            var validInstallers = Arrays.asList("com.android.vending", "com.google.android.feedback");
-            var installer = getPackageManager().getInstallerPackageName(getPackageName());
-            var installedFromGooglePlay = installer != null && validInstallers.contains(installer);
-
-            var installationUrl = installedFromGooglePlay
-                ? "https://play.google.com/store/apps/details?id=com.termux.styling"
-                : "https://f-droid.org/en/packages/com.termux.styling";
+            var installationUrl = "https://play.google.com/store/apps/details?id=com.termux.styling";
             new AlertDialog.Builder(this).setMessage(getString(R.string.error_styling_not_installed))
                 .setPositiveButton(R.string.action_styling_install,
                     (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(installationUrl))))
