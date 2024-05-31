@@ -2,11 +2,14 @@ package com.termux.terminal;
 
 import android.annotation.SuppressLint;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -327,8 +330,12 @@ public final class TerminalSession extends TerminalOutput {
 
         final byte[] mReceiveBuffer = new byte[4 * 1024];
 
+        public MainThreadHandler() {
+            super(Looper.getMainLooper());
+        }
+
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NonNull Message msg) {
             int bytesRead = mProcessToTerminalIOQueue.read(mReceiveBuffer, false);
             if (bytesRead > 0) {
                 mEmulator.append(mReceiveBuffer, bytesRead);
