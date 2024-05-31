@@ -160,8 +160,8 @@ tasks {
 task("downloadBootstraps") {
     doLast {
         val version = "4"
-        downloadBootstrap("aarch64", "8def4a196c97a26cfa40308c884cf047f3ee3188040e9bedc7be014b3fa44d7d", version)
-        downloadBootstrap("x86_64", "9778f9007c6113e8e5017c181a24ca7fe46abd45b4f4b1ab56c3a60d2c0c57dc", version)
+        downloadBootstrap("aarch64", "8a4e5380ac98481f8bc544e12b6b58c0cdb43aed648888d5f5c199c0105e5533", version)
+        downloadBootstrap("x86_64", "7e9a414aefd827201d867cc7db3e4e84baf5d6d4312c8b3608fa70dab8122783", version)
         // downloadBootstrap("arm", "TODO", version)
         // downloadBootstrap("i686", "TODO", version)
     }

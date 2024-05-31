@@ -170,12 +170,14 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
 
     /** Handle dedicated volume buttons as virtual keys if applicable. */
     private boolean handleVirtualKeys(int keyCode, KeyEvent event, boolean down) {
+        /*
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 mActivity.onBackPressed();
             }
             return true;
         }
+         */
 
         InputDevice inputDevice = event.getDevice();
         if (mActivity.mProperties.areVirtualVolumeKeysDisabled()) {

@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
@@ -216,22 +217,32 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             throw new RuntimeException("bindService() failed");
         }
 
-        if (Build.VERSION.SDK_INT >= 33) {
-            getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-                @Override
-                public void handleOnBackPressed() {
-                    if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
-                        getDrawer().closeDrawers();
-                    } else {
-                        getDrawer().openDrawer(Gravity.LEFT);
-                    }
-
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
+                    getDrawer().closeDrawers();
+                } else {
+                    getDrawer().openDrawer(Gravity.LEFT);
                 }
+
+            }
+        });
+
+        if (Build.VERSION.SDK_INT >= 30) {
+            mTerminalView.getRootView().setOnApplyWindowInsetsListener((view, insets) -> {
+                if (view.getRootWindowInsets().isVisible(WindowInsets.Type.ime())) {
+                    if (mPreferences.isShowTerminalToolbar()) {
+                        var terminalToolbarViewPager = getTerminalToolbarViewPager();
+                        terminalToolbarViewPager.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    var terminalToolbarViewPager = getTerminalToolbarViewPager();
+                    terminalToolbarViewPager.setVisibility(View.GONE);
+                }
+                return insets;
             });
         }
-
-        //var intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        //startActivityForResult(intent, 2332,null);
     }
 
     @Override
