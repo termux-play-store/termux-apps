@@ -366,10 +366,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
  */
 
         final Intent intent = getIntent();
-        if (intent != null) {
-            Log.e("termux", "SHORT CLASS: " + intent.getComponent().getShortClassName());
-            Log.e("termux", "LONG CLASS: " + intent.getComponent().getClassName());
-        }
         setIntent(null);
 
         boolean isFailSafe = intent.getBooleanExtra(EXTRA_FAILSAFE_SESSION, false);

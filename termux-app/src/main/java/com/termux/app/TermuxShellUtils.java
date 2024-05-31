@@ -79,9 +79,7 @@ public class TermuxShellUtils {
             Log.e(TermuxConstants.LOG_TAG, "IO exception", e);
         }
 
-        Log.e("termux", "TODO: INTERPRETER=" + interpreter);
         var elfFileToExecute = interpreter == null ? executable.getAbsolutePath() : interpreter;
-        Log.e("termux", "TODO: ELF FILE TO EXECUTE=" + elfFileToExecute);
 
         var actualArguments = new ArrayList<>();
         var processName = (isLoginShell ? "-" : "") + executable.getName();
