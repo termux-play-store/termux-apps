@@ -310,6 +310,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         try {
+            // TODO: Use activity result instead from termux-styling?
             if ("com.termux.app.NEW_STYLE".equals(intent.getAction())) {
                 var clipData = intent.getClipData();
                 if (clipData != null && clipData.getItemCount() == 1) {

@@ -16,10 +16,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 public final class TermuxAppShell {
 
-    public static class StreamGobbler extends Thread {
+    private static class StreamGobbler extends Thread {
         @NonNull
         private final String shell;
         @NonNull
@@ -39,13 +40,7 @@ public final class TermuxAppShell {
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    // TODO: Is this wait necessary?
-                    // TODO: log
-                    try {
-                        this.wait(128);
-                    } catch (InterruptedException e) {
-                        // no action
-                    }
+                    Log.e("termux", "Task (" + shell + "): " + line);
                 }
             } catch (IOException e) {
                 // reader probably closed, expected exit condition
@@ -68,23 +63,25 @@ public final class TermuxAppShell {
         this.mAppShellClient = appShellClient;
     }
 
-    public static @Nullable TermuxAppShell execute(String executable,
+    public static @Nullable TermuxAppShell execute(File executable,
                                                    String[] arguments,
                                                    @NonNull final TermuxService termuxService) {
-        TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(executable, arguments, false);
-        String[] environmentArray = TermuxShellUtils.setupEnvironment(false);
+        var command = TermuxShellUtils.setupShellCommandArguments(executable, arguments, false);
+        var environmentArray = TermuxShellUtils.setupEnvironment(false);
         final Process process;
         try {
-            String[] runtimeExecArgs = new String[command.arguments.length+1];
+            var runtimeExecArgs = new String[command.arguments.length];
             runtimeExecArgs[0] = command.executablePath;
-            System.arraycopy(command.arguments, 0, runtimeExecArgs, 1, command.arguments.length);
+            // TODO: Skipping first arg such as "sh" since it's not possible using the java exec() api to set it:
+            System.arraycopy(command.arguments, 1, runtimeExecArgs, 1, command.arguments.length - 1);
+            Log.e("termux", "TermuxAppShell::execute: runtimeExecArgs=" + Arrays.toString(runtimeExecArgs));
             process = Runtime.getRuntime().exec(runtimeExecArgs, environmentArray, new File(TermuxConstants.HOME_PATH));
         } catch (IOException e) {
             Log.e(TermuxConstants.LOG_TAG, "Error executing task", e);
             return null;
         }
 
-        final TermuxAppShell appShell = new TermuxAppShell(process, termuxService);
+        var appShell = new TermuxAppShell(process, termuxService);
         new Thread(() -> {
             try {
                 int mPid = TermuxShellUtils.getPid(process);

@@ -23,14 +23,14 @@ import com.termux.terminal.TerminalSession;
 import java.util.List;
 
 // TODO: Remove?
-public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public class TermuxSessionsListViewController extends ArrayAdapter<TerminalSession> implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     final TermuxActivity mActivity;
 
     final StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
     final StyleSpan italicSpan = new StyleSpan(Typeface.ITALIC);
 
-    public TermuxSessionsListViewController(TermuxActivity activity, List<TermuxSession> sessionList) {
+    public TermuxSessionsListViewController(TermuxActivity activity, List<TerminalSession> sessionList) {
         super(activity.getApplicationContext(), R.layout.item_terminal_sessions_list, sessionList);
         this.mActivity = activity;
     }
@@ -47,7 +47,7 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
 
         TextView sessionTitleView = sessionRowView.findViewById(R.id.session_title);
 
-        TerminalSession sessionAtRow = getItem(position).mTerminalSession;
+        var sessionAtRow = getItem(position);
         if (sessionAtRow == null) {
             sessionTitleView.setText("null session");
             return sessionRowView;
@@ -82,15 +82,15 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        TermuxSession clickedSession = getItem(position);
-        mActivity.getTermuxTerminalSessionClient().setCurrentSession(clickedSession.mTerminalSession);
+        var clickedSession = getItem(position);
+        mActivity.getTermuxTerminalSessionClient().setCurrentSession(clickedSession);
         mActivity.getDrawer().closeDrawers();
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        final TermuxSession selectedSession = getItem(position);
-        mActivity.getTermuxTerminalSessionClient().renameSession(selectedSession.mTerminalSession);
+        var selectedSession = getItem(position);
+        mActivity.getTermuxTerminalSessionClient().renameSession(selectedSession);
         return true;
     }
 

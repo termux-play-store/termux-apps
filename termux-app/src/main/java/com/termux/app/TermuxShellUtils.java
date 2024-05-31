@@ -33,15 +33,14 @@ public class TermuxShellUtils {
     }
 
     @NonNull
-    public static ExecuteCommand setupShellCommandArguments(@NonNull String executable, @NonNull String[] arguments, boolean isLoginShell) {
+    public static ExecuteCommand setupShellCommandArguments(@NonNull File executable, @NonNull String[] arguments, boolean isLoginShell) {
         // The file to execute may either be:
         // - An elf file, in which we execute it directly.
         // - A script file without shebang, which we execute with our standard shell $PREFIX/bin/sh instead of the
         //   system /system/bin/sh. The system shell may vary and may not work at all due to LD_LIBRARY_PATH.
         // - A file with shebang, which we try to handle with e.g. /bin/foo -> $PREFIX/bin/foo.
         String interpreter = null;
-        File file = new File(executable);
-        try (FileInputStream in = new FileInputStream(file)) {
+        try (FileInputStream in = new FileInputStream(executable)) {
             byte[] buffer = new byte[256];
             int bytesRead = in.read(buffer);
             if (bytesRead > 4) {
@@ -80,14 +79,16 @@ public class TermuxShellUtils {
             Log.e(TermuxConstants.LOG_TAG, "IO exception", e);
         }
 
-        String elfFileToExecute = interpreter == null ? executable : interpreter;
+        Log.e("termux", "TODO: INTERPRETER=" + interpreter);
+        var elfFileToExecute = interpreter == null ? executable.getAbsolutePath() : interpreter;
+        Log.e("termux", "TODO: ELF FILE TO EXECUTE=" + elfFileToExecute);
 
-        List<String> actualArguments = new ArrayList<>();
-        String processName = (isLoginShell ? "-" : "") + new File(executable).getName();
+        var actualArguments = new ArrayList<>();
+        var processName = (isLoginShell ? "-" : "") + executable.getName();
         actualArguments.add(processName);
 
         String actualFileToExecute;
-        if (Build.VERSION.SDK_INT >= 29 && elfFileToExecute.startsWith(TermuxConstants.FILES_PATH)) {
+        if (elfFileToExecute.startsWith(TermuxConstants.FILES_PATH)) {
             actualFileToExecute = "/system/bin/linker" + (android.os.Process.is64Bit() ? "64" : "");
             actualArguments.add(elfFileToExecute);
         } else {
@@ -95,7 +96,7 @@ public class TermuxShellUtils {
         }
 
         if (interpreter != null) {
-            actualArguments.add(executable);
+            actualArguments.add(executable.getAbsolutePath());
         }
         Collections.addAll(actualArguments, arguments);
         return new ExecuteCommand(actualFileToExecute, actualArguments.toArray(new String[0]));
@@ -167,28 +168,31 @@ public class TermuxShellUtils {
                                                                   TermuxService termuxSessionClient,
                                                                   @Nullable String executablePath,
                                                                   boolean failSafe) {
-        String loginShellPath = null;
+        boolean isLoginShell = false;
+
+        File loginShell = null;
         if (!failSafe) {
             File shellFile = new File(com.termux.app.TermuxConstants.BIN_PATH, "login");
             if (shellFile.isFile()) {
                 if (!shellFile.canExecute()) {
-                    shellFile.setExecutable(true);
+                    if (!shellFile.setExecutable(true)) {
+                        Log.e(TermuxConstants.LOG_TAG, "Cannot set executable: " + shellFile.getAbsolutePath());
+                    }
                 }
-                loginShellPath = shellFile.getAbsolutePath();
+                loginShell = shellFile;
             } else {
                 Log.e(TermuxConstants.LOG_TAG, "bin/login not found");
             }
         }
 
-        boolean isLoginShell = false;
-        if (loginShellPath == null) {
-            loginShellPath = "/system/bin/sh";
+        if (loginShell == null) {
+            loginShell = new File("/system/bin/sh");
         } else {
             isLoginShell = true;
         }
 
         String[] arguments = new String[0];
-        TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(loginShellPath, arguments, isLoginShell);
+        TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(loginShell, arguments, isLoginShell);
         Log.e("termux", "command.executablePath=" + command.executablePath + ", arguments=" + Arrays.toString(command.arguments));
 
         var environmentArray = TermuxShellUtils.setupEnvironment(failSafe);

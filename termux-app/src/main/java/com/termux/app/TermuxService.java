@@ -104,6 +104,7 @@ public final class TermuxService extends Service {
     @SuppressLint("Wakelock")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.e("termux", "TermuxService.onStartCommand: " + intent);
         setupNotificationChannel();
         startForeground(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
 
@@ -244,13 +245,13 @@ public final class TermuxService extends Service {
             return;
         }
 
-        String executable = executableUri.getPath();
-        String[] arguments = intent.getStringArrayExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS);
+        var executable = new File(executableUri.getPath());
+        var arguments = intent.getStringArrayExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS);
 
         executeBackgroundTask(executable, arguments);
     }
 
-    private void executeBackgroundTask(String executable, String[] arguments) {
+    private void executeBackgroundTask(File executable, String[] arguments) {
         var newTermuxTask = TermuxAppShell.execute(executable, arguments, this);
         if (newTermuxTask != null) {
             mTermuxTasks.add(newTermuxTask);
@@ -266,7 +267,7 @@ public final class TermuxService extends Service {
 
     /**
      * Create a {@link TerminalSession}.
-     * Currently called by {@link TermuxTerminalSessionActivityClient#addNewSession(boolean, String)} to add a new {@link TermuxSession}.
+     * Currently called by {@link TermuxTerminalSessionActivityClient#addNewSession(boolean, String)} to add a new {@link TerminalSession}.
      */
     public @NonNull TerminalSession createTermuxSession(String executablePath,
                                              String[] arguments,
@@ -532,7 +533,7 @@ public final class TermuxService extends Service {
                     scriptFile.setExecutable(true);
                 }
 
-                executeBackgroundTask(scriptFile.getAbsolutePath(), new String[0]);
+                executeBackgroundTask(scriptFile, new String[0]);
             }
         }
     }

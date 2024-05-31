@@ -75,7 +75,7 @@ public final class TermuxWidgetService extends RemoteViewsService {
 
         @Override
         public void onDataSetChanged() {
-            Log.e("termux", "WIDGET: onDataSetChanged");
+            Log.v(TermuxWidgetConstants.LOG_TAG, "termux-widget: onDataSetChanged");
 
             // This is triggered when you call AppWidgetManager notifyAppWidgetViewDataChanged
             // on the collection view corresponding to this factory. You can do heaving lifting in
@@ -92,7 +92,7 @@ public final class TermuxWidgetService extends RemoteViewsService {
                 .build();
             try (var cursor = mContext.getContentResolver().query(contentUri, null, null, null, null)) {
                 if (cursor == null) {
-                    Log.e("termux", "WIDGET: Null cursor");
+                    Log.e(TermuxWidgetConstants.LOG_TAG, "termux-widget: Cursor from content resolver is null");
                     return;
                 }
                 var displayNameIdx = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);

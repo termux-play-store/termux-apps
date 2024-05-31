@@ -86,9 +86,8 @@ public class TermuxCreateShortcutActivity extends Activity {
     }
 
     private void createShortcut(Context context, File clickedFile) {
-        ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
-
-        ShortcutFile shortcutFile = new ShortcutFile(clickedFile);
+        var shortcutManager = context.getSystemService(ShortcutManager.class);
+        var shortcutFile = new ShortcutFile(clickedFile);
 
         if (shortcutManager.isRequestPinShortcutSupported()) {
             shortcutManager.requestPinShortcut(shortcutFile.getShortcutInfo(context, true), null);
