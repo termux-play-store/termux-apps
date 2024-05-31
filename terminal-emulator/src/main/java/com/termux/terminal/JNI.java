@@ -21,7 +21,7 @@ final class JNI {
      * @param envVars   An array of strings of the form "VAR=value" to be added to the environment of the process
      * @param processId A one-element array to which the process ID of the started process will be written.
      * @return the file descriptor resulting from opening /dev/ptmx master device. The sub process will have opened the
-     * slave device counterpart (/dev/pts/$N) and have it as stdint, stdout and stderr.
+     * slave device counterpart (/dev/pts/$N) and have it as stdin, stdout and stderr.
      */
     public static native int createSubprocess(String cmd, String cwd, String[] args, String[] envVars, int[] processId, int rows, int columns);
 
