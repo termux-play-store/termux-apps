@@ -14,14 +14,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -55,6 +53,7 @@ import androidx.viewpager.widget.ViewPager;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -85,6 +84,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
+
+    private static final int REQUEST_CODE_TERMUX_STYLING = 1;
 
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -227,8 +228,47 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        Log.i(TermuxConstants.LOG_TAG, "onActivityResult(request=" + requestCode + ", result=" + resultCode + ")");
+
         if (resultCode != Activity.RESULT_OK) {
             Log.e(TermuxConstants.LOG_TAG, "Failed activity result - request=" + requestCode + ", result=" + resultCode);
+            return;
+        }
+
+        if (requestCode == REQUEST_CODE_TERMUX_STYLING) {
+            try {
+                var clipData = data.getClipData();
+                if (clipData != null && clipData.getItemCount() == 1) {
+                    var styleFileUri = clipData.getItemAt(0).getUri();
+                    try (var in = getContentResolver().openInputStream(styleFileUri)) {
+                        var out = new ByteArrayOutputStream();
+                        var buffer = new byte[8196];
+                        if (in != null) {
+                            // Null input stream means default style.
+                            int read;
+                            while ((read = in.read(buffer)) != -1) {
+                                out.write(buffer, 0, read);
+                            }
+                        }
+                        var bytesReceived = out.toByteArray();
+                        var isColors = styleFileUri.getPath().startsWith("/colors/");
+                        var fileToWrite = new File(isColors ? TermuxConstants.COLORS_PATH : TermuxConstants.FONT_PATH);
+                        if (bytesReceived.length == 0) {
+                            if (!fileToWrite.delete()) {
+                                Log.e("termux", "Unable to delete file: " + fileToWrite.getAbsolutePath());
+                            }
+                        } else {
+                            try (var fos = new FileOutputStream(fileToWrite)) {
+                                fos.write(bytesReceived);
+                            }
+                        }
+                        mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -288,48 +328,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         super.onSaveInstanceState(savedInstanceState);
         saveTerminalToolbarTextInput(savedInstanceState);
         savedInstanceState.putBoolean(ARG_ACTIVITY_RECREATED, true);
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        try {
-            // TODO: Use activity result instead from termux-styling?
-            if ("com.termux.app.NEW_STYLE".equals(intent.getAction())) {
-                var clipData = intent.getClipData();
-                if (clipData != null && clipData.getItemCount() == 1) {
-                    var styleFileUri = clipData.getItemAt(0).getUri();
-                    try (var in = getContentResolver().openInputStream(styleFileUri)) {
-                        var out = new ByteArrayOutputStream();
-                        var buffer = new byte[8196];
-                        if (in != null) {
-                            // Null input stream means default style.
-                            int read;
-                            while ((read = in.read(buffer)) != -1) {
-                                out.write(buffer, 0, read);
-                            }
-                        }
-                        var bytesReceived = out.toByteArray();
-                        var isColors = styleFileUri.getPath().startsWith("/colors/");
-                        var fileToWrite = new File(isColors ? TermuxConstants.COLORS_PATH : TermuxConstants.FONT_PATH);
-                        if (bytesReceived.length == 0) {
-                            if (!fileToWrite.delete()) {
-                                Log.e("termux", "Unable to delete file: " + fileToWrite.getAbsolutePath());
-                            }
-                        } else {
-                            try (var fos = new FileOutputStream(fileToWrite)) {
-                                fos.write(bytesReceived);
-                            }
-                        }
-                        mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
-                    }
-
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TermuxConstants.LOG_TAG, "Error handling new intent", e);
-            TermuxMessageDialogUtils.showToast(this, "Error handling new intent: " + e.getMessage());
-        }
     }
 
     /**
@@ -568,7 +566,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void showStylingDialog() {
         try {
-            startActivity(new Intent().setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity"));
+            //noinspection deprecation
+            startActivityForResult(new Intent().setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity"), REQUEST_CODE_TERMUX_STYLING);
         } catch (ActivityNotFoundException | IllegalArgumentException e) {
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.

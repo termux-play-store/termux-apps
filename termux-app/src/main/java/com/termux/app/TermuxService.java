@@ -13,7 +13,6 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
@@ -55,6 +54,7 @@ public final class TermuxService extends Service {
 
     public static final String TERMUX_EXECUTE_EXTRA_ARGUMENTS = "com.termux.execute.arguments";
     public static final String TERMUX_EXECUTE_WORKDIR = "com.termux.execute.workdir";
+    public static final String TERMUX_EXECUTE_EXTRA_BACKGROUND = "com.termux.execute.background";
 
     public static final String NOTIFICATION_CHANNEL_ID = "com.termu.service.notification_channel";
 
@@ -67,9 +67,6 @@ public final class TermuxService extends Service {
     }
 
     private final IBinder mBinder = new LocalBinder();
-
-    private final Handler mHandler = new Handler();
-
 
     /**
      * The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}

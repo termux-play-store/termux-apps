@@ -9,13 +9,11 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
-import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import java.io.IOException
 
 const val DEFAULT_FILENAME = "Default"
@@ -62,10 +60,17 @@ class TermuxStyleActivity : Activity() {
         val colorSpinner = findViewById<Button>(R.id.color_spinner)
         val fontSpinner = findViewById<Button>(R.id.font_spinner)
 
-        val colorAdapter = ArrayAdapter<Selectable>(this, android.R.layout.simple_spinner_dropdown_item)
+        val colorAdapter =
+            ArrayAdapter<Selectable>(this, android.R.layout.simple_spinner_dropdown_item)
 
         colorSpinner.setOnClickListener {
-            val dialog = AlertDialog.Builder(this@TermuxStyleActivity).setAdapter(colorAdapter) { _, which -> sendFile(colorAdapter.getItem(which)!!, true) }.create()
+            val dialog = AlertDialog.Builder(this@TermuxStyleActivity)
+                .setAdapter(colorAdapter) { _, which ->
+                    returnFile(
+                        colorAdapter.getItem(which)!!,
+                        true
+                    )
+                }.create()
             dialog.setOnShowListener {
                 val lv = dialog.listView
                 lv.setOnItemLongClickListener { _, _, position, _ ->
@@ -76,9 +81,16 @@ class TermuxStyleActivity : Activity() {
             dialog.show()
         }
 
-        val fontAdapter = ArrayAdapter<Selectable>(this, android.R.layout.simple_spinner_dropdown_item)
+        val fontAdapter =
+            ArrayAdapter<Selectable>(this, android.R.layout.simple_spinner_dropdown_item)
         fontSpinner.setOnClickListener {
-            val dialog = AlertDialog.Builder(this@TermuxStyleActivity).setAdapter(fontAdapter) { _, which -> sendFile(fontAdapter.getItem(which)!!, false) }.create()
+            val dialog = AlertDialog.Builder(this@TermuxStyleActivity)
+                .setAdapter(fontAdapter) { _, which ->
+                    returnFile(
+                        fontAdapter.getItem(which)!!,
+                        false
+                    )
+                }.create()
             dialog.setOnShowListener {
                 val lv = dialog.listView
                 lv.setOnItemLongClickListener { _, _, position, _ ->
@@ -100,8 +112,8 @@ class TermuxStyleActivity : Activity() {
 
             try {
                 assets.list(assetType)!!
-                        .filter { it.endsWith(assetsFileExtension) }
-                        .forEach { currentList.add(Selectable(it)) }
+                    .filter { it.endsWith(assetsFileExtension) }
+                    .forEach { currentList.add(Selectable(it)) }
             } catch (e: IOException) {
                 throw RuntimeException(e)
             }
@@ -126,11 +138,12 @@ class TermuxStyleActivity : Activity() {
                 val license = SpannableString(String(buffer))
                 Linkify.addLinks(license, Linkify.WEB_URLS)
                 val dialog = AlertDialog.Builder(this)
-                        .setTitle(mCurrentSelectable.displayName)
-                        .setMessage(license)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show()
-                (dialog.findViewById<View>(android.R.id.message) as TextView).movementMethod = LinkMovementMethod.getInstance()
+                    .setTitle(mCurrentSelectable.displayName)
+                    .setMessage(license)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+                (dialog.findViewById<View>(android.R.id.message) as TextView).movementMethod =
+                    LinkMovementMethod.getInstance()
             }
         } catch (e: IOException) {
             // Ignore.
@@ -138,21 +151,17 @@ class TermuxStyleActivity : Activity() {
 
     }
 
-    private fun sendFile(mCurrentSelectable: Selectable, colors: Boolean) {
-        try {
-            val assetsFolder = if (colors) "colors" else "fonts"
-
-            // Note: Must match string in TermuxActivity#onCreate():
-            val newStyleIntent = Intent("com.termux.app.NEW_STYLE")
-                .setClassName("com.termux", "com.termux.app.TermuxActivityInternal")
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            newStyleIntent.clipData = ClipData("style-bytes", arrayOf("application/octet-stream"), ClipData.Item(Uri.parse("${CONTENT_URI_PREFIX}/${assetsFolder}/${mCurrentSelectable.fileName}")))
-            startActivity(newStyleIntent)
-        } catch (e: Exception) {
-            Log.w("termux", "Failed to sendFile", e)
-            val message = resources.getString(R.string.writing_failed) + e.message
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-        }
+    private fun returnFile(mCurrentSelectable: Selectable, colors: Boolean) {
+        val assetsFolder = if (colors) "colors" else "fonts"
+        val resultIntent = Intent()
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        resultIntent.clipData = ClipData(
+            "style-bytes",
+            arrayOf("application/octet-stream"),
+            ClipData.Item(Uri.parse("${CONTENT_URI_PREFIX}/${assetsFolder}/${mCurrentSelectable.fileName}"))
+        )
+        setResult(RESULT_OK, resultIntent)
+        finish()
     }
 
 }
