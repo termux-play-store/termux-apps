@@ -50,19 +50,6 @@
                 android:textColor="?android:textColorPrimary"
                 android:textColorLink="?android:textColorLink"
                 android:autoLink="web"/>
-
-            <com.google.android.material.button.MaterialButton
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:id="@+id/btn_disable_launcher_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:gravity="center"
-                android:text="@string/action_disable_launcher_icon"
-                android:textSize="12sp"
-                android:textColor="?android:textColorPrimary"
-                app:strokeColor="?android:textColorPrimary"
-                app:strokeWidth="2dp"/>
         </LinearLayout>
 
     </ScrollView>

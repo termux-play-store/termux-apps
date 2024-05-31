@@ -19,6 +19,9 @@
         Check &TERMUX_APP_NAME; app github %1$s and &TERMUX_TASKER_APP_NAME; app github %2$s for more info.</string>
     <string name="plugin_api_help">Visit %1$s for more info on plugin usage.</string>
 
+    <string name="permission_termux_internal_command_label">Run commands in the Termux environment</string>
+    <string name="permission_termux_internal_command_description">execute arbitrary commands within Termux environment and access files</string>
+
     <!-- TermuxTaskerActivity -->
     <string name="msg_disable_launcher_icon_details">The &TERMUX_TASKER_APP_NAME; app does not require
         a launcher icon/activity to function. You can optionally disable it if you want and
