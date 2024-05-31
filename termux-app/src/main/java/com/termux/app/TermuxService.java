@@ -243,9 +243,17 @@ public final class TermuxService extends Service {
         }
 
         var executable = new File(executableUri.getPath());
+        var inBackground = intent.getBooleanExtra(TERMUX_EXECUTE_EXTRA_BACKGROUND, false);
         var arguments = intent.getStringArrayExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS);
-
-        executeBackgroundTask(executable, arguments);
+        if (inBackground) {
+            executeBackgroundTask(executable, arguments);
+        } else {
+            String stdin = null;
+            String workingDirectory = null;
+            boolean isFailsafe = false;
+            String sessionName = null;
+            createTermuxSession(executable, arguments, stdin, workingDirectory, isFailsafe, sessionName);
+        }
     }
 
     private void executeBackgroundTask(File executable, String[] arguments) {
@@ -266,13 +274,13 @@ public final class TermuxService extends Service {
      * Create a {@link TerminalSession}.
      * Currently called by {@link TermuxTerminalSessionActivityClient#addNewSession(boolean, String)} to add a new {@link TerminalSession}.
      */
-    public @NonNull TerminalSession createTermuxSession(String executablePath,
+    public @NonNull TerminalSession createTermuxSession(File executable,
                                                         String[] arguments,
                                                         String stdin,
                                                         String workingDirectory,
                                                         boolean isFailSafe,
                                                         String sessionName) {
-        TerminalSessionClient sessionClient = new TerminalSessionClient() {
+        var sessionClient = new TerminalSessionClient() {
             @Override
             public void onTextChanged(@NonNull TerminalSession changedSession) {
                 if (mTerminalSessionClient != null) {
@@ -335,8 +343,7 @@ public final class TermuxService extends Service {
         // then no need to set stdout
         var newTermuxSession = TermuxShellUtils.executeTerminalSession(
             sessionClient,
-            this,
-            executablePath,
+            executable,
             isFailSafe
         );
 
@@ -444,9 +451,8 @@ public final class TermuxService extends Service {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
-            // TODO: Remove notification to avoid having to have and request dangerous notification permission,
-            // https://developer.android.com/develop/ui/views/notifications/notification-permission ?
-            //((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
+            var notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
         }
     }
 

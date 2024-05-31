@@ -163,34 +163,30 @@ public class TermuxShellUtils {
     }
 
     public static @NonNull TerminalSession executeTerminalSession(@NonNull TerminalSessionClient terminalSessionClient,
-                                                                  TermuxService termuxSessionClient,
-                                                                  @Nullable String executablePath,
+                                                                  @Nullable File executable,
                                                                   boolean failSafe) {
-        boolean isLoginShell = false;
+        boolean isLoginShell = executable == null;
 
-        File loginShell = null;
-        if (!failSafe) {
-            File shellFile = new File(com.termux.app.TermuxConstants.BIN_PATH, "login");
+        if (!failSafe && executable == null) {
+            var shellFile = new File(com.termux.app.TermuxConstants.BIN_PATH, "login");
             if (shellFile.isFile()) {
                 if (!shellFile.canExecute()) {
                     if (!shellFile.setExecutable(true)) {
                         Log.e(TermuxConstants.LOG_TAG, "Cannot set executable: " + shellFile.getAbsolutePath());
                     }
                 }
-                loginShell = shellFile;
+                executable = shellFile;
             } else {
                 Log.e(TermuxConstants.LOG_TAG, "bin/login not found");
             }
         }
 
-        if (loginShell == null) {
-            loginShell = new File("/system/bin/sh");
-        } else {
-            isLoginShell = true;
+        if (executable == null) {
+            executable = new File("/system/bin/sh");
         }
 
         String[] arguments = new String[0];
-        TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(loginShell, arguments, isLoginShell);
+        TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(executable, arguments, isLoginShell);
         Log.e("termux", "command.executablePath=" + command.executablePath + ", arguments=" + Arrays.toString(command.arguments));
 
         var environmentArray = TermuxShellUtils.setupEnvironment(failSafe);
