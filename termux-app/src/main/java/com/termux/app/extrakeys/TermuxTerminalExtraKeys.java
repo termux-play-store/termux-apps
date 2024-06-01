@@ -20,7 +20,7 @@ import org.json.JSONException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TermuxTerminalExtraKeys {
+public final class TermuxTerminalExtraKeys {
     public static Map<String, Integer> PRIMARY_KEY_CODES_FOR_STRINGS = new HashMap<>() {{
         put("SPACE", KeyEvent.KEYCODE_SPACE);
         put("ESC", KeyEvent.KEYCODE_ESCAPE);

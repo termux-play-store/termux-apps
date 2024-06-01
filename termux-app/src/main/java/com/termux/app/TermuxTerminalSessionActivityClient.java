@@ -381,7 +381,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
     }
 
     public void addNewSession(boolean isFailSafe, String sessionName) {
-        TermuxService service = mActivity.getTermuxService();
+        var service = mActivity.getTermuxService();
         if (service == null) {
             return;
         }
@@ -393,13 +393,10 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
         } else {
-            TerminalSession currentSession = mActivity.getCurrentSession();
-
-            String workingDirectory = currentSession == null ? TermuxConstants.HOME_PATH : currentSession.getCwd();
+            var currentSession = mActivity.getCurrentSession();
+            var workingDirectory = currentSession == null ? TermuxConstants.HOME_PATH : currentSession.getCwd();
             var newTermuxSession = service.createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);
-
             setCurrentSession(newTermuxSession);
-
             mActivity.getDrawer().closeDrawers();
         }
     }

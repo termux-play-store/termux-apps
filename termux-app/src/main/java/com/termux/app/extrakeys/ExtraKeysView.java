@@ -342,8 +342,9 @@ public final class ExtraKeysView extends GridLayout {
 
 
     public void onExtraKeyButtonClick(View view, ExtraKeyButton buttonInfo, MaterialButton button) {
-        if (mExtraKeysViewClient != null)
+        if (mExtraKeysViewClient != null) {
             mExtraKeysViewClient.onExtraKeyButtonClick(view, buttonInfo, button);
+        }
     }
 
     public void performExtraKeyButtonHapticFeedback(View view, ExtraKeyButton buttonInfo, MaterialButton button) {
@@ -354,10 +355,9 @@ public final class ExtraKeysView extends GridLayout {
             }
         }
 
-        if (Settings.System.getInt(getContext().getContentResolver(),
-            Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0) {
+        // TODO: (Settings.System.getInt(getContext().getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0) {
             button.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
-        }
+        // }
     }
 
 
@@ -369,8 +369,9 @@ public final class ExtraKeysView extends GridLayout {
 
             // Toggle active state and disable lock state if new state is not active
             state.setIsActive(!state.isActive);
-            if (!state.isActive)
+            if (!state.isActive) {
                 state.setIsLocked(false);
+            }
         } else {
             onExtraKeyButtonClick(view, buttonInfo, button);
         }

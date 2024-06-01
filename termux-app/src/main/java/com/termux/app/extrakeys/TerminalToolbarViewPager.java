@@ -13,9 +13,9 @@ import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.terminal.TerminalSession;
 
-public class TerminalToolbarViewPager {
+public final class TerminalToolbarViewPager {
 
-    public static class PageAdapter extends PagerAdapter {
+    public static final class PageAdapter extends PagerAdapter {
 
         final TermuxActivity mActivity;
         String mSavedTextInput;
@@ -82,7 +82,7 @@ public class TerminalToolbarViewPager {
         }
     }
 
-    public static class OnPageChangeListener extends ViewPager.SimpleOnPageChangeListener {
+    public static final class OnPageChangeListener extends ViewPager.SimpleOnPageChangeListener {
 
         final TermuxActivity mActivity;
         final ViewPager mTerminalToolbarViewPager;

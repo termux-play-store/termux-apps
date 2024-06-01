@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class ExtraKeyButton {
+public final class ExtraKeyButton {
 
     /** The key name for the name of the extra key if using a dict to define the extra key. {key: name, ...} */
     public static final String KEY_KEY_NAME = "key";
@@ -24,7 +24,6 @@ public class ExtraKeyButton {
 
     /** The key name for the nested dict to define popup extra key info if using a dict to define the extra key. {popup: {key: name, ...}, ...} */
     public static final String KEY_POPUP = "popup";
-
 
     /**
      * The key that will be sent to the terminal, either a control character, like defined in

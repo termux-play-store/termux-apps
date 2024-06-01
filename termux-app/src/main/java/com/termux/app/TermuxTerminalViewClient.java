@@ -358,7 +358,7 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
      * drawer or extra keys, or with ctrl+alt+k hardware keyboard shortcut.
      */
     public void onToggleSoftKeyboardRequest() {
-        mActivity.getSystemService(InputMethodManager.class).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+        mActivity.getSystemService(InputMethodManager.class).toggleSoftInput(0, 0);
         mActivity.mTerminalView.requestFocus();
     }
 

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The {@link Class} that maintains a state of a {@link SpecialButton} */
-public class SpecialButtonState {
+public final class SpecialButtonState {
 
     /** If special button has been created for the {@link ExtraKeysView}. */
     boolean isCreated = false;

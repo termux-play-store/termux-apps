@@ -7,7 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class TermuxProperties {
+public final class TermuxProperties {
 
     private final Properties properties = new Properties();
 

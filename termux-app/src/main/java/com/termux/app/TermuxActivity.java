@@ -129,7 +129,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     /**
      * The {@link TermuxActivity} broadcast receiver for various things like terminal style configuration changes.
      */
-    private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new TermuxActivityBroadcastReceiver();
+    private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mIsVisible) {
+                if (ACTION_RELOAD_STYLE.equals(intent.getAction())) {
+                    if ("storage".equals(intent.getStringExtra(ACTION_RELOAD_STYLE))) {
+                        TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
+                    } else {
+                        reloadActivityStyling();
+                    }
+                }
+            }
+        }
+    };
 
     /**
      * If between onStart() and onStop(). Note that only one session is in the foreground of the terminal view at the
@@ -655,22 +668,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         var flag = Build.VERSION.SDK_INT >= 33 ? Context.RECEIVER_NOT_EXPORTED : 0;
         registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter, flag);
-    }
-
-    class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.e("termux", "ONRECEIVE: " + intent.getAction() + ", isVisible=" + isVisible());
-            if (mIsVisible) {
-                if (ACTION_RELOAD_STYLE.equals(intent.getAction())) {
-                    if ("storage".equals(intent.getStringExtra(ACTION_RELOAD_STYLE))) {
-                        TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
-                    } else {
-                        reloadActivityStyling();
-                    }
-                }
-            }
-        }
     }
 
     private void reloadActivityStyling() {

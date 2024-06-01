@@ -82,7 +82,7 @@ import org.json.JSONObject;
  *
  * For more info, check https://wiki.termux.com/wiki/Touch_Keyboard.
  */
-public class ExtraKeysInfo {
+public final class ExtraKeysInfo {
 
     /**
      * Matrix of buttons to be displayed in {@link ExtraKeysView}.
@@ -92,14 +92,9 @@ public class ExtraKeysInfo {
     public ExtraKeysInfo(@NonNull String propertiesInfo,
                          String style,
                          @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap) throws JSONException {
-        mButtons = initExtraKeysInfo(propertiesInfo, getCharDisplayMapForStyle(style), extraKeyAliasMap);
-    }
-
-    private ExtraKeyButton[][] initExtraKeysInfo(@NonNull String propertiesInfo,
-                                                 @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyDisplayMap,
-                                                 @NonNull ExtraKeysConstants.ExtraKeyDisplayMap extraKeyAliasMap) throws JSONException {
+        var extraKeyDisplayMap = getCharDisplayMapForStyle(style);
         // Convert String propertiesInfo to Array of Arrays
-        JSONArray arr = new JSONArray(propertiesInfo);
+        var arr = new JSONArray(propertiesInfo);
         Object[][] matrix = new Object[arr.length()][];
         for (int i = 0; i < arr.length(); i++) {
             JSONArray line = arr.getJSONArray(i);
@@ -110,9 +105,9 @@ public class ExtraKeysInfo {
         }
 
         // convert matrix to buttons
-        ExtraKeyButton[][] buttons = new ExtraKeyButton[matrix.length][];
+        mButtons = new ExtraKeyButton[matrix.length][];
         for (int i = 0; i < matrix.length; i++) {
-            buttons[i] = new ExtraKeyButton[matrix[i].length];
+            mButtons[i] = new ExtraKeyButton[matrix[i].length];
             for (int j = 0; j < matrix[i].length; j++) {
                 Object key = matrix[i][j];
 
@@ -130,11 +125,9 @@ public class ExtraKeysInfo {
                     button = new ExtraKeyButton(jobject, popup, extraKeyDisplayMap, extraKeyAliasMap);
                 }
 
-                buttons[i][j] = button;
+                mButtons[i][j] = button;
             }
         }
-
-        return buttons;
     }
 
     /**
