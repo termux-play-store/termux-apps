@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        versionCode = 118
+        versionCode = 119
         versionName = "0.$versionCode"
 
         val minSdkVersion: String by project
