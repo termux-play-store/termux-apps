@@ -182,7 +182,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
-            TermuxMessageDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
+            TermuxMessageDialogUtils.textInput(TermuxActivity.this,
+                R.string.title_create_named_session,
+                R.string.hint_session_name,
+                null,
                 R.string.action_create_named_session_confirm, sessionName -> mTermuxTerminalSessionActivityClient.addNewSession(false, sessionName),
                 R.string.action_new_session_failsafe, sessionName -> mTermuxTerminalSessionActivityClient.addNewSession(true, sessionName),
                 -1, null, null);
@@ -595,7 +598,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             new AlertDialog.Builder(this).setMessage(getString(R.string.error_styling_not_installed))
                 .setPositiveButton(R.string.action_styling_install,
                     (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(installationUrl))))
-                .setNegativeButton(android.R.string.cancel, null).show();
+                .setNegativeButton(R.string.cancel, null).show();
         }
     }
 

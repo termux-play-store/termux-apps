@@ -65,6 +65,7 @@
                         android:insetBottom="0dp"
                         app:iconPadding="0dp"
                         app:iconGravity="textStart"
+                        app:iconTint="@color/black"
                         app:icon="@drawable/icon_keyboard" />
 
                     <com.google.android.material.button.MaterialButton
@@ -79,6 +80,7 @@
                         android:insetBottom="0dp"
                         app:iconPadding="0dp"
                         app:iconGravity="textStart"
+                        app:iconTint="@color/black"
                         app:icon="@drawable/icon_add"
                         />
                 </LinearLayout>

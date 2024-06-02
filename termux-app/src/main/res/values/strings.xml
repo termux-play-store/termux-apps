@@ -21,6 +21,7 @@
     <string name="title_max_terminals_reached">Max terminals reached</string>
     <string name="msg_max_terminals_reached">Close down existing ones before creating new.</string>
     <string name="title_rename_session">Set session name</string>
+    <string name="hint_session_name">Session name</string>
     <string name="action_rename_session_confirm">Set</string>
     <string name="title_create_named_session">New named session</string>
     <string name="action_create_named_session_confirm">Create</string>
@@ -51,7 +52,7 @@
     <string name="action_report_issue">Report Issue</string>
     <string name="msg_generating_report">Generating Report</string>
     <string name="msg_add_termux_debug_info">Add termux debug info to report?</string>
-    <string name="error_styling_not_installed">The Termux:Styling Plugin App is not installed.</string>
+    <string name="error_styling_not_installed">The Termux:Styling app is not installed.</string>
     <string name="action_styling_install">Install</string>
 
     <!-- Share -->
@@ -86,6 +87,8 @@
     <string name="action_file_received_open_directory">Open directory</string>
 
     <!-- Miscellaneous -->
+    <string name="hint_file_name">File name</string>
+    <string name="cancel">Cancel</string>
     <string name="error_termux_service_start_failed_general">Failed to start TermuxService. Check logcat for exception message.</string>
     <string name="error_termux_service_start_failed_bg">Failed to start TermuxService while app is in background due to android bg restrictions.</string>
 

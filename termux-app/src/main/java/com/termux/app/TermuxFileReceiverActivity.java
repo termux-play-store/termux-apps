@@ -137,8 +137,12 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
     }
 
     void promptNameAndSave(final InputStream in, final String attachmentFileName) {
-        TermuxMessageDialogUtils.textInput(this, R.string.title_file_received, attachmentFileName,
-            R.string.action_file_received_edit, text -> {
+        TermuxMessageDialogUtils.textInput(this,
+            R.string.title_file_received,
+            R.string.hint_file_name,
+            attachmentFileName,
+            R.string.action_file_received_edit,
+            text -> {
                 File outFile = saveStreamWithName(in, text);
                 if (outFile == null) return;
 
@@ -161,7 +165,8 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
                 startService(executeIntent);
                 finish();
             },
-            R.string.action_file_received_open_directory, text -> {
+            R.string.action_file_received_open_directory,
+            text -> {
                 if (saveStreamWithName(in, text) == null) return;
 
                 Intent executeIntent = new Intent(TermuxService.ACTION_SERVICE_EXECUTE);
@@ -170,7 +175,8 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
                 startService(executeIntent);
                 finish();
             },
-            android.R.string.cancel, text -> finish(), dialog -> {
+            R.string.cancel,
+            text -> finish(), dialog -> {
                 if (mFinishOnDismissNameDialog) finish();
             });
     }
