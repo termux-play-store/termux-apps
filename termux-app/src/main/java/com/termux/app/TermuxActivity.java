@@ -27,6 +27,7 @@ import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -54,7 +55,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * A terminal emulator activity.
@@ -433,7 +433,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     public void toggleTerminalToolbar() {
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
+        var terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (terminalToolbarViewPager == null) return;
 
         final boolean showNow = mPreferences.toggleShowTerminalToolbar();
@@ -478,7 +478,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
      */
     public void showToast(String text, boolean longDuration) {
         if (text == null || text.isEmpty()) return;
-        Snackbar.make(mTerminalView, text, longDuration ? BaseTransientBottomBar.LENGTH_LONG : BaseTransientBottomBar.LENGTH_SHORT).show();
+        var snackbar = Snackbar.make(mTerminalView, text, longDuration ? BaseTransientBottomBar.LENGTH_LONG : BaseTransientBottomBar.LENGTH_SHORT);
+        var terminalToolbarViewPager = getTerminalToolbarViewPager();
+        if (terminalToolbarViewPager != null && terminalToolbarViewPager.getVisibility() == View.VISIBLE) {
+            snackbar.setAnchorView(mExtraKeysView);
+        }
+        snackbar.show();
     }
 
     @Override
