@@ -160,17 +160,14 @@ tasks {
 task("downloadBootstraps") {
     doLast {
         val version = "4"
-        downloadBootstrap("aarch64", "8a4e5380ac98481f8bc544e12b6b58c0cdb43aed648888d5f5c199c0105e5533", version)
-        downloadBootstrap("x86_64", "7e9a414aefd827201d867cc7db3e4e84baf5d6d4312c8b3608fa70dab8122783", version)
-        // downloadBootstrap("arm", "TODO", version)
-        // downloadBootstrap("i686", "TODO", version)
+        downloadBootstrap("aarch64", "6041d475b8cd4813ac06d28bd376e19dd02a2bf08b2e55c4fdc2bb6aa189f34c", version)
+        downloadBootstrap("x86_64", "d62d8864d66684788df0e6b616be663015ab16ef78c70a6fed10aa97757a6ef8", version)
     }
 }
 
 afterEvaluate {
     android.applicationVariants.all { variant ->
         variant.javaCompileProvider.dependsOn("downloadBootstraps")
-        //variant.javaCompileProvider.dependsOn(downloadBootstraps)
         true
     }
 }
