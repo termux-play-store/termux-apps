@@ -1,24 +1,22 @@
-package com.termux.view.textselection;
+package com.termux.view;
 
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Rect;
-import android.os.Build;
 import android.text.TextUtils;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import androidx.annotation.Nullable;
 
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.WcWidth;
-import com.termux.view.R;
-import com.termux.view.TerminalView;
 
-public class TextSelectionCursorController implements CursorController {
+public class TextSelectionCursorController implements ViewTreeObserver.OnTouchModeChangeListener {
 
     private final TerminalView terminalView;
     private final TextSelectionHandleView mStartHandle, mEndHandle;
@@ -42,7 +40,6 @@ public class TextSelectionCursorController implements CursorController {
         mHandleHeight = Math.max(mStartHandle.getHandleHeight(), mEndHandle.getHandleHeight());
     }
 
-    @Override
     public void show(MotionEvent event) {
         setInitialTextSelectionPosition(event);
         mStartHandle.positionAtCursor(mSelX1, mSelY1, true);
@@ -53,7 +50,6 @@ public class TextSelectionCursorController implements CursorController {
         mIsSelectingText = true;
     }
 
-    @Override
     public boolean hide() {
         if (!isActive()) return false;
 
@@ -78,7 +74,6 @@ public class TextSelectionCursorController implements CursorController {
         return true;
     }
 
-    @Override
     public void render() {
         if (!isActive()) return;
 
@@ -98,10 +93,10 @@ public class TextSelectionCursorController implements CursorController {
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
         if (!" ".equals(screen.getSelectedText(mSelX1, mSelY1, mSelX1, mSelY1))) {
             // Selecting something other than whitespace. Expand to word.
-            while (mSelX1 > 0 && !"".equals(screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1))) {
+            while (mSelX1 > 0 && !screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1).isEmpty()) {
                 mSelX1--;
             }
-            while (mSelX2 < terminalView.mEmulator.mColumns - 1 && !"".equals(screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1))) {
+            while (mSelX2 < terminalView.mEmulator.mColumns - 1 && !screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1).isEmpty()) {
                 mSelX2++;
             }
         }
@@ -208,7 +203,6 @@ public class TextSelectionCursorController implements CursorController {
         }, ActionMode.TYPE_FLOATING);
     }
 
-    @Override
     public void updatePosition(TextSelectionHandleView handle, int x, int y) {
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
         final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
@@ -344,11 +338,9 @@ public class TextSelectionCursorController implements CursorController {
         }
     }
 
-    @Override
     public void onDetached() {
     }
 
-    @Override
     public boolean isActive() {
         return mIsSelectingText;
     }

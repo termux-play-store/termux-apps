@@ -1,10 +1,9 @@
-package com.termux.view.textselection;
+package com.termux.view;
 
 import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,12 +14,13 @@ import android.widget.PopupWindow;
 
 import com.termux.view.R;
 import com.termux.view.TerminalView;
+import com.termux.view.TextSelectionCursorController;
 
 @SuppressLint("ViewConstructor")
 public class TextSelectionHandleView extends View {
     private final TerminalView terminalView;
     private PopupWindow mHandle;
-    private final CursorController mCursorController;
+    private final TextSelectionCursorController mCursorController;
 
     private final Drawable mHandleLeftDrawable;
     private final Drawable mHandleRightDrawable;
@@ -52,7 +52,7 @@ public class TextSelectionHandleView extends View {
 
     private long mLastTime;
 
-    public TextSelectionHandleView(TerminalView terminalView, CursorController cursorController, int initialOrientation) {
+    public TextSelectionHandleView(TerminalView terminalView, TextSelectionCursorController cursorController, int initialOrientation) {
         super(terminalView.getContext());
         this.terminalView = terminalView;
         mCursorController = cursorController;

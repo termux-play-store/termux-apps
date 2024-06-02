@@ -40,7 +40,6 @@ import androidx.annotation.Nullable;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
-import com.termux.view.textselection.TextSelectionCursorController;
 
 /**
  * View displaying and interacting with a {@link TerminalSession}.
