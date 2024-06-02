@@ -94,6 +94,9 @@ public class WifiAPI {
                             case ScanResult.CHANNEL_WIDTH_160MHZ:
                                 channelWidthMhz = "160";
                                 break;
+                            case ScanResult.CHANNEL_WIDTH_320MHZ:
+                                channelWidthMhz = "320";
+                                break;
                         }
                         out.name("channel_bandwidth_mhz").value(channelWidthMhz);
                         if (channelWidth != ScanResult.CHANNEL_WIDTH_20MHZ) {
