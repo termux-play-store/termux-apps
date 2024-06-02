@@ -1,4 +1,4 @@
-# Termux:Styling
+# Termux:Style
 
 [![Build status](https://github.com/termux/termux-styling/workflows/Build/badge.svg)](https://github.com/termux/termux-styling/actions)
 [![Join the chat at https://gitter.im/termux/termux](https://badges.gitter.im/termux/termux.svg)](https://gitter.im/termux/termux)
@@ -12,7 +12,7 @@ required font or color files.
 
 ## Installation
 
-Termux:Styling application can be obtained from [F-Droid](https://f-droid.org/en/packages/com.termux.styling/).
+Termux:Style application can be obtained from [F-Droid](https://f-droid.org/en/packages/com.termux.styling/).
 
 Additionally we provide per-commit debug builds for those who want to try
 out the latest features or test their pull request. This build can be obtained

@@ -52,7 +52,7 @@
     <string name="action_report_issue">Report Issue</string>
     <string name="msg_generating_report">Generating Report</string>
     <string name="msg_add_termux_debug_info">Add termux debug info to report?</string>
-    <string name="error_styling_not_installed">The Termux:Styling app is not installed.</string>
+    <string name="error_styling_not_installed">The Termux:Style app is not installed.</string>
     <string name="action_styling_install">Install</string>
 
     <!-- Share -->
