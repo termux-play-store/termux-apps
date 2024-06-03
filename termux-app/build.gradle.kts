@@ -2,7 +2,7 @@ import com.android.build.gradle.internal.tasks.factory.dependsOn
 import java.io.BufferedOutputStream
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.URL
+import java.net.URI
 import java.security.DigestInputStream
 import java.security.MessageDigest
 
@@ -134,7 +134,7 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
     file.parentFile.mkdirs()
     val out = BufferedOutputStream(FileOutputStream(file))
 
-    val connection = URL(remoteUrl).openConnection()
+    val connection = URI(remoteUrl).toURL().openConnection()
     val digestStream = DigestInputStream(connection.inputStream, digest)
     digestStream.transferTo(out)
     out.close()
@@ -160,8 +160,8 @@ tasks {
 task("downloadBootstraps") {
     doLast {
         val version = "4"
-        downloadBootstrap("aarch64", "6041d475b8cd4813ac06d28bd376e19dd02a2bf08b2e55c4fdc2bb6aa189f34c", version)
-        downloadBootstrap("x86_64", "d62d8864d66684788df0e6b616be663015ab16ef78c70a6fed10aa97757a6ef8", version)
+        downloadBootstrap("aarch64", "e481d2db72341bff31191c7f1c0c6648abb6a33e78612860a5ecdc1531e48df7", version)
+        downloadBootstrap("x86_64", "bce9ac899cae6979f98e47e4cae0f9e62b1fb0d04ca7d1a32ad9758ee1cf961e", version)
     }
 }
 
