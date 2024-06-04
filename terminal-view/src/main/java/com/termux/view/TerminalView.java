@@ -6,9 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
@@ -22,12 +20,9 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
-import android.view.RoundedCorner;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
-import android.view.WindowInsets;
-import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.autofill.AutofillValue;
 import android.view.inputmethod.BaseInputConnection;
@@ -70,10 +65,6 @@ public final class TerminalView extends View {
     public TerminalEmulator mEmulator;
 
     public TerminalRenderer mRenderer;
-
-    private int topOffsetDueToRoundedCorners;
-
-    private int bottomOffsetDueToRoundedCorners;
 
     public TerminalViewClient mClient;
 
@@ -961,34 +952,6 @@ public final class TerminalView extends View {
         int viewWidth = getWidth();
         int viewHeight = getHeight();
         if (viewWidth == 0 || viewHeight == 0 || mTermSession == null) return;
-
-        if (Build.VERSION.SDK_INT >= 50) {
-            // https://developer.android.com/develop/ui/views/layout/insets/rounded-corners
-            var insets = getRootWindowInsets();
-
-            var topLeft = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT);
-            var topRight = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT);
-            var bottomLeft = insets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_LEFT);
-            var bottomRight = insets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_RIGHT);
-
-            int radiusTopLeft = (topLeft == null) ? 0 : topLeft.getRadius();
-            int radiusTopRight = (topRight == null) ? 0 : topRight.getRadius();
-            int radiusBottomLeft = (bottomLeft == null) ? 0 : bottomLeft.getRadius();
-            int radiusBottomRight = (bottomRight == null) ? 0 : bottomRight.getRadius();
-
-            int topRadius = Math.max(radiusTopLeft, radiusTopRight);
-            int bottomRadius = Math.max(radiusBottomLeft, radiusBottomRight);
-
-            var windowManager = getContext().getSystemService(WindowManager.class);
-            var windowBounds = windowManager.getCurrentWindowMetrics().getBounds();
-
-            var location = new int[2];
-            getLocationInWindow(location);
-            this.topOffsetDueToRoundedCorners = Math.max(0, topRadius - windowBounds.top - location[1]);
-            int bottomMargin = windowBounds.bottom - getBottom() - location[1];
-            this.bottomOffsetDueToRoundedCorners = Math.max(0, bottomRadius - bottomMargin);
-            viewHeight -= this.topOffsetDueToRoundedCorners + this.bottomOffsetDueToRoundedCorners;
-        }
 
         // Set to 80 and 24 if you want to enable vttest.
         int newColumns = Math.max(4, (int) (viewWidth / mRenderer.mFontWidth));
