@@ -35,6 +35,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.terminal.KeyHandler;
@@ -961,29 +962,27 @@ public final class TerminalView extends View {
         int viewHeight = getHeight();
         if (viewWidth == 0 || viewHeight == 0 || mTermSession == null) return;
 
-        // https://developer.android.com/develop/ui/views/layout/insets/rounded-corner
         if (Build.VERSION.SDK_INT >= 50) {
-            WindowInsets insets = getRootWindowInsets();
-            RoundedCorner topLeft = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT);
-            RoundedCorner topRight = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT);
-            RoundedCorner bottomLeft = insets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_LEFT);
-            RoundedCorner bottomRight = insets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_RIGHT);
-            int radiusTopLeft = 0;
-            int radiusTopRight = 0;
-            int radiusBottomLeft = 0;
-            int radiusBottomRight = 0;
-            if (topLeft != null) radiusTopLeft = topLeft.getRadius();
-            if (topRight != null) radiusTopRight = topRight.getRadius();
-            if (bottomLeft != null) radiusBottomLeft = bottomLeft.getRadius();
-            if (bottomRight != null) radiusBottomRight = bottomRight.getRadius();
+            // https://developer.android.com/develop/ui/views/layout/insets/rounded-corners
+            var insets = getRootWindowInsets();
+
+            var topLeft = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT);
+            var topRight = insets.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT);
+            var bottomLeft = insets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_LEFT);
+            var bottomRight = insets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_RIGHT);
+
+            int radiusTopLeft = (topLeft == null) ? 0 : topLeft.getRadius();
+            int radiusTopRight = (topRight == null) ? 0 : topRight.getRadius();
+            int radiusBottomLeft = (bottomLeft == null) ? 0 : bottomLeft.getRadius();
+            int radiusBottomRight = (bottomRight == null) ? 0 : bottomRight.getRadius();
+
             int topRadius = Math.max(radiusTopLeft, radiusTopRight);
             int bottomRadius = Math.max(radiusBottomLeft, radiusBottomRight);
 
-            WindowManager windowManager =
-                (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-            Rect windowBounds = windowManager.getCurrentWindowMetrics().getBounds();
+            var windowManager = getContext().getSystemService(WindowManager.class);
+            var windowBounds = windowManager.getCurrentWindowMetrics().getBounds();
 
-            int[] location = {0, 0};
+            var location = new int[2];
             getLocationInWindow(location);
             this.topOffsetDueToRoundedCorners = Math.max(0, topRadius - windowBounds.top - location[1]);
             int bottomMargin = windowBounds.bottom - getBottom() - location[1];
@@ -1006,7 +1005,7 @@ public final class TerminalView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         if (mEmulator == null) {
             canvas.drawColor(0XFF000000);
             return;
