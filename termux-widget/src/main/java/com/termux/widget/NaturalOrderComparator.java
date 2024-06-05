@@ -64,10 +64,7 @@ public class NaturalOrderComparator {
         }
     }
 
-    public static int compare(Object o1, Object o2) {
-        String a = o1.toString();
-        String b = o2.toString();
-
+    public static int compare(String a, String b) {
         int ia = 0, ib = 0;
         int nza, nzb;
         char ca, cb;
