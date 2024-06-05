@@ -15,10 +15,12 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.WindowInsetsController;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.ColorUtils;
 
 import com.termux.R;
 import com.termux.terminal.TerminalColors;
@@ -495,7 +497,16 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         if (!mActivity.isVisible()) return;
         TerminalSession session = mActivity.getCurrentSession();
         if (session != null && session.getEmulator() != null) {
-            mActivity.getWindow().getDecorView().setBackgroundColor(session.getEmulator().mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]);
+            var backgroundColor = session.getEmulator().mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND];
+            var decorView = mActivity.getWindow().getDecorView();
+            decorView.setBackgroundColor(backgroundColor);
+            var wic = decorView.getWindowInsetsController();
+            if (wic != null) {
+                var mask = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
+                var isDark = ColorUtils.calculateLuminance(backgroundColor) <= 0.5;
+                var flag = isDark ? 0 : mask;
+                wic.setSystemBarsAppearance(flag, mask);
+            }
         }
     }
 
