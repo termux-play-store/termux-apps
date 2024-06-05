@@ -69,6 +69,9 @@ public final class TerminalSession extends TerminalOutput {
      */
     private int mTerminalFileDescriptor;
 
+    public long mProcessSpawnedTimeMillis;
+    public long mProcessExitTimeMillis;
+
     /** Set by the application for user identification of session, not by terminal. */
     public String mSessionName;
 
@@ -118,6 +121,7 @@ public final class TerminalSession extends TerminalOutput {
 
         int[] processId = new int[1];
         mTerminalFileDescriptor = JNI.createSubprocess(mExecutablePath, mCwd, mArgs, mEnv, processId, rows, columns);
+        mProcessSpawnedTimeMillis = System.currentTimeMillis();
         mShellPid = processId[0];
 
         final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor, mClient);
@@ -237,6 +241,7 @@ public final class TerminalSession extends TerminalOutput {
     /** Cleanup resources when the process exits. */
     void cleanupResources(int exitStatus) {
         synchronized (this) {
+            mProcessExitTimeMillis = System.currentTimeMillis();
             mShellPid = -1;
             mShellExitStatus = exitStatus;
         }

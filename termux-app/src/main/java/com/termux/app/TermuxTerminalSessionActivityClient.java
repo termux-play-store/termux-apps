@@ -244,7 +244,9 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         } else {
             // Once we have a separate launcher icon for the failsafe session, it
             // should be safe to auto-close session on exit code '0' or '130'.
-            if (finishedSession.getExitStatus() == 0 || finishedSession.getExitStatus() == 130) {
+            // But keep short-lived sessions around for debugging and understandability.
+            var isLongLived = (finishedSession.mProcessExitTimeMillis - finishedSession.mProcessSpawnedTimeMillis) > 3_000;
+            if ((finishedSession.getExitStatus() == 0 || finishedSession.getExitStatus() == 130) && isLongLived) {
                 removeFinishedSession(finishedSession);
             }
         }
@@ -393,7 +395,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         sessionToRename.mSessionName = text;
     }
 
-    public void addNewSession(boolean isFailSafe, String sessionName) {
+    public void addNewSession(boolean isFailSafe, String sessionName, File executable) {
         var service = mActivity.getTermuxService();
         if (service == null) {
             return;
@@ -408,7 +410,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         } else {
             var currentSession = mActivity.getCurrentSession();
             var workingDirectory = currentSession == null ? TermuxConstants.HOME_PATH : currentSession.getCwd();
-            var newTermuxSession = service.createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);
+            var newTermuxSession = service.createTermuxSession(executable, null, null, workingDirectory, isFailSafe, sessionName);
             setCurrentSession(newTermuxSession);
             mActivity.getDrawer().closeDrawers();
         }
