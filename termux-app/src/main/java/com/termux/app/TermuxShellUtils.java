@@ -105,13 +105,8 @@ public class TermuxShellUtils {
 
         Map<String, String> environment = new HashMap<>();
         environment.put("COLORTERM", "truecolor");
-        environment.put("HOME", TermuxConstants.HOME_PATH);
-        environment.put("LANG", "en_US.UTF-8");
         environment.put("PREFIX", TermuxConstants.PREFIX_PATH);
         environment.put("TERM", "xterm-256color");
-        environment.put("TMP", tmpDir);
-        environment.put("TMPDIR", tmpDir);
-
         putToEnvIfInSystemEnv(environment, "ANDROID_ART_ROOT");
         putToEnvIfInSystemEnv(environment, "ANDROID_ASSETS");
         putToEnvIfInSystemEnv(environment, "ANDROID_DATA");
@@ -128,6 +123,10 @@ public class TermuxShellUtils {
         putToEnvIfInSystemEnv(environment, "SYSTEMSERVERCLASSPATH");
 
         if (!failsafe) {
+            environment.put("HOME", TermuxConstants.HOME_PATH);
+            environment.put("LANG", "en_US.UTF-8");
+            environment.put("TMP", tmpDir);
+            environment.put("TMPDIR", tmpDir);
             environment.put("LD_PRELOAD", TermuxConstants.PREFIX_PATH + "/lib/libtermux-exec.so");
             environment.put("PATH", TermuxConstants.PREFIX_PATH + "/bin:" + System.getenv("PATH"));
         }
