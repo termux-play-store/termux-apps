@@ -136,8 +136,10 @@ public class PluginUtils {
      * @param waitForResult This must be set to {@link true} if plugin action should wait for result
      *                      from the execution service that should be sent back to plugin host synchronously.
      */
-    public static void sendExecuteIntentToExecuteService(final Context context, final BroadcastReceiver receiver,
-                                                         final Intent originalIntent, final Intent executionIntent,
+    public static void sendExecuteIntentToExecuteService(final Context context,
+                                                         final BroadcastReceiver receiver,
+                                                         final Intent originalIntent,
+                                                         final Intent executionIntent,
                                                          boolean waitForResult) {
         if (context == null) return;
 
@@ -187,8 +189,7 @@ public class PluginUtils {
                 context.startService(executionIntent);
             }
         } catch (Exception e) {
-            String errmsg = Logger.getMessageAndStackTraceString("Failed to send execution intent to " + executionIntent.getComponent().toString(), e);
-            Logger.logErrorAndShowToast(context, LOG_TAG, errmsg);
+            Log.e(LOG_TAG, "Failed to send execution intent to " + executionIntent.getComponent().toString(), e);
             PluginUtils.sendImmediateResultToPluginHostApp(receiver, originalIntent, TaskerPlugin.Setting.RESULT_CODE_FAILED, errmsg);
         }
     }
@@ -233,7 +234,7 @@ public class PluginUtils {
 
         int err = sanitizeErrCode(errCode);
 
-        Logger.logInfo(LOG_TAG, "Sending immediate result to plugin host app. " + PLUGIN_VARIABLE_ERR + ": " + ((err == TaskerPlugin.Setting.RESULT_CODE_OK) ? "success" : "failed") + " (" + err +  ")");
+        Log.i(LOG_TAG, "Sending immediate result to plugin host app. " + PLUGIN_VARIABLE_ERR + ": " + ((err == TaskerPlugin.Setting.RESULT_CODE_OK) ? "success" : "failed") + " (" + err +  ")");
 
         if (TaskerPlugin.Setting.hostSupportsVariableReturn(originalIntent.getExtras())) {
             final Bundle varsBundle = createVariablesBundle(stdout, stdoutOriginalLength,
@@ -275,7 +276,7 @@ public class PluginUtils {
         if (resultBundle.containsKey(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERR))
             err = sanitizeErrCode(resultBundle.getInt(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_ERR));
 
-        Logger.logInfo(LOG_TAG, "Sending pending result to plugin host app. " + PLUGIN_VARIABLE_ERR + ": " + ((err == TaskerPlugin.Setting.RESULT_CODE_OK) ? "success" : "failed") + " (" + err +  ")");
+        Log.i(LOG_TAG, "Sending pending result to plugin host app. " + PLUGIN_VARIABLE_ERR + ": " + ((err == TaskerPlugin.Setting.RESULT_CODE_OK) ? "success" : "failed") + " (" + err +  ")");
 
         String exitCode = null;
         if (resultBundle.containsKey(TERMUX_SERVICE.EXTRA_PLUGIN_RESULT_BUNDLE_EXIT_CODE))
@@ -308,6 +309,7 @@ public class PluginUtils {
      * @param errCode The value for {@link #PLUGIN_VARIABLE_ERR} variable of plugin action.
      */
     public static void processPluginExecutionCommandError(final Context context, final BroadcastReceiver receiver, final Intent originalIntent, String logTag, final ExecutionCommand executionCommand, final int errCode) {
+        /*
         if (context == null || executionCommand == null) return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
@@ -319,10 +321,11 @@ public class PluginUtils {
 
         //boolean isExecutionCommandLoggingEnabled = Logger.shouldEnableLoggingForCustomLogLevel(executionCommand.backgroundCustomLogLevel);
 
-        // Log the error and any exception
-        //Log.e(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true, isExecutionCommandLoggingEnabled));
+         Log the error and any exception
+        Log.e(logTag, ExecutionCommand.getExecutionOutputLogString(executionCommand, true, true, isExecutionCommandLoggingEnabled));
 
         // TODO: PluginUtils.sendImmediateResultToPluginHostApp(receiver, originalIntent, errCode, ResultData.getErrorsListMinimalString(executionCommand.resultData));
+         */
     }
 
 

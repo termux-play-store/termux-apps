@@ -13,36 +13,36 @@ import androidx.annotation.Nullable;
  * Class for managing the {@link com.twofortyfouram.locale.Intent#EXTRA_BUNDLE} for this plug-in.
  */
 public class PluginBundleManager {
-
+    
     /** The {@code String} extra for the path to the executable to execute. */
-    public static final String EXTRA_EXECUTABLE = TermuxConstants.TERMUX_TASKER_PACKAGE_NAME + ".extra.EXECUTABLE"; // Default: "com.termux.tasker.extra.EXECUTABLE"
+    public static final String EXTRA_EXECUTABLE = ".extra.EXECUTABLE"; // Default: "com.termux.tasker.extra.EXECUTABLE"
 
     /** The {@code String} extra for the arguments to pass to the executable. */
-    public static final String EXTRA_ARGUMENTS = TermuxConstants.TERMUX_PACKAGE_NAME + ".execute.arguments"; // Default: "com.termux.execute.arguments"
+    public static final String EXTRA_ARGUMENTS = "com.termux.execute.arguments"; // Default: "com.termux.execute.arguments"
 
     /** The {@code String} extra for path to current working directory for execution. */
-    public static final String EXTRA_WORKDIR = TermuxConstants.TERMUX_TASKER_PACKAGE_NAME + ".extra.WORKDIR"; // Default: "com.termux.tasker.extra.WORKDIR"
+    public static final String EXTRA_WORKDIR = "com.termux.tasker.extra.WORKDIR"; // Default: "com.termux.tasker.extra.WORKDIR"
 
     /** The {@code String} extra for stdin for background commands. */
-    public static final String EXTRA_STDIN = TermuxConstants.TERMUX_TASKER_PACKAGE_NAME + ".extra.STDIN"; // Default: "com.termux.tasker.extra.STDIN"
+    public static final String EXTRA_STDIN = "com.termux.tasker.extra.STDIN"; // Default: "com.termux.tasker.extra.STDIN"
 
     /** The {@code String} extra for terminal session action defined by
      * {@link com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE}
      * `VALUE_EXTRA_SESSION_ACTION_*` values.
      */
-    public static final String EXTRA_SESSION_ACTION = TermuxConstants.TERMUX_TASKER_PACKAGE_NAME + ".extra.SESSION_ACTION"; // Default: "com.termux.tasker.extra.SESSION_ACTION"
+    public static final String EXTRA_SESSION_ACTION = "com.termux.tasker.extra.SESSION_ACTION"; // Default: "com.termux.tasker.extra.SESSION_ACTION"
 
     /** The {@code String} extra for custom log levels for background commands between
      * {@link Logger#LOG_LEVEL_OFF} and {@link Logger#MAX_LOG_LEVEL} as per
      * https://github.com/termux/termux-app/commit/60f37bde.
      */
-    public static final String EXTRA_BACKGROUND_CUSTOM_LOG_LEVEL = TermuxConstants.TERMUX_TASKER_PACKAGE_NAME + ".extra.BACKGROUND_CUSTOM_LOG_LEVEL"; // Default: "com.termux.tasker.extra.BACKGROUND_CUSTOM_LOG_LEVEL"
+    public static final String EXTRA_BACKGROUND_CUSTOM_LOG_LEVEL = "com.termux.tasker.extra.BACKGROUND_CUSTOM_LOG_LEVEL"; // Default: "com.termux.tasker.extra.BACKGROUND_CUSTOM_LOG_LEVEL"
 
     /** The {@code boolean} extra for whether the executable should be run inside a terminal. */
-    public static final String EXTRA_TERMINAL = TermuxConstants.TERMUX_TASKER_PACKAGE_NAME + ".extra.TERMINAL"; // Default: "com.termux.tasker.extra.TERMINAL"
+    public static final String EXTRA_TERMINAL = "com.termux.tasker.extra.TERMINAL"; // Default: "com.termux.tasker.extra.TERMINAL"
 
     /** The {@code boolean} extra for whether plugin action should wait for result of commands or not. */
-    public static final String EXTRA_WAIT_FOR_RESULT = TermuxConstants.TERMUX_TASKER_PACKAGE_NAME + ".extra.WAIT_FOR_RESULT"; // Default: "com.termux.tasker.extra.WAIT_FOR_RESULT"
+    public static final String EXTRA_WAIT_FOR_RESULT = "com.termux.tasker.extra.WAIT_FOR_RESULT"; // Default: "com.termux.tasker.extra.WAIT_FOR_RESULT"
 
 
 
@@ -53,7 +53,7 @@ public class PluginBundleManager {
      * easier. For example, suppose a bug is found in how some version of the plug-in stored its Bundle. By
      * having the version, the plug-in can better detect when such bugs occur.
      */
-    public static final String BUNDLE_EXTRA_INT_VERSION_CODE = TermuxConstants.TERMUX_TASKER_PACKAGE_NAME + ".extra.VERSION_CODE"; // Default: "com.termux.tasker.extra.VERSION_CODE"
+    public static final String BUNDLE_EXTRA_INT_VERSION_CODE = "com.termux.tasker.extra.VERSION_CODE"; // Default: "com.termux.tasker.extra.VERSION_CODE"
 
     public static final String UNICODE_CHECK = "\u2713";
     public static final String UNICODE_UNCHECK = "\u2715";

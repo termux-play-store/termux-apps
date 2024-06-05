@@ -13,7 +13,8 @@
 
     <application
         android:label="@string/application_name"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="true"
         android:fullBackupOnly="false"
         android:supportsRtl="true">
@@ -29,7 +30,8 @@
         <activity
             android:name=".EditConfigurationActivity"
             android:exported="true"
-            android:icon="@drawable/ic_launcher"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher"
             android:label="@string/plugin_name"
             android:windowSoftInputMode="stateHidden"
             android:uiOptions="splitActionBarWhenNarrow">

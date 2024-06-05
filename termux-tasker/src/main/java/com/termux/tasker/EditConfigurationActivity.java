@@ -182,28 +182,6 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
         processWorkingDirectoryPath(mWorkingDirectoryPathText == null ? null : mWorkingDirectoryPathText.getText().toString());
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.activity_edit_configuration, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.menu_log_level) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
-
-
-
     private void setExecutionPathViews() {
         mExecutablePathText.addTextChangedListener(new AfterTextChangedWatcher() {
             @Override
@@ -314,18 +292,16 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
     private void checkIfPluginCanAccessTermuxApp() {
         if (mTermuxAppFilesPathInaccessibleWarning == null) return;
 
-        String errmsg;
-
         // If Termux app is not installed, enabled or accessible with current context or if
         // TermuxConstants.TERMUX_PREFIX_DIR_PATH does not exist or has required permissions,
         // then show warning.
-        errmsg = TermuxUtils.isTermuxAppAccessible(this);
-        if (errmsg != null) {
-            mTermuxAppFilesPathInaccessibleWarning.setText(errmsg);
-            mTermuxAppFilesPathInaccessibleWarning.setVisibility(View.VISIBLE);
-        } else {
+        String errorMessage = null; // TermuxUtils.isTermuxAppAccessible(this);
+        if (errorMessage == null) {
             mTermuxAppFilesPathInaccessibleWarning.setVisibility(View.GONE);
             mTermuxAppFilesPathInaccessibleWarning.setText(null);
+        } else {
+            mTermuxAppFilesPathInaccessibleWarning.setText(errorMessage);
+            mTermuxAppFilesPathInaccessibleWarning.setVisibility(View.VISIBLE);
         }
     }
 
@@ -597,8 +573,7 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
     }
 
     private void processSessionAction(String sessionActionString) {
-        processIntFieldValue(mSessionActionLayout, sessionActionString,
-                TERMUX_SERVICE.MIN_VALUE_EXTRA_SESSION_ACTION, TERMUX_SERVICE.MAX_VALUE_EXTRA_SESSION_ACTION);
+        processIntFieldValue(mSessionActionLayout, sessionActionString, TERMUX_SERVICE.MIN_VALUE_EXTRA_SESSION_ACTION, TERMUX_SERVICE.MAX_VALUE_EXTRA_SESSION_ACTION);
     }
 
     private void processBackgroundCustomLogLevel(String backgroundCustomLogLevelString) {
@@ -749,7 +724,7 @@ public final class EditConfigurationActivity extends AbstractPluginActivity {
         });
     }
 
-    static class AfterTextChangedWatcher implements TextWatcher {
+    static abstract class AfterTextChangedWatcher implements TextWatcher {
         @Override
         public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
