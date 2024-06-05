@@ -70,9 +70,7 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
         if (session != null) {
             TerminalEmulator term = mActivity.getCurrentSession().getEmulator();
             if (!term.isMouseTrackingActive() && !e.isFromSource(InputDevice.SOURCE_MOUSE)) {
-                if (!mActivity.mPreferences.isFullscreen()) {
-                    mActivity.getSystemService(InputMethodManager.class).showSoftInput(mActivity.getTerminalView(), 0);
-                }
+                mActivity.getSystemService(InputMethodManager.class).showSoftInput(mActivity.getTerminalView(), 0);
             }
         }
     }
