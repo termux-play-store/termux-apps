@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -37,14 +38,12 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
-        Log.e("termux", "ONUPDATE: " + Arrays.toString(appWidgetIds));
         for (int appWidgetId : appWidgetIds) {
             updateAppWidgetRemoteViews(context, appWidgetManager, appWidgetId);
         }
     }
 
     public static void updateAppWidgetRemoteViews(@NonNull Context context, @NonNull AppWidgetManager appWidgetManager, int appWidgetId) {
-        Log.e("termux", "UPDATE APP WIDGET REMOVE VIEWS: " + appWidgetId);
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return;
 
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
@@ -54,7 +53,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         remoteViews.setEmptyView(R.id.widget_list, R.id.empty_view);
 
         // Setup intent which points to the TermuxWidgetService which will provide the views for this collection.
-        Intent intent = new Intent(context, TermuxWidgetService.class);
+        var intent = new Intent(context, TermuxWidgetService.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         // When intents are compared, the extras are ignored, so we need to embed the extras
         // into the data so that the extras will not be ignored.
@@ -62,36 +61,31 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         remoteViews.setRemoteAdapter(R.id.widget_list, intent);
 
         // Setup refresh button:
-        Intent refreshIntent = new Intent(context, TermuxWidgetProvider.class);
+        var refreshIntent = new Intent(context, TermuxWidgetProvider.class);
         refreshIntent.setAction(TermuxWidgetConstants.ACTION_REFRESH_WIDGET);
         refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         refreshIntent.setData(Uri.parse(refreshIntent.toUri(Intent.URI_INTENT_SCHEME)));
-        PendingIntent refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        var refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
         remoteViews.setOnClickPendingIntent(R.id.refresh_button, refreshPendingIntent);
 
         // Here we setup the a pending intent template. Individuals items of a collection
         // cannot setup their own pending intents, instead, the collection as a whole can
         // setup a pending intent template, and the individual items can set a fillInIntent
         // to create unique before on an item to item basis.
-        Intent toastIntent = new Intent(context, TermuxWidgetProvider.class);
-        toastIntent.setAction(TermuxWidgetConstants.ACTION_WIDGET_ITEM_CLICKED);
-        toastIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        var clickedIntent = new Intent(context, TermuxWidgetProvider.class);
+        clickedIntent.setAction(TermuxWidgetConstants.ACTION_WIDGET_ITEM_CLICKED);
+        clickedIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
-        Intent startTerminalSessionIntent = new Intent();
-        startTerminalSessionIntent.setClassName("com.termux", "com.termux.app.TermuxActivityInternal");
-        PendingIntent toastPendingIntent = PendingIntent.getActivities(context, 0, new Intent[]{startTerminalSessionIntent},
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        var clickedIntentPending = PendingIntent.getBroadcast(context, 0, clickedIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
-        remoteViews.setPendingIntentTemplate(R.id.widget_list, toastPendingIntent);
+        remoteViews.setPendingIntentTemplate(R.id.widget_list, clickedIntentPending);
 
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.e("termux", "TERMUX WIDGET PROVIDER: on receive " + intent);
-        String action = intent != null ? intent.getAction() : null;
+        var action = intent != null ? intent.getAction() : null;
         if (action == null) return;
 
         switch (action) {
@@ -101,24 +95,35 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
                 refreshAppWidgets(context, intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS), true);
                 return;
             } case TermuxWidgetConstants.ACTION_WIDGET_ITEM_CLICKED: {
-                String clickedFilePath = intent.getStringExtra(TermuxWidgetConstants.EXTRA_FILE_CLICKED);
-                Log.e("termux", "CLICKED FILE: " + clickedFilePath);
+                var clickedFilePath = intent.getStringExtra(TermuxWidgetConstants.EXTRA_FILE_CLICKED);
                 if (clickedFilePath == null || clickedFilePath.isEmpty()) {
                     Log.e(TermuxWidgetConstants.LOG_TAG, "Ignoring unset clicked file");
                     return;
                 }
+                var isTask = intent.getBooleanExtra(TermuxWidgetConstants.EXTRA_IS_TASK, false);
 
-                if (new File(clickedFilePath).isDirectory()) {
-                    Log.e(TermuxWidgetConstants.LOG_TAG, "Ignoring clicked directory file");
-                    return;
+                if (isTask) {
+                    var startTerminalSessionIntent = new Intent();
+                    startTerminalSessionIntent.setClassName("com.termux", "com.termux.app.TermuxService");
+                    startTerminalSessionIntent.setAction("com.termux.service.action.service_execute");
+                    startTerminalSessionIntent.putExtra("com.termux.execute.background", true);
+                    var data = new Uri.Builder().scheme("path").path(clickedFilePath).build();
+                    startTerminalSessionIntent.setData(data);
+                    context.startForegroundService(startTerminalSessionIntent);
+
+                    var message = context.getString(R.string.msg_executing_task, new File(clickedFilePath).getName());
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    var startTerminalSessionIntent = new Intent();
+                    startTerminalSessionIntent.setClassName("com.termux", "com.termux.app.TermuxActivityInternal");
+                    startTerminalSessionIntent.setAction(Intent.ACTION_RUN);
+                    var data = new Uri.Builder().scheme("path").path(clickedFilePath).build();
+                    startTerminalSessionIntent.setData(data);
+                    startTerminalSessionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(startTerminalSessionIntent);
                 }
 
-                Intent myIntent = new Intent();
-                myIntent.setClassName("com.termux", "com.termux.app.TermuxActivity");
-                context.startActivity(myIntent);
-                //sendExecutionIntentToTermuxService(context, clickedFilePath, LOG_TAG);
                 return;
-
             } case TermuxWidgetConstants.ACTION_REFRESH_WIDGET: {
                 int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
                 int[] appWidgetIds;
@@ -138,10 +143,12 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
 
                 var updatedAppWidgetIds = refreshAppWidgets(context, appWidgetIds, updateRemoteViews);
                 if (updatedAppWidgetIds.isEmpty()) {
-                    Log.w(TermuxWidgetConstants.LOG_TAG, context.getString(R.string.msg_no_widgets_found_to_reload));
+                    Log.e(TermuxWidgetConstants.LOG_TAG, "No widgets to reload");
                 } else {
-                    Log.d(TermuxWidgetConstants.LOG_TAG, context.getString(R.string.msg_widgets_reloaded, Arrays.toString(appWidgetIds)));
+                    Log.i(TermuxWidgetConstants.LOG_TAG, "Reloaded widgets: " + updatedAppWidgetIds);
                 }
+                var msg = context.getString(R.string.msg_widgets_reloaded);
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
                 return;
             } default: {
                 Log.w(TermuxWidgetConstants.LOG_TAG, "Unhandled action: " + action);
@@ -149,7 +156,6 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
             }
         }
 
-        // Allow super to handle other actions
         super.onReceive(context, intent);
     }
 

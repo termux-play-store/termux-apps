@@ -17,12 +17,6 @@
     <string name="permission_termux_internal_label">Termux Internal</string>
     <string name="permission_termux_internal_description">Access internal Termux functionality.</string>
 
-    <!-- TermuxWidgetActivity -->
-    <string name="msg_disable_launcher_icon_info">The &TERMUX_WIDGET_APP_NAME; app does not require
-        a require launcher icon/activity to function. You can optionally disable it if you want and
-        can enabled in again either by reinstalling the app or from the &TERMUX_APP_NAME; app settings
-        if the option has been implemented in your installed version."</string>
-
     <string name="msg_max_shortcuts_limit_info">The current max static and dynamic shortcuts limit
         for the &TERMUX_WIDGET_APP_NAME; app is %1$d.
         \n\nCheck %2$s for info on how to change the limit."</string>
@@ -47,25 +41,18 @@
         and do not show any shortcuts and refresh buttons of the widgets itself do not work either.</string>
     <string name="action_refresh_all_widgets">Refresh</string>
 
-
-
     <!-- ShortcutFile -->
     <string name="msg_shortcut_icon_file_used">Using file at `%1$s` as shortcut icon file</string>
 
-
-
     <!-- ShortcutUtils -->
     <string name="error_failed_to_get_shortcut_manager">Failed to get ShortcutManager</string>
-
-
 
     <string name="title_widget">&TERMUX_APP_NAME;</string>
     <string name="title_shortcut_widget_name">&TERMUX_APP_NAME; widget</string>
     <string name="title_single_shortcut_name">&TERMUX_APP_NAME; shortcut</string>
     <string name="title_termux_shortcuts">&TERMUX_APP_NAME; Shortcuts</string>
 
-    <string name="msg_widgets_reloaded">&TERMUX_APP_NAME; widgets reloaded: %1$s</string>
-    <string name="msg_no_widgets_found_to_reload">No &TERMUX_APP_NAME; widgets found to reload</string>
+    <string name="msg_widgets_reloaded">&TERMUX_WIDGET_APP_NAME; reloaded</string>
     <string name="msg_no_shortcut_scripts">No files in\n&TERMUX_SHORTCUT_SCRIPTS_DIR_PATH_SHORT;</string>
     <string name="msg_bad_token">This shortcut is invalid - remove and add again.</string>
     <string name="msg_executing_task">Executing task: \"%1$s\"</string>

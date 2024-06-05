@@ -3,37 +3,25 @@ package com.termux.widget;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.io.File;
 
 public final class ShortcutFile {
 
-    private static final String LOG_TAG = "ShortcutFile";
-
     public final String mPath;
-    public String mLabel;
-
-    public ShortcutFile(@NonNull String path) {
-        this(path, null);
-    }
+    public final String mLabel;
+    public final boolean mDisplaysDirectory;
+    public final boolean mIsTask;
 
     public ShortcutFile(@NonNull File file) {
-        this(file.getAbsolutePath(), null);
-    }
-
-    public ShortcutFile(@NonNull File file, int depth) {
-        this(file.getAbsolutePath(),
-                (depth > 0 && file.getParentFile() != null ? (file.getParentFile().getName() + "/") : "") + file.getName());
-    }
-
-    public ShortcutFile(@NonNull String path, @Nullable String defaultLabel) {
-        mPath = path;
-        mLabel = getLabelForShortcut(defaultLabel);
+        mPath = file.getAbsolutePath();
+        var parentDirName = file.getParentFile().getName();
+        mDisplaysDirectory = !parentDirName.equals(TermuxWidgetConstants.SHORTCUTS_DIR_NAME);
+        mIsTask = parentDirName.equals(TermuxWidgetConstants.TASKS_DIR_NAME);
+        mLabel = mDisplaysDirectory ? (parentDirName + "/" + file.getName()) : file.getName();
     }
 
     @NonNull
@@ -44,11 +32,6 @@ public final class ShortcutFile {
     @NonNull
     public String getLabel() {
         return mLabel;
-    }
-
-    @NonNull
-    public String getLabelForShortcut(@Nullable String defaultLabel) {
-        return (defaultLabel == null || defaultLabel.isEmpty()) ? new File(mPath).getName() : defaultLabel;
     }
 
     public Intent getExecutionIntent(Context context) {
@@ -78,8 +61,10 @@ public final class ShortcutFile {
 
         // Next, we set a fill-intent which will be used to fill-in the pending intent template
         // which is set on the collection view in TermuxAppWidgetProvider.
-        Log.e("TERMUX", "FILLING IN: " + getPath());
-        Intent fillInIntent = new Intent().putExtra(TermuxWidgetConstants.EXTRA_FILE_CLICKED, getPath());
+        Intent fillInIntent = new Intent()
+            .putExtra(TermuxWidgetConstants.EXTRA_FILE_CLICKED, getPath())
+            .putExtra(TermuxWidgetConstants.EXTRA_IS_TASK, mIsTask);
+
         remoteViews.setOnClickFillInIntent(R.id.widget_item_layout, fillInIntent);
 
         return remoteViews;

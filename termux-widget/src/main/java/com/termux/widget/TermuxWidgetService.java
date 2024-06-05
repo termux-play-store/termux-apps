@@ -9,7 +9,9 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public final class TermuxWidgetService extends RemoteViewsService {
@@ -75,7 +77,7 @@ public final class TermuxWidgetService extends RemoteViewsService {
 
         @Override
         public void onDataSetChanged() {
-            Log.v(TermuxWidgetConstants.LOG_TAG, "termux-widget: onDataSetChanged");
+            Log.v(TermuxWidgetConstants.LOG_TAG, "termux-widget: onDataSetChanged, widget id: " + mAppWidgetId);
 
             // This is triggered when you call AppWidgetManager notifyAppWidgetViewDataChanged
             // on the collection view corresponding to this factory. You can do heaving lifting in
@@ -95,17 +97,17 @@ public final class TermuxWidgetService extends RemoteViewsService {
                     Log.e(TermuxWidgetConstants.LOG_TAG, "termux-widget: Cursor from content resolver is null");
                     return;
                 }
-                var displayNameIdx = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
                 var relativePathIdx = cursor.getColumnIndex("termux_path");
                 while (cursor.moveToNext()) {
-                    var displayName = cursor.getString(displayNameIdx);
                     var termuxPath = (relativePathIdx == -1) ? "-1" : cursor.getString(relativePathIdx);
-                    Log.e("termux", "WIDGET: path=" + termuxPath + ", name=" + displayName);
-                    shortcutFiles.add(new ShortcutFile(termuxPath));
+                    shortcutFiles.add(new ShortcutFile(new File(termuxPath)));
                 }
             }
 
-            //ShortcutUtils.enumerateShortcutFiles(shortcutFiles, true);
+            shortcutFiles.sort(Comparator
+                .comparingInt((ShortcutFile a) -> (a.mDisplaysDirectory ? 1 : -1))
+                .thenComparing((a, b) -> NaturalOrderComparator.compare(a.mLabel, b.mLabel))
+            );
         }
     }
 

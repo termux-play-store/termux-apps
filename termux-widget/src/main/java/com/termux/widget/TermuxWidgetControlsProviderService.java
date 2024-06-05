@@ -3,7 +3,6 @@ package com.termux.widget;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
-import android.net.Uri;
 import android.os.Build;
 import android.service.controls.Control;
 import android.service.controls.ControlsProviderService;
@@ -29,8 +28,7 @@ import io.reactivex.processors.ReplayProcessor;
 /**
  * ControlProviderService for Android 11+ Device Control which allows running
  * Termux Widget shortcuts from device Power Menu.
- * See:
- * https://developer.android.com/guide/topics/ui/device-control
+ * See <a href="https://developer.android.com/guide/topics/ui/device-control">Control external devices</a>
  */
 @RequiresApi(api = Build.VERSION_CODES.R)
 public class TermuxWidgetControlsProviderService extends ControlsProviderService {
@@ -43,6 +41,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
     /**
      * Creates the initial selection of all our shortcut widget controls that the user can add.
      * Android system will subscribe to our flow to display items to user
+     *
      * @return Flow.Publisher<Control>
      */
     @Override
@@ -61,6 +60,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
      * Creates the selection of widget controls that the user has added and adds the necessary
      * PendingIntent to execute the widget action.
      * Android system will subscribe to our flow to display items to user
+     *
      * @param list List of widget control ids (shortcut paths) that user has added
      * @return Flow.Publisher<Control>
      */
@@ -82,6 +82,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
 
     /**
      * Notify consumers that action was performed.
+     *
      * @param controlId
      * @param controlAction
      * @param consumer
@@ -109,6 +110,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
 
     /**
      * Creates Control Widget that user can add, but is not already added
+     *
      * @param shortcutFile
      * @return Control
      */
@@ -116,15 +118,16 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
         PendingIntent emptyPendingIntent = createNoopPendingIntent();
 
         return new Control.StatelessBuilder(shortcutFile.getAbsolutePath(), emptyPendingIntent)
-                .setTitle(shortcutFile.getName())
-                .setSubtitle(createSubtitle(shortcutFile))
-                .setCustomIcon(createDefaultIcon())
-                .setDeviceType(DeviceTypes.TYPE_UNKNOWN)
-                .build();
+            .setTitle(shortcutFile.getName())
+            .setSubtitle(createSubtitle(shortcutFile))
+            .setCustomIcon(createDefaultIcon())
+            .setDeviceType(DeviceTypes.TYPE_UNKNOWN)
+            .build();
     }
 
     /**
      * Creates Control widget that will fire off commands from the shortcutFile.
+     *
      * @param shortcutFile
      * @return Control
      */
@@ -132,17 +135,18 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
         PendingIntent pendingIntent = createNoopPendingIntent();
 
         return new Control.StatefulBuilder(shortcutFile.getAbsolutePath(), pendingIntent)
-                .setTitle(shortcutFile.getName())
-                .setSubtitle(createSubtitle(shortcutFile))
-                .setCustomIcon(createDefaultIcon())
-                .setControlTemplate(createDefaultStatelessTemplate())
-                .setDeviceType(DeviceTypes.TYPE_UNKNOWN)
-                .setStatus(Control.STATUS_OK)
-                .build();
+            .setTitle(shortcutFile.getName())
+            .setSubtitle(createSubtitle(shortcutFile))
+            .setCustomIcon(createDefaultIcon())
+            .setControlTemplate(createDefaultStatelessTemplate())
+            .setDeviceType(DeviceTypes.TYPE_UNKNOWN)
+            .setStatus(Control.STATUS_OK)
+            .build();
     }
 
     /**
      * Display shortcut file parent name as subtitle
+     *
      * @param file
      * @return String
      */
@@ -152,6 +156,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
 
     /**
      * Use our launcher icon as default icon for our Control widgets
+     *
      * @return Icon
      */
     private Icon createDefaultIcon() {
@@ -165,6 +170,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
     /**
      * Create PendingIntent that does nothing, but is required for Control builder as
      * we cannot pass null there.
+     *
      * @return PendingIntent
      */
     private PendingIntent createNoopPendingIntent() {
