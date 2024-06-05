@@ -12,8 +12,6 @@ public class TermuxWidgetConstants {
 
     public static final String EXTRA_FILE_CLICKED = "com.termux.widget.EXTRA_FILE_CLICKED";
 
-    public static final String EXTRA_IS_TASK = "com.termux.widget.EXTRA_IS_TASK";
-
     public static final String SHORTCUTS_DIR_NAME = ".shortcuts";
 
     public static final String TASKS_DIR_NAME = "tasks";

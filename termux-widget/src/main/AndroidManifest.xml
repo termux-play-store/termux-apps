@@ -32,6 +32,16 @@
         </receiver>
 
         <activity
+            android:exported="true"
+            android:name=".TermuxCreateShortcutActivity"
+            android:label="@string/title_single_shortcut_name">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".TermuxLaunchShortcutActivity"
             android:noHistory="true"
             android:launchMode="singleInstance"
@@ -43,16 +53,6 @@
             android:name=".TermuxWidgetService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
-
-        <service
-            android:name=".TermuxWidgetControlsProviderService"
-            android:exported="false"
-            android:label="@string/title_termux_shortcuts"
-            android:permission="android.permission.BIND_CONTROLS">
-            <intent-filter>
-                <action android:name="android.service.controls.ControlsProviderService" />
-            </intent-filter>
-        </service>
 
     </application>
 

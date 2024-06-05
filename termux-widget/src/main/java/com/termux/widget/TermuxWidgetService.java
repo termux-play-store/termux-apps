@@ -104,10 +104,7 @@ public final class TermuxWidgetService extends RemoteViewsService {
                 }
             }
 
-            shortcutFiles.sort(Comparator
-                .comparingInt((ShortcutFile a) -> (a.mDisplaysDirectory ? 1 : -1))
-                .thenComparing((a, b) -> NaturalOrderComparator.compare(a.mLabel, b.mLabel))
-            );
+            ShortcutFile.sort(shortcutFiles);
         }
     }
 

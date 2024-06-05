@@ -4,99 +4,91 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.ShortcutManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 public class TermuxCreateShortcutActivity extends Activity {
 
     private ListView mListView;
-    private File mCurrentDirectory;
-    private File[] mCurrentFiles;
-
-    private static final String LOG_TAG = "TermuxCreateShortcutActivity";
+    private final List<ShortcutFile> mAllFiles = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shortcuts_listview);
         mListView = findViewById(R.id.list);
+
+        var contentUri = new Uri.Builder()
+            .scheme("content")
+            .authority("com.termux.files")
+            .path(TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH)
+            .build();
+        try (var cursor = getContentResolver().query(contentUri, null, null, null, null)) {
+            if (cursor == null) {
+                Log.e(TermuxWidgetConstants.LOG_TAG, "termux-widget: Cursor from content resolver is null");
+                return;
+            }
+            var relativePathIdx = cursor.getColumnIndex("termux_path");
+            while (cursor.moveToNext()) {
+                var termuxPath = (relativePathIdx == -1) ? "-1" : cursor.getString(relativePathIdx);
+                mAllFiles.add(new ShortcutFile(new File(termuxPath)));
+            }
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        //updateListview(TermuxWidgetConstants.);
+        updateListview();
 
         mListView.setOnItemClickListener((parent, view, position, id) -> {
-            final Context context = TermuxCreateShortcutActivity.this;
-            File clickedFile = mCurrentFiles[position];
-            if (clickedFile.isDirectory()) {
-                updateListview(clickedFile);
-            } else {
-                createShortcut(context, clickedFile);
-                finish();
-            }
+            var context = TermuxCreateShortcutActivity.this;
+            var clickedFile = mAllFiles.get(position);
+            createShortcut(context, clickedFile);
+            finish();
         });
     }
 
-    private void updateListview(File directory) {
-        // NOTE: use open document provider?
-        mCurrentDirectory = directory;
-        mCurrentFiles = null; // directory.listFiles(ShortcutUtils.SHORTCUT_FILES_FILTER);
+    private void updateListview() {
+        ShortcutFile.sort(mAllFiles);
 
-        if (mCurrentFiles == null) mCurrentFiles = new File[0];
-
-        Arrays.sort(mCurrentFiles, Comparator.comparing(File::getName));
-
-        final boolean isTopDir = directory.getAbsolutePath().equals(TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH);
-        getActionBar().setDisplayHomeAsUpEnabled(!isTopDir);
-
-        if (isTopDir && mCurrentFiles.length == 0) {
-            // Create if necessary so user can more easily add.
-            //TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR.mkdirs();
+        if (mAllFiles.isEmpty()) {
             new AlertDialog.Builder(this)
-                    .setMessage(R.string.msg_no_shortcut_scripts)
-                    .setOnDismissListener(dialog -> finish()).show();
+                .setMessage(R.string.msg_no_shortcut_scripts)
+                .setOnDismissListener(dialog -> finish()).show();
             return;
         }
 
-        final String[] values = new String[mCurrentFiles.length];
+        final String[] values = new String[mAllFiles.size()];
         for (int i = 0; i < values.length; i++) {
-            values[i] = mCurrentFiles[i].getName() + (mCurrentFiles[i].isDirectory() ? "/" : "");
+            values[i] = mAllFiles.get(i).mLabel;
         }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, values);
         mListView.setAdapter(adapter);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            //updateListview(DataUtils.getDefaultIfNull(mCurrentDirectory.getParentFile(), mCurrentDirectory));
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void createShortcut(Context context, File clickedFile) {
+    private void createShortcut(Context context, ShortcutFile shortcutFile) {
         var shortcutManager = context.getSystemService(ShortcutManager.class);
-        var shortcutFile = new ShortcutFile(clickedFile);
 
         if (shortcutManager.isRequestPinShortcutSupported()) {
-            shortcutManager.requestPinShortcut(shortcutFile.getShortcutInfo(context, true), null);
+            shortcutManager.requestPinShortcut(shortcutFile.getShortcutInfo(context), null);
         } else {
-            //createStaticShortcut(context, shortcutFile);
+            Log.w(TermuxWidgetConstants.LOG_TAG, "Pinned shortcuts not supported");
+            Toast.makeText(this, R.string.msg_pinned_shortcuts_not_supported, Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void createPinnedShortcut(Context context, ShortcutFile shortcutFile) {
     }
 
 }

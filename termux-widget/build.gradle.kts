@@ -45,10 +45,6 @@ android {
 }
 
 dependencies {
-    // required for TermuxWidgetControlsProviderService
-    implementation("org.reactivestreams:reactive-streams:1.0.4")
-    implementation("io.reactivex.rxjava2:rxjava:2.2.21")
-
     implementation("androidx.annotation:annotation:1.8.0")
     implementation("com.google.android.material:material:1.12.0")
 }
