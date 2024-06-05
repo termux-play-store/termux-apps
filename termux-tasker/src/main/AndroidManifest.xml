@@ -4,8 +4,9 @@
 
     <permission
         android:name="com.termux.permission.TERMUX_INTERNAL"
-        android:description="@string/permission_termux_internal_command_description"
-        android:label="@string/permission_termux_internal_command_label"
+        android:label="@string/permission_termux_internal_label"
+        android:description="@string/permission_termux_internal_description"
+        android:icon="@mipmap/ic_launcher"
         android:protectionLevel="signature" />
 
     <uses-permission android:name="com.termux.permission.TERMUX_INTERNAL" />
@@ -16,16 +17,6 @@
         android:allowBackup="true"
         android:fullBackupOnly="false"
         android:supportsRtl="true">
-
-        <activity
-            android:name=".activities.TermuxTaskerActivity"
-            android:exported="true"
-            >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
 
         <!--
         This is the "edit" Activity. Note that Locale will reject plug-in Activities for the following reasons:·
