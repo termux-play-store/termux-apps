@@ -155,7 +155,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
      * @return Icon
      */
     private Icon createDefaultIcon() {
-        return Icon.createWithResource(getBaseContext(), R.drawable.ic_launcher);
+        return Icon.createWithResource(getBaseContext(), R.mipmap.ic_launcher);
     }
 
     private ControlTemplate createDefaultStatelessTemplate() {

@@ -14,6 +14,9 @@
         \n\nCheck &TERMUX_APP_NAME; app github %1$s and &TERMUX_WIDGET_APP_NAME; app github %2$s for more info.</string>
     <string name="plugin_api_help">Visit %1$s for more info on plugin usage.</string>
 
+    <string name="permission_termux_internal_label">Termux Internal</string>
+    <string name="permission_termux_internal_description">Access internal Termux functionality.</string>
+
     <!-- TermuxWidgetActivity -->
     <string name="msg_disable_launcher_icon_info">The &TERMUX_WIDGET_APP_NAME; app does not require
         a require launcher icon/activity to function. You can optionally disable it if you want and

@@ -17,9 +17,9 @@
 
     <permission
         android:name="com.termux.permission.TERMUX_INTERNAL"
-        android:description="@string/permission_run_command_description"
+        android:label="@string/permission_termux_internal_label"
+        android:description="@string/permission_termux_internal_description"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/permission_run_command_label"
         android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.INTERNET" />

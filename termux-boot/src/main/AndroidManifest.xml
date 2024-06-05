@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <permission
+        android:name="com.termux.permission.TERMUX_INTERNAL"
+        android:label="@string/permission_termux_internal_label"
+        android:description="@string/permission_termux_internal_description"
+        android:icon="@mipmap/ic_launcher"
+        android:protectionLevel="signature" />
+
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-permission android:name="com.termux.permission.TERMUX_INTERNAL" />

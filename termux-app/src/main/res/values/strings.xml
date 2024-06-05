@@ -2,9 +2,8 @@
 <resources>
     <string name="application_name">Termux</string>
 
-    <!-- Termux RUN_COMMAND permission -->
-    <string name="permission_run_command_label">Run commands in the Termux environment</string>
-    <string name="permission_run_command_description">execute arbitrary commands within Termux environment and access files</string>
+    <string name="permission_termux_internal_label">Termux Internal</string>
+    <string name="permission_termux_internal_description">Access internal Termux functionality.</string>
 
     <!-- Termux Bootstrap Packages Installation -->
     <string name="bootstrap_installer_body">Installing bootstrap packages…</string>
