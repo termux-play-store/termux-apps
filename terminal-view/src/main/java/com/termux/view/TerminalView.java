@@ -613,23 +613,6 @@ public final class TerminalView extends View {
         return true;
     }
 
-    @Override
-    public boolean onKeyPreIme(int keyCode, KeyEvent event) {
-        if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
-            Log.i(LOG_TAG, "onKeyPreIme(keyCode=" + keyCode + ", event=" + event + ")");
-        }
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Log.e("termux", "KEYCODE BACK PRE IME");
-            switch (event.getAction()) {
-                case KeyEvent.ACTION_DOWN:
-                    return onKeyDown(keyCode, event);
-                case KeyEvent.ACTION_UP:
-                    return onKeyUp(keyCode, event);
-            }
-        }
-        return super.onKeyPreIme(keyCode, event);
-    }
-
     /**
      * Key presses in software keyboards will generally NOT trigger this listener, although some
      * may elect to do so in some situations. Do not rely on this to catch software key presses.

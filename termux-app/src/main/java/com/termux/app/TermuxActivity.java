@@ -218,12 +218,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
+                if (mTerminalView.isSelectingText()) {
+                    mTerminalView.stopTextSelectionMode();
+                } else if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
                     getDrawer().closeDrawers();
                 } else {
                     getDrawer().openDrawer(Gravity.LEFT);
                 }
-
             }
         });
 
@@ -456,16 +457,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             String textInput = textInputView.getText().toString();
             if (!textInput.isEmpty())
                 savedInstanceState.putString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT, textInput);
-        }
-    }
-
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
-            getDrawer().closeDrawers();
-        } else {
-            getDrawer().openDrawer(Gravity.LEFT);
         }
     }
 
