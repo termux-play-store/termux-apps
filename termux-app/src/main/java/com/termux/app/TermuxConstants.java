@@ -2,8 +2,6 @@ package com.termux.app;
 
 import android.annotation.SuppressLint;
 
-import java.io.File;
-
 public class TermuxConstants {
 
     public static final String LOG_TAG = "termux";
@@ -18,5 +16,7 @@ public class TermuxConstants {
     public static final String COLORS_PATH = TermuxConstants.HOME_PATH + "/.termux/colors.properties";
 
     public static final int TERMUX_APP_NOTIFICATION_ID = 1337;
+
+    public static final String TERMUX_INTERNAL_ACTIVITY = "com.termux.app.TermuxActivityInternal";
 
 }

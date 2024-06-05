@@ -182,14 +182,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         setTerminalToolbarView(savedInstanceState);
 
         View newSessionButton = findViewById(R.id.new_session_button);
-        newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
+        newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null, null));
         newSessionButton.setOnLongClickListener(v -> {
             TermuxMessageDialogUtils.textInput(TermuxActivity.this,
                 R.string.title_create_named_session,
                 R.string.hint_session_name,
                 null,
-                R.string.action_create_named_session_confirm, sessionName -> mTermuxTerminalSessionActivityClient.addNewSession(false, sessionName),
-                R.string.action_new_session_failsafe, sessionName -> mTermuxTerminalSessionActivityClient.addNewSession(true, sessionName),
+                R.string.action_create_named_session_confirm, sessionName -> mTermuxTerminalSessionActivityClient.addNewSession(false, sessionName, null),
+                R.string.action_new_session_failsafe, sessionName -> mTermuxTerminalSessionActivityClient.addNewSession(true, sessionName, null),
                 -1, null, null);
             return true;
         });
@@ -293,6 +293,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onStart() {
         super.onStart();
         mIsVisible = true;
+
         mTermuxTerminalSessionActivityClient.onStart();
         if (mTermuxTerminalViewClient != null) {
             mTermuxTerminalViewClient.onStart();
@@ -347,6 +348,32 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         savedInstanceState.putBoolean(ARG_ACTIVITY_RECREATED, true);
     }
 
+    File executableFromIntent(Intent intent) {
+        if (intent == null) {
+            return null;
+        }
+        if (intent.getComponent() != null &&
+            TermuxConstants.TERMUX_INTERNAL_ACTIVITY.equals(intent.getComponent().getClassName()) &&
+            Intent.ACTION_RUN.equals(intent.getAction())) {
+            var path = intent.getData() == null ? null : intent.getData().getPath();
+            return path == null ? null : new File(path);
+        }
+        return null;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (mTermuxService != null) {
+            var executable = executableFromIntent(intent);
+            if (mTermuxService != null && executable != null) {
+                // A connection to the termux service has already been established in
+                // onServiceConnected(), so handle the execute intent here now.
+                mTermuxTerminalSessionActivityClient.addNewSession(false, executable.getName(), executable);
+            }
+        }
+    }
+
     /**
      * Part of the {@link ServiceConnection} interface. The service is bound with
      * {@link #bindService(Intent, ServiceConnection, int)} in {@link #onCreate(Bundle)} which will cause a call to this
@@ -365,6 +392,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         final Intent intent = getIntent();
         setIntent(null);
 
+        var executablePath = executableFromIntent(intent);
+        var sessionName = (executablePath == null) ? null : executablePath.getName();
         boolean isFailSafe = intent.getBooleanExtra(EXTRA_FAILSAFE_SESSION, false);
 
         if (mTermuxService.isTermuxSessionsEmpty()) {
@@ -374,7 +403,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     return;
                 }
                 try {
-                    mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
+                    mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, sessionName, executablePath);
                 } catch (WindowManager.BadTokenException e) {
                     // Activity finished - ignore.
                 }
@@ -385,7 +414,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             // each time.
             if (Intent.ACTION_RUN.equals(intent.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
-                mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
+                mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, sessionName, executablePath);
             } else {
                 mTermuxTerminalSessionActivityClient.setCurrentSession(mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast());
             }

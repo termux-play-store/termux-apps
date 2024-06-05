@@ -408,6 +408,9 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
         } else {
+            if ((sessionName == null || sessionName.isEmpty()) && isFailSafe) {
+                sessionName = "Failsafe";
+            }
             var currentSession = mActivity.getCurrentSession();
             var workingDirectory = currentSession == null ? TermuxConstants.HOME_PATH : currentSession.getCwd();
             var newTermuxSession = service.createTermuxSession(executable, null, null, workingDirectory, isFailSafe, sessionName);

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A service holding a list of {@link TerminalSession} in {@link #mTerminalSessions} and background {@link TermuxAppShell}
@@ -101,7 +102,6 @@ public final class TermuxService extends Service {
     @SuppressLint("Wakelock")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e("termux", "TermuxService.onStartCommand: " + intent);
         setupNotificationChannel();
         startForeground(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
 
@@ -245,6 +245,10 @@ public final class TermuxService extends Service {
         var executable = new File(executableUri.getPath());
         var inBackground = intent.getBooleanExtra(TERMUX_EXECUTE_EXTRA_BACKGROUND, false);
         var arguments = intent.getStringArrayExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS);
+        if (arguments == null) {
+            arguments = new String[0];
+        }
+
         if (inBackground) {
             executeBackgroundTask(executable, arguments);
         } else {
