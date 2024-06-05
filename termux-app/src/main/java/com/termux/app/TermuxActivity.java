@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.RoundedCorner;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -27,7 +29,6 @@ import android.view.WindowManager;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -80,7 +81,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final int CONTEXT_MENU_KILL_PROCESS_ID = 4;
     private static final int CONTEXT_MENU_STYLING_ID = 5;
     private static final int CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON = 6;
-    private static final int CONTEXT_MENU_HELP_ID = 7;
+    private static final int CONTEXT_MENU_FULLSCREEN_ID = 7;
+    private static final int CONTEXT_MENU_HELP_ID = 8;
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
@@ -225,20 +227,18 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             }
         });
 
-        if (Build.VERSION.SDK_INT >= 30) {
-            mTerminalView.getRootView().setOnApplyWindowInsetsListener((view, insets) -> {
-                if (view.getRootWindowInsets().isVisible(WindowInsets.Type.ime())) {
-                    if (mPreferences.isShowTerminalToolbar()) {
-                        var terminalToolbarViewPager = getTerminalToolbarViewPager();
-                        terminalToolbarViewPager.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    var terminalToolbarViewPager = getTerminalToolbarViewPager();
-                    terminalToolbarViewPager.setVisibility(View.GONE);
+        getWindow().getDecorView().setOnApplyWindowInsetsListener((view, insets) -> {
+            var terminalToolbarViewPager = getTerminalToolbarViewPager();
+            if (insets.isVisible(WindowInsets.Type.ime())) {
+                if (mPreferences.isShowTerminalToolbar()) {
+                    terminalToolbarViewPager.setVisibility(View.VISIBLE);
                 }
-                return insets;
-            });
-        }
+            } else {
+                terminalToolbarViewPager.setVisibility(View.GONE);
+            }
+            TermuxFullscreen.updatePadding(this, insets);
+            return insets;
+        });
     }
 
     @Override
@@ -512,6 +512,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         menu.add(Menu.NONE, CONTEXT_MENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.action_kill_process, getCurrentSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXT_MENU_STYLING_ID, Menu.NONE, R.string.action_style_terminal);
         menu.add(Menu.NONE, CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.action_toggle_keep_screen_on).setCheckable(true).setChecked(mTerminalView.getKeepScreenOn());
+        menu.add(Menu.NONE, CONTEXT_MENU_FULLSCREEN_ID, Menu.NONE, R.string.action_fullscreen).setCheckable(true).setChecked(mPreferences.isFullscreen());
         menu.add(Menu.NONE, CONTEXT_MENU_HELP_ID, Menu.NONE, R.string.action_open_help);
     }
 
@@ -555,6 +556,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 return true;
             case CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON:
                 toggleKeepScreenOn();
+                return true;
+            case CONTEXT_MENU_FULLSCREEN_ID:
+                mPreferences.toggleFullscreen();
+                applyFullscreenSetting(mPreferences.isFullscreen());
                 return true;
             case CONTEXT_MENU_HELP_ID:
                 startActivity(new Intent(this, TermuxHelpActivity.class));
@@ -692,21 +697,23 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     void applyFullscreenSetting(boolean doFullscreen) {
-        WindowInsetsControllerCompat windowInsetsController =
-            WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        var rootView = findViewById(R.id.activity_termux_root_relative_layout);
+        //var rootView = getWindow().getDecorView();
+        var windowInsetsController = WindowCompat.getInsetsController(getWindow(), rootView);
+        var flags = WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
 
-        View rootView = findViewById(R.id.activity_termux_root_relative_layout);
         if (doFullscreen) {
+            var imm = getSystemService(InputMethodManager.class);
+            imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
+
+            getWindow().setFlags(flags, flags);
             rootView.setFitsSystemWindows(false);
-            rootView.setPadding(0, 0, 0, 0);
 
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
             windowInsetsController.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-
-            InputMethodManager imm = getSystemService(InputMethodManager.class);
-            imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
         } else {
             rootView.setFitsSystemWindows(true);
+            getWindow().clearFlags(flags);
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars());
         }
     }

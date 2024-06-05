@@ -186,7 +186,6 @@ public class TermuxShellUtils {
 
         String[] arguments = new String[0];
         TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(executable, arguments, isLoginShell);
-        Log.e("termux", "command.executablePath=" + command.executablePath + ", arguments=" + Arrays.toString(command.arguments));
 
         var environmentArray = TermuxShellUtils.setupEnvironment(failSafe);
 

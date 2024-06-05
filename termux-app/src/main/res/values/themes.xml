@@ -6,6 +6,10 @@
 
     <!-- TermuxActivity DayNight NoActionBar theme. -->
     <style name="Theme.TermuxActivity.DayNight.NoActionBar" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:windowLayoutInDisplayCutoutMode">
+            shortEdges
+        </item>
+
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">@color/white</item>
