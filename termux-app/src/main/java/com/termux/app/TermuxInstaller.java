@@ -119,6 +119,13 @@ final class TermuxInstaller {
                             } else {
                                 String zipEntryName = zipEntry.getName();
                                 File targetFile = new File(TERMUX_STAGING_PREFIX_DIR_PATH, zipEntryName);
+
+                                // Silence google play scanning flagging about this: https://support.google.com/faqs/answer/9294009
+                                var canonicalPath = targetFile.getCanonicalPath();
+                                if (!canonicalPath.startsWith(TERMUX_STAGING_PREFIX_DIR_PATH)) {
+                                    throw new RuntimeException("Invalid zip entry: " + zipEntryName);
+                                }
+
                                 boolean isDirectory = zipEntry.isDirectory();
 
                                 if (isDirectory) {
