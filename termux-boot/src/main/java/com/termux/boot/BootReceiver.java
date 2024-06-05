@@ -9,7 +9,10 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) return;
+        if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            Log.w("termux", "Unexpected intent: " + intent.getAction());
+            return;
+        }
 
         Intent executeIntent = new Intent("com.termux.app.ACTION_ON_BOOT");
         executeIntent.setClassName("com.termux", "com.termux.app.TermuxService");
