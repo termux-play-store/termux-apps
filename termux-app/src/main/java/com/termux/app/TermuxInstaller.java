@@ -206,9 +206,7 @@ final class TermuxInstaller {
                 try {
                     File storageDir = new File(TermuxConstants.HOME_PATH + "/storage");
 
-                    if (!clearDirectory(storageDir)) {
-                        throw new RuntimeException("Unable to clear ~/storage");
-                    }
+                    clearDirectory(storageDir);
 
                     Log.i(TermuxConstants.LOG_TAG, "Setting up storage symlinks at ~/storage/shared, ~/storage/downloads, ~/storage/dcim, ~/storage/pictures, ~/storage/music and ~/storage/movies for directories in \"" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\".");
 
@@ -300,12 +298,15 @@ final class TermuxInstaller {
 
     public static native byte[] getZip();
 
-    private static boolean clearDirectory(File directory) {
-        for (File child : directory.listFiles()) {
-            if (!clearDirectory(child)) {
-                return false;
+    private static void clearDirectory(File fileOrDirectory) {
+        var children = fileOrDirectory.listFiles();
+        if (children != null) {
+            for (File child : children) {
+                clearDirectory(child);
             }
         }
-        return directory.delete();
+        if (!fileOrDirectory.delete()) {
+            Log.e(TermuxConstants.LOG_TAG, "Unable to delete: " + fileOrDirectory.getAbsolutePath());
+        }
     }
 }
