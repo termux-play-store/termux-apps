@@ -6,7 +6,7 @@ android {
     namespace = "com.termux.boot"
 
     defaultConfig {
-        versionCode = 11
+        versionCode = 12
         versionName = "0.$versionCode"
 
         applicationId = "com.termux.boot"
