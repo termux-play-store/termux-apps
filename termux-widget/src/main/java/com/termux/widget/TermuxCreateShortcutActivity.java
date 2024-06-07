@@ -29,22 +29,9 @@ public class TermuxCreateShortcutActivity extends Activity {
         setContentView(R.layout.shortcuts_listview);
         mListView = findViewById(R.id.list);
 
-        var contentUri = new Uri.Builder()
-            .scheme("content")
-            .authority("com.termux.files")
-            .path(TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH)
-            .build();
-        try (var cursor = getContentResolver().query(contentUri, null, null, null, null)) {
-            if (cursor == null) {
-                Log.e(TermuxWidgetConstants.LOG_TAG, "termux-widget: Cursor from content resolver is null");
-                return;
-            }
-            var relativePathIdx = cursor.getColumnIndex("termux_path");
-            while (cursor.moveToNext()) {
-                var termuxPath = (relativePathIdx == -1) ? "-1" : cursor.getString(relativePathIdx);
-                mAllFiles.add(new ShortcutFile(new File(termuxPath)));
-            }
-        }
+        TermuxPathLister.listPaths(this, TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH, path -> {
+            mAllFiles.add(new ShortcutFile(new File(path)));
+        });
     }
 
     @Override

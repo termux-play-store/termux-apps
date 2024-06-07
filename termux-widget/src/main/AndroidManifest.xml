@@ -42,14 +42,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".TermuxLaunchShortcutActivity"
-            android:noHistory="true"
-            android:launchMode="singleInstance"
-            android:taskAffinity=".TermuxLaunchShortcutActivity"
-            android:theme="@android:style/Theme.NoDisplay"
-            android:exported="true"/>
-
         <service
             android:name=".TermuxWidgetService"
             android:exported="false"

@@ -4,14 +4,12 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public final class TermuxWidgetService extends RemoteViewsService {
@@ -87,22 +85,9 @@ public final class TermuxWidgetService extends RemoteViewsService {
             // locking up the widget.
             shortcutFiles.clear();
 
-            var contentUri = new Uri.Builder()
-                .scheme("content")
-                .authority("com.termux.files")
-                .path(TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH)
-                .build();
-            try (var cursor = mContext.getContentResolver().query(contentUri, null, null, null, null)) {
-                if (cursor == null) {
-                    Log.e(TermuxWidgetConstants.LOG_TAG, "termux-widget: Cursor from content resolver is null");
-                    return;
-                }
-                var relativePathIdx = cursor.getColumnIndex("termux_path");
-                while (cursor.moveToNext()) {
-                    var termuxPath = (relativePathIdx == -1) ? "-1" : cursor.getString(relativePathIdx);
-                    shortcutFiles.add(new ShortcutFile(new File(termuxPath)));
-                }
-            }
+            TermuxPathLister.listPaths(mContext, TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH, path -> {
+                shortcutFiles.add(new ShortcutFile(new File(path)));
+            });
 
             ShortcutFile.sort(shortcutFiles);
         }
