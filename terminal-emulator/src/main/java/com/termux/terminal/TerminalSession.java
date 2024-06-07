@@ -10,6 +10,7 @@ import android.system.OsConstants;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -86,7 +87,7 @@ public final class TerminalSession extends TerminalOutput {
 
     private static final String LOG_TAG = "TerminalSession";
 
-    public TerminalSession(String shellPath, String cwd, String[] args, String[] env, Integer transcriptRows, TerminalSessionClient client) {
+    public TerminalSession(@NonNull String shellPath, @NonNull String cwd, String[] args, String[] env, Integer transcriptRows, TerminalSessionClient client) {
         this.mExecutablePath = shellPath;
         this.mCwd = cwd;
         this.mArgs = args;

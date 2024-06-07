@@ -281,7 +281,7 @@ public final class TermuxService extends Service {
     public @NonNull TerminalSession createTermuxSession(File executable,
                                                         String[] arguments,
                                                         String stdin,
-                                                        String workingDirectory,
+                                                        @Nullable String workingDirectory,
                                                         boolean isFailSafe,
                                                         String sessionName) {
         var sessionClient = new TerminalSessionClient() {
@@ -348,6 +348,7 @@ public final class TermuxService extends Service {
         var newTermuxSession = TermuxShellUtils.executeTerminalSession(
             sessionClient,
             executable,
+            workingDirectory,
             isFailSafe
         );
 

@@ -13,7 +13,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -162,6 +161,7 @@ public class TermuxShellUtils {
 
     public static @NonNull TerminalSession executeTerminalSession(@NonNull TerminalSessionClient terminalSessionClient,
                                                                   @Nullable File executable,
+                                                                  @Nullable String workingDirectory,
                                                                   boolean failSafe) {
         boolean isLoginShell = executable == null;
 
@@ -188,9 +188,13 @@ public class TermuxShellUtils {
 
         var environmentArray = TermuxShellUtils.setupEnvironment(failSafe);
 
+        if (workingDirectory == null) {
+            workingDirectory = TermuxConstants.HOME_PATH;
+        }
+
         return new TerminalSession(
             command.executablePath,
-            com.termux.app.TermuxConstants.HOME_PATH,
+            workingDirectory,
             command.arguments,
             environmentArray,
             4000,
