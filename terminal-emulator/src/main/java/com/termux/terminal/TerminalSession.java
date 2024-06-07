@@ -124,7 +124,7 @@ public final class TerminalSession extends TerminalOutput {
         mProcessSpawnedTimeMillis = System.currentTimeMillis();
         mShellPid = processId[0];
 
-        final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor, mClient);
+        var terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor);
 
         new Thread("TermSessionInputReader[pid=" + mShellPid + "]") {
             @Override
@@ -306,12 +306,12 @@ public final class TerminalSession extends TerminalOutput {
                 return outputPath;
             }
         } catch (IOException | SecurityException e) {
-            Logger.logStackTraceWithMessage(mClient, LOG_TAG, "Error getting current directory", e);
+            Log.e(LOG_TAG, "Error getting current directory", e);
         }
         return null;
     }
 
-    private static FileDescriptor wrapFileDescriptor(int fileDescriptor, TerminalSessionClient client) {
+    private static FileDescriptor wrapFileDescriptor(int fileDescriptor) {
         FileDescriptor result = new FileDescriptor();
         try {
             Field descriptorField;
@@ -323,9 +323,8 @@ public final class TerminalSession extends TerminalOutput {
             }
             descriptorField.setAccessible(true);
             descriptorField.set(result, fileDescriptor);
-        } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
-            Logger.logStackTraceWithMessage(client, LOG_TAG, "Error accessing FileDescriptor#descriptor private field", e);
-            System.exit(1);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
         return result;
     }
