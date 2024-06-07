@@ -44,8 +44,10 @@ public class TermuxContentProvider extends ContentProvider {
             };
         }
 
-        MatrixCursor cursor = new MatrixCursor(projection);
-        addFileRow(cursor, file, projection);
+        var cursor = new MatrixCursor(projection);
+        if (file.exists()) {
+            addFileRow(cursor, file, projection);
+        }
         return cursor;
     }
 
