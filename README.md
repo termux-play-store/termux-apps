@@ -40,7 +40,7 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 - [Termux:API](https://github.com/termux/termux-api)
 - [Termux:Boot](https://github.com/termux/termux-boot)
 - [Termux:Float](https://github.com/termux/termux-float)
-- [Termux:Styling](https://github.com/termux/termux-styling)
+- [Termux:Style](https://github.com/termux/termux-styling)
 - [Termux:Tasker](https://github.com/termux/termux-tasker)
 - [Termux:Widget](https://github.com/termux/termux-widget)
 ##
