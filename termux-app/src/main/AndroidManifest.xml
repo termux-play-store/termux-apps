@@ -38,7 +38,7 @@
         android:dataExtractionRules="@xml/backup"
         android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup"
-        android:banner="@drawable/banner"
+        android:banner="@mipmap/banner"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/application_name"
