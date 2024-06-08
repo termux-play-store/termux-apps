@@ -1,5 +1,6 @@
 package com.termux.app;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -310,8 +311,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }
         applyFullscreenSetting(mPreferences.isFullscreen());
 
-        if (Build.VERSION.SDK_INT >= 33) {
-            //TermuxPermissionUtils.requestPermission(this, Manifest.permission.POST_NOTIFICATIONS, TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS);
+        if (Build.VERSION.SDK_INT >= 33 && TermuxService.USE_NOTIFICATIONS) {
+            TermuxPermissionUtils.requestPermission(this, Manifest.permission.POST_NOTIFICATIONS, TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS);
         }
     }
 

@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * A service holding a list of {@link TerminalSession} in {@link #mTerminalSessions} and background {@link TermuxAppShell}
@@ -46,6 +45,14 @@ import java.util.Objects;
  * {@link #buildNotification()}.
  */
 public final class TermuxService extends Service {
+
+    /**
+     * The usage of notifications was questioned by a Google Play reviewer as
+     * not being necessary for the app functionality.
+     *
+     * Disable it for now.
+     */
+    public static boolean USE_NOTIFICATIONS = false;
 
     public static final String ACTION_STOP_SERVICE = "com.termux.service.action.service_stop";
     public static final String ACTION_SERVICE_EXECUTE = "com.termux.service.action.service_execute";
@@ -456,8 +463,10 @@ public final class TermuxService extends Service {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
-            var notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
+            if (USE_NOTIFICATIONS) {
+                // var notificationManager = getSystemService(NotificationManager.class);
+                // notificationManager.notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
+            }
         }
     }
 

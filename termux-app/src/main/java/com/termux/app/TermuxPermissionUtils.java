@@ -135,7 +135,7 @@ public class TermuxPermissionUtils {
     }
 
     public static boolean checkStoragePermission(@NonNull Context context, boolean checkLegacyStoragePermission) {
-        if (checkLegacyStoragePermission || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+        if (checkLegacyStoragePermission) {
             return checkPermissions(context,
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE});
