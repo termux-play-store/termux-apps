@@ -3,16 +3,10 @@ package com.termux.app;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.SystemClock;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.WindowInsetsController;
@@ -37,66 +31,6 @@ import java.util.Properties;
  * The {@link TerminalSessionClient} implementation that may require an {@link Activity} for its interface methods.
  */
 public final class TermuxTerminalSessionActivityClient implements TerminalSessionClient {
-
-    public static class BellHandler {
-        private static BellHandler instance = null;
-        private static final Object lock = new Object();
-
-        private static final String LOG_TAG = "BellHandler";
-
-        public static BellHandler getInstance(Context context) {
-            if (instance == null) {
-                synchronized (lock) {
-                    if (instance == null) {
-                        instance = new BellHandler((Vibrator) context.getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE));
-                    }
-                }
-            }
-            return instance;
-        }
-
-        private static final long DURATION = 50;
-        private static final long MIN_PAUSE = 3 * DURATION;
-
-        private final Handler handler = new Handler(Looper.getMainLooper());
-        private long lastBell = 0;
-        private final Runnable bellRunnable;
-
-        private BellHandler(final Vibrator vibrator) {
-            bellRunnable = () -> {
-                if (vibrator != null) {
-                    try {
-                        vibrator.vibrate(VibrationEffect.createOneShot(DURATION, VibrationEffect.DEFAULT_AMPLITUDE));
-                    } catch (Exception e) {
-                        // Issue on samsung devices on android 8
-                        // java.lang.NullPointerException: Attempt to read from field 'android.os.VibrationEffect com.android.server.VibratorService$Vibration.mEffect' on a null object reference
-                        Log.e(LOG_TAG, "Failed to run vibrator", e);
-                    }
-                }
-            };
-        }
-
-        public synchronized void doBell() {
-            long now = now();
-            long timeSinceLastBell = now - lastBell;
-
-            if (timeSinceLastBell < 0) {
-                // there is a next bell pending; don't schedule another one
-            } else if (timeSinceLastBell < MIN_PAUSE) {
-                // there was a bell recently, schedule the next one
-                handler.postDelayed(bellRunnable, MIN_PAUSE - timeSinceLastBell);
-                lastBell = lastBell + MIN_PAUSE;
-            } else {
-                // the last bell was long ago, do it now
-                bellRunnable.run();
-                lastBell = now;
-            }
-        }
-
-        private long now() {
-            return SystemClock.uptimeMillis();
-        }
-    }
 
     private final TermuxActivity mActivity;
 
@@ -271,7 +205,6 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
     public void onBell(@NonNull TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
-        //BellHandler.getInstance(mActivity).doBell();
         loadBellSoundPool();
         if (mBellSoundPool != null) {
             mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
