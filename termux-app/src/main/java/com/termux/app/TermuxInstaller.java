@@ -201,76 +201,86 @@ final class TermuxInstaller {
     static void setupStorageSymlinks(final Context context) {
         Log.i(TermuxConstants.LOG_TAG, "Setting up storage symlinks.");
 
-        new Thread() {
-            public void run() {
-                try {
-                    File storageDir = new File(TermuxConstants.HOME_PATH + "/storage");
+        new Thread(() -> {
+            try {
+                Log.i(TermuxConstants.LOG_TAG, "Setting up storage symlinks for directories in: " + Environment.getExternalStorageDirectory().getAbsolutePath());
 
-                    clearDirectory(storageDir);
+                File storageDir = new File(TermuxConstants.HOME_PATH + "/storage");
 
-                    Log.i(TermuxConstants.LOG_TAG, "Setting up storage symlinks at ~/storage/shared, ~/storage/downloads, ~/storage/dcim, ~/storage/pictures, ~/storage/music and ~/storage/movies for directories in \"" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\".");
-
-                    // Get primary storage root "/storage/emulated/0" symlink
-                    File sharedDir = Environment.getExternalStorageDirectory();
-                    Os.symlink(sharedDir.getAbsolutePath(), new File(storageDir, "shared").getAbsolutePath());
-
-                    File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-                    Os.symlink(documentsDir.getAbsolutePath(), new File(storageDir, "documents").getAbsolutePath());
-
-                    File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                    Os.symlink(downloadsDir.getAbsolutePath(), new File(storageDir, "downloads").getAbsolutePath());
-
-                    File dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                    Os.symlink(dcimDir.getAbsolutePath(), new File(storageDir, "dcim").getAbsolutePath());
-
-                    File picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-                    Os.symlink(picturesDir.getAbsolutePath(), new File(storageDir, "pictures").getAbsolutePath());
-
-                    File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-                    Os.symlink(musicDir.getAbsolutePath(), new File(storageDir, "music").getAbsolutePath());
-
-                    File moviesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-                    Os.symlink(moviesDir.getAbsolutePath(), new File(storageDir, "movies").getAbsolutePath());
-
-                    File podcastsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PODCASTS);
-                    Os.symlink(podcastsDir.getAbsolutePath(), new File(storageDir, "podcasts").getAbsolutePath());
-
-                    File audiobooksDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_AUDIOBOOKS);
-                    Os.symlink(audiobooksDir.getAbsolutePath(), new File(storageDir, "audiobooks").getAbsolutePath());
-
-                    // Dir 0 should ideally be for primary storage
-                    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/app/ContextImpl.java;l=818
-                    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/os/Environment.java;l=219
-                    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/os/Environment.java;l=181
-                    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/services/core/java/com/android/server/StorageManagerService.java;l=3796
-                    // https://cs.android.com/android/platform/superproject/+/android-7.0.0_r36:frameworks/base/services/core/java/com/android/server/MountService.java;l=3053
-
-                    // Create "Android/data/com.termux" symlinks
-                    File[] dirs = context.getExternalFilesDirs(null);
-                    if (dirs != null && dirs.length > 0) {
-                        for (int i = 0; i < dirs.length; i++) {
-                            File dir = dirs[i];
-                            if (dir == null) continue;
-                            String symlinkName = "external-" + i;
-                            Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
+                var storageDirEntries = storageDir.listFiles();
+                if (storageDirEntries != null) {
+                    for (File child : storageDirEntries) {
+                        if (!child.delete()) {
+                            Log.e(TermuxConstants.LOG_TAG, "Cannot delete: " + child.getAbsolutePath());
                         }
                     }
-
-                    // Create "Android/media/com.termux" symlinks
-                    dirs = context.getExternalMediaDirs();
-                    if (dirs != null && dirs.length > 0) {
-                        for (int i = 0; i < dirs.length; i++) {
-                            File dir = dirs[i];
-                            if (dir == null) continue;
-                            String symlinkName = "media-" + i;
-                            Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
-                        }
-                    }
-                } catch (ErrnoException e) {
-                    throw new RuntimeException(e);
                 }
+
+                if (!storageDir.exists() && !storageDir.mkdirs()) {
+                    Log.e(TermuxConstants.LOG_TAG, "Cannot create: " + storageDir.getAbsolutePath());
+                    return;
+                }
+
+                // Get primary storage root "/storage/emulated/0" symlink
+                File sharedDir = Environment.getExternalStorageDirectory();
+                Os.symlink(sharedDir.getAbsolutePath(), new File(storageDir, "shared").getAbsolutePath());
+
+                File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+                Os.symlink(documentsDir.getAbsolutePath(), new File(storageDir, "documents").getAbsolutePath());
+
+                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                Os.symlink(downloadsDir.getAbsolutePath(), new File(storageDir, "downloads").getAbsolutePath());
+
+                File dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                Os.symlink(dcimDir.getAbsolutePath(), new File(storageDir, "dcim").getAbsolutePath());
+
+                File picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                Os.symlink(picturesDir.getAbsolutePath(), new File(storageDir, "pictures").getAbsolutePath());
+
+                File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+                Os.symlink(musicDir.getAbsolutePath(), new File(storageDir, "music").getAbsolutePath());
+
+                File moviesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+                Os.symlink(moviesDir.getAbsolutePath(), new File(storageDir, "movies").getAbsolutePath());
+
+                File podcastsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PODCASTS);
+                Os.symlink(podcastsDir.getAbsolutePath(), new File(storageDir, "podcasts").getAbsolutePath());
+
+                File audiobooksDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_AUDIOBOOKS);
+                Os.symlink(audiobooksDir.getAbsolutePath(), new File(storageDir, "audiobooks").getAbsolutePath());
+
+                // Dir 0 should ideally be for primary storage
+                // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/app/ContextImpl.java;l=818
+                // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/os/Environment.java;l=219
+                // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/core/java/android/os/Environment.java;l=181
+                // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:frameworks/base/services/core/java/com/android/server/StorageManagerService.java;l=3796
+                // https://cs.android.com/android/platform/superproject/+/android-7.0.0_r36:frameworks/base/services/core/java/com/android/server/MountService.java;l=3053
+
+                // Create "Android/data/com.termux" symlinks
+                File[] dirs = context.getExternalFilesDirs(null);
+                if (dirs != null && dirs.length > 0) {
+                    for (int i = 0; i < dirs.length; i++) {
+                        File dir = dirs[i];
+                        if (dir == null) continue;
+                        String symlinkName = "external-" + i;
+                        Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
+                    }
+                }
+
+                // Create "Android/media/com.termux" symlinks
+                dirs = context.getExternalMediaDirs();
+                if (dirs != null && dirs.length > 0) {
+                    for (int i = 0; i < dirs.length; i++) {
+                        File dir = dirs[i];
+                        if (dir == null) continue;
+                        String symlinkName = "media-" + i;
+                        Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
+                    }
+                }
+            } catch (ErrnoException e) {
+                throw new RuntimeException(e);
             }
-        }.start();
+        }).start();
     }
 
     public static boolean deleteDir(File dir) {
@@ -296,15 +306,4 @@ final class TermuxInstaller {
 
     public static native byte[] getZip();
 
-    private static void clearDirectory(File fileOrDirectory) {
-        var children = fileOrDirectory.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                clearDirectory(child);
-            }
-        }
-        if (!fileOrDirectory.delete()) {
-            Log.e(TermuxConstants.LOG_TAG, "Unable to delete: " + fileOrDirectory.getAbsolutePath());
-        }
-    }
 }
