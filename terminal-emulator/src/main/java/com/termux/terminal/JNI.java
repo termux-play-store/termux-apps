@@ -38,4 +38,10 @@ final class JNI {
     /** Close a file descriptor through the close(2) system call. */
     public static native void close(int fileDescriptor);
 
+    /** Read bytes from the provided file descriptor. */
+    public static native int read(int fileDescriptor, byte[] buffer);
+
+    /** Write bytes to the provided file descriptor. */
+    public static native int write(int fileDescriptor, byte[] buffer, int length);
+
 }

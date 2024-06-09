@@ -124,21 +124,15 @@ public final class TerminalSession extends TerminalOutput {
         mProcessSpawnedTimeMillis = System.currentTimeMillis();
         mShellPid = processId[0];
 
-        var terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor);
-
         new Thread("TermSessionInputReader[pid=" + mShellPid + "]") {
             @Override
             public void run() {
-                try (InputStream termIn = new FileInputStream(terminalFileDescriptorWrapped)) {
-                    final byte[] buffer = new byte[4096];
-                    while (true) {
-                        int read = termIn.read(buffer);
-                        if (read == -1) return;
-                        if (!mProcessToTerminalIOQueue.write(buffer, 0, read)) return;
-                        mMainThreadHandler.sendEmptyMessage(MSG_NEW_INPUT);
-                    }
-                } catch (Exception e) {
-                    // Ignore, just shutting down.
+                final byte[] buffer = new byte[4096];
+                while (true) {
+                    int read = JNI.read(mTerminalFileDescriptor, buffer);
+                    if (read == -1) return;
+                    if (!mProcessToTerminalIOQueue.write(buffer, 0, read)) return;
+                    mMainThreadHandler.sendEmptyMessage(MSG_NEW_INPUT);
                 }
             }
         }.start();
@@ -147,14 +141,10 @@ public final class TerminalSession extends TerminalOutput {
             @Override
             public void run() {
                 final byte[] buffer = new byte[4096];
-                try (FileOutputStream termOut = new FileOutputStream(terminalFileDescriptorWrapped)) {
-                    while (true) {
-                        int bytesToWrite = mTerminalToProcessIOQueue.read(buffer, true);
-                        if (bytesToWrite == -1) return;
-                        termOut.write(buffer, 0, bytesToWrite);
-                    }
-                } catch (IOException e) {
-                    // Ignore.
+                while (true) {
+                    int bytesToWrite = mTerminalToProcessIOQueue.read(buffer, true);
+                    if (bytesToWrite == -1) return;
+                    JNI.write(mTerminalFileDescriptor, buffer, bytesToWrite);
                 }
             }
         }.start();
@@ -309,24 +299,6 @@ public final class TerminalSession extends TerminalOutput {
             Log.e(LOG_TAG, "Error getting current directory", e);
         }
         return null;
-    }
-
-    private static FileDescriptor wrapFileDescriptor(int fileDescriptor) {
-        FileDescriptor result = new FileDescriptor();
-        try {
-            Field descriptorField;
-            try {
-                descriptorField = FileDescriptor.class.getDeclaredField("descriptor");
-            } catch (NoSuchFieldException e) {
-                // For desktop java:
-                descriptorField = FileDescriptor.class.getDeclaredField("fd");
-            }
-            descriptorField.setAccessible(true);
-            descriptorField.set(result, fileDescriptor);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return result;
     }
 
     @SuppressLint("HandlerLeak")
