@@ -6,9 +6,11 @@ import android.database.MatrixCursor;
 import android.graphics.Point;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract.Root;
 import android.provider.DocumentsProvider;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.termux.R;
@@ -16,9 +18,14 @@ import com.termux.R;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * A document provider for the Storage Access Framework which exposes the files in the
@@ -29,7 +36,7 @@ import java.util.Locale;
  * "A document provider and ACTION_GET_CONTENT should be considered mutually exclusive. If you
  * support both of them simultaneously, your app will appear twice in the system picker UI,
  * offering two different ways of accessing your stored data. This would be confusing for users."
- * - http://developer.android.com/guide/topics/providers/document-provider.html#43
+ * - <a href="https://developer.android.com/guide/topics/providers/create-document-provider">Source</a>
  */
 public class TermuxDocumentsProvider extends DocumentsProvider {
 
@@ -62,36 +69,74 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         Document.COLUMN_SIZE
     };
 
+    private void setNotificationUri(Cursor cursor) {
+        var context = getContext();
+        if (context != null) {
+            var baseUri = DocumentsContract.buildChildDocumentsUri(TermuxContentProvider.URI_AUTHORITY, BASE_DIR.getAbsolutePath());
+            cursor.setNotificationUri(context.getContentResolver(), baseUri);
+        }
+    }
+
+    @Override
+    public boolean onCreate() {
+        return true;
+    }
+
     @Override
     public Cursor queryRoots(String[] projection) {
-        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_ROOT_PROJECTION);
-        final String applicationName = getContext().getString(R.string.application_name);
+        var result = new MatrixCursor(projection != null ? projection : DEFAULT_ROOT_PROJECTION);
+        var applicationName = getContext().getString(R.string.application_name);
 
-        final MatrixCursor.RowBuilder row = result.newRow();
+        var row = result.newRow();
         row.add(Root.COLUMN_ROOT_ID, getDocIdForFile(BASE_DIR));
+        row.add(Root.COLUMN_ICON, R.mipmap.ic_launcher);
+        row.add(Root.COLUMN_TITLE, applicationName);
+        row.add(Root.COLUMN_FLAGS, Root.FLAG_SUPPORTS_CREATE | Root.FLAG_SUPPORTS_SEARCH | Root.FLAG_SUPPORTS_IS_CHILD | Root.FLAG_SUPPORTS_RECENTS);
         row.add(Root.COLUMN_DOCUMENT_ID, getDocIdForFile(BASE_DIR));
         row.add(Root.COLUMN_SUMMARY, null);
-        row.add(Root.COLUMN_FLAGS, Root.FLAG_SUPPORTS_CREATE | Root.FLAG_SUPPORTS_SEARCH | Root.FLAG_SUPPORTS_IS_CHILD);
-        row.add(Root.COLUMN_TITLE, applicationName);
         row.add(Root.COLUMN_MIME_TYPES, ALL_MIME_TYPES);
         row.add(Root.COLUMN_AVAILABLE_BYTES, BASE_DIR.getFreeSpace());
-        row.add(Root.COLUMN_ICON, R.mipmap.ic_launcher);
         return result;
     }
 
     @Override
     public Cursor queryDocument(String documentId, String[] projection) throws FileNotFoundException {
-        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        var result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        setNotificationUri(result);
         includeFile(result, documentId, null);
         return result;
     }
 
     @Override
+    public Cursor queryRecentDocuments(String rootId, String[] projection) throws FileNotFoundException {
+        var dir = getFileForDocId(rootId);
+        try (var walk = Files.walk(dir.toPath())) {
+            var iterator = walk
+                .filter(f -> f.toFile().isFile())
+                .sorted(Comparator.comparingLong((Path a) -> a.toFile().lastModified()).reversed())
+                .limit(64)
+                .iterator();
+
+            var result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+            setNotificationUri(result);
+            while (iterator.hasNext()) {
+                includeFile(result, null, iterator.next().toFile());
+            }
+            return result;
+        } catch (IOException e) {
+            throw handleIOExceptionFromFilesWalk(e, dir);
+        }
+    }
+
+    @Override
     public Cursor queryChildDocuments(String parentDocumentId, String[] projection, String sortOrder) throws FileNotFoundException {
-        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
-        final File parent = getFileForDocId(parentDocumentId);
-        for (File file : parent.listFiles()) {
-            includeFile(result, null, file);
+        var result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        setNotificationUri(result);
+        var files = getFileForDocId(parentDocumentId).listFiles();
+        if (files != null) {
+            for (var file : files) {
+                includeFile(result, null, file);
+            }
         }
         return result;
     }
@@ -108,11 +153,6 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         final File file = getFileForDocId(documentId);
         final ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
         return new AssetFileDescriptor(pfd, 0, file.length());
-    }
-
-    @Override
-    public boolean onCreate() {
-        return true;
     }
 
     @Override
@@ -135,14 +175,42 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         } catch (IOException e) {
             throw new FileNotFoundException("Failed to create document with id " + newFile.getPath());
         }
+        notifyFileChange();
         return newFile.getPath();
     }
 
     @Override
+    public String renameDocument(String documentId, String displayName) throws FileNotFoundException {
+        var oldFile = getFileForDocId(documentId);
+        var newFile = new File(oldFile.getParent(), displayName);
+        if (newFile.exists()) {
+            throw new FileNotFoundException("File already exists: " + displayName);
+        }
+        var pathsToInvalidate = findAllPathsIn(oldFile);
+        if (!oldFile.renameTo(newFile)) {
+            throw new FileNotFoundException("Unable to rename " + documentId);
+        }
+        revokeDocumentsPermission(pathsToInvalidate);
+        return getDocIdForFile(newFile);
+    }
+
+    @Override
     public void deleteDocument(String documentId) throws FileNotFoundException {
-        File file = getFileForDocId(documentId);
-        if (!file.delete()) {
-            throw new FileNotFoundException("Failed to delete document with id " + documentId);
+        var file = getFileForDocId(documentId);
+        try (var walk = Files.walk(file.toPath())) {
+            var iterator = walk.sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .iterator();
+            while (iterator.hasNext()) {
+                var f = iterator.next();
+                if (!f.delete()) {
+                    throw new FileNotFoundException("Cannot delete: " + f.getAbsolutePath());
+                }
+                revokeDocumentPermission(getDocIdForFile(f));
+            }
+            notifyFileChange();
+        } catch (IOException e) {
+            throw handleIOExceptionFromFilesWalk(e, file);
         }
     }
 
@@ -153,9 +221,26 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
     }
 
     @Override
+    public String moveDocument(String sourceDocumentId, String sourceParentDocumentId, String targetParentDocumentId) throws FileNotFoundException {
+        var srcFile = getFileForDocId(sourceDocumentId);
+        var destFile = new File(getFileForDocId(targetParentDocumentId), srcFile.getName());
+        if (destFile.exists()) {
+            throw new FileNotFoundException("File already exists: " + destFile);
+        }
+        var pathsToInvalidate = findAllPathsIn(srcFile);
+        if (!srcFile.renameTo(destFile)) {
+            throw new FileNotFoundException("Cannot rename " + srcFile.getAbsolutePath() + " to " + destFile.getAbsolutePath());
+        }
+        revokeDocumentsPermission(pathsToInvalidate);
+        return getDocIdForFile(destFile);
+    }
+
+
+    @Override
     public Cursor querySearchDocuments(String rootId, String query, String[] projection) throws FileNotFoundException {
-        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
-        final File parent = getFileForDocId(rootId);
+        var result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        setNotificationUri(result);
+        var parent = getFileForDocId(rootId);
 
         // This example implementation searches file names for the query and doesn't rank search
         // results, so we can stop as soon as we find a sufficient number of matches.  Other
@@ -255,7 +340,7 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         final String mimeType = getMimeType(file);
         if (mimeType.startsWith("image/")) flags |= Document.FLAG_SUPPORTS_THUMBNAIL;
 
-        final MatrixCursor.RowBuilder row = result.newRow();
+        var row = result.newRow();
         row.add(Document.COLUMN_DOCUMENT_ID, docId);
         row.add(Document.COLUMN_DISPLAY_NAME, displayName);
         row.add(Document.COLUMN_SIZE, file.length());
@@ -263,6 +348,37 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Document.COLUMN_LAST_MODIFIED, file.lastModified());
         row.add(Document.COLUMN_FLAGS, flags);
         row.add(Document.COLUMN_ICON, R.mipmap.ic_launcher);
+    }
+
+    private static List<String> findAllPathsIn(File fileOrDirectory) throws FileNotFoundException {
+        try (var walk = Files.walk(fileOrDirectory.toPath())) {
+            return walk.map(f -> f.toAbsolutePath().toString()).collect(Collectors.toList());
+        } catch (IOException e) {
+            throw handleIOExceptionFromFilesWalk(e, fileOrDirectory);
+        }
+    }
+
+    private static FileNotFoundException handleIOExceptionFromFilesWalk(IOException e, File walked) {
+        var errorMessage = "Error walking: " + walked.getAbsolutePath();
+        Log.e(TermuxConstants.LOG_TAG, errorMessage, e);
+        return new FileNotFoundException(errorMessage);
+    }
+
+    private void revokeDocumentsPermission(List<String> paths) {
+        for (var path : paths) {
+            Log.e(TermuxConstants.LOG_TAG, "Revoking: " + path);
+
+            revokeDocumentPermission(path);
+        }
+        notifyFileChange();
+    }
+
+    private void notifyFileChange() {
+        var updatedUri = DocumentsContract.buildChildDocumentsUri(TermuxContentProvider.URI_AUTHORITY, BASE_DIR.getAbsolutePath());
+        var context = getContext();
+        if (context != null) {
+            context.getContentResolver().notifyChange(updatedUri, null);
+        }
     }
 
 }
