@@ -1,7 +1,6 @@
 package com.termux.app;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -11,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,7 +20,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.RoundedCorner;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -603,11 +600,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         final AlertDialog.Builder b = new AlertDialog.Builder(this);
         b.setIcon(android.R.drawable.ic_dialog_alert);
         b.setMessage(R.string.title_confirm_kill_process);
-        b.setPositiveButton(android.R.string.yes, (dialog, id) -> {
+        b.setPositiveButton(android.R.string.ok, (dialog, id) -> {
             dialog.dismiss();
             session.finishIfRunning();
         });
-        b.setNegativeButton(android.R.string.no, null);
+        b.setNegativeButton(android.R.string.cancel, null);
         b.show();
     }
 
@@ -615,9 +612,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         try {
             //noinspection deprecation
             startActivityForResult(new Intent().setClassName("com.termux.styling", "com.termux.styling.TermuxStyleActivity"), REQUEST_CODE_TERMUX_STYLING);
-        } catch (ActivityNotFoundException | IllegalArgumentException e) {
+        } catch (ActivityNotFoundException | IllegalArgumentException | SecurityException e) {
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.
+            // The SecurityException may happen if app is not allowed to start TermuxStyleActivity (old installation or non-google play build).
             Log.i(TermuxConstants.LOG_TAG, "Error starting Termux:Style - app needs to be installed", e);
 
             var installationUrl = "https://play.google.com/store/apps/details?id=com.termux.styling";
