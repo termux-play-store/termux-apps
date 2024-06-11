@@ -10,7 +10,6 @@ import android.system.OsConstants;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -26,7 +25,7 @@ import java.util.UUID;
  * A terminal session, consisting of a process coupled to a terminal interface.
  * <p>
  * The subprocess will be executed by the constructor, and when the size is made known by a call to
- * {@link #updateSize(int, int)} terminal emulation will begin and threads will be spawned to handle the subprocess I/O.
+ * {@link #updateSize(int, int, int, int)} terminal emulation will begin and threads will be spawned to handle the subprocess I/O.
  * All terminal emulation and callback methods will be performed on the main thread.
  * <p>
  * The child process may be exited forcefully by using the {@link #finishIfRunning()} method.
@@ -66,7 +65,7 @@ public final class TerminalSession extends TerminalOutput {
 
     /**
      * The file descriptor referencing the master half of a pseudo-terminal pair, resulting from calling
-     * {@link JNI#createSubprocess(String, String, String[], String[], int[], int, int)}.
+     * {@link JNI#createSubprocess(String, String, String[], String[], int[], int, int, int, int)}.
      */
     private int mTerminalFileDescriptor;
 
@@ -97,11 +96,11 @@ public final class TerminalSession extends TerminalOutput {
     }
 
     /** Inform the attached pty of the new size and reflow or initialize the emulator. */
-    public void updateSize(int columns, int rows) {
+    public void updateSize(int columns, int rows, int fontWidth, int fontHeight) {
         if (mEmulator == null) {
-            initializeEmulator(columns, rows);
+            initializeEmulator(columns, rows, fontWidth, fontHeight);
         } else {
-            JNI.setPtyWindowSize(mTerminalFileDescriptor, rows, columns);
+            JNI.setPtyWindowSize(mTerminalFileDescriptor, rows, columns, fontWidth, fontHeight);
             mEmulator.resize(columns, rows);
         }
     }
@@ -117,11 +116,11 @@ public final class TerminalSession extends TerminalOutput {
      * @param columns The number of columns in the terminal window.
      * @param rows    The number of rows in the terminal window.
      */
-    public void initializeEmulator(int columns, int rows) {
+    public void initializeEmulator(int columns, int rows, int cellWidth, int cellHeight) {
         mEmulator = new TerminalEmulator(this, columns, rows, mTranscriptRows, mClient);
 
         int[] processId = new int[1];
-        mTerminalFileDescriptor = JNI.createSubprocess(mExecutablePath, mCwd, mArgs, mEnv, processId, rows, columns);
+        mTerminalFileDescriptor = JNI.createSubprocess(mExecutablePath, mCwd, mArgs, mEnv, processId, rows, columns, cellWidth, cellHeight);
         mProcessSpawnedTimeMillis = System.currentTimeMillis();
         mShellPid = processId[0];
 
