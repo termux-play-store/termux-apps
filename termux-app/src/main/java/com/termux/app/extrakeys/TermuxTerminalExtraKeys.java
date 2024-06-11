@@ -85,13 +85,13 @@ public final class TermuxTerminalExtraKeys {
 
             ExtraKeysConstants.ExtraKeyDisplayMap extraKeyDisplayMap = ExtraKeysInfo.getCharDisplayMapForStyle(extraKeysStyle);
             if (ExtraKeysConstants.EXTRA_KEY_DISPLAY_MAPS.DEFAULT_CHAR_DISPLAY.equals(extraKeyDisplayMap) && !"default".equals(extraKeysStyle)) {
-                mActivity.showToast("The style \"" + extraKeysStyle + "\" is invalid. Using default style instead.", true);
+                mActivity.showTransientMessage("The style \"" + extraKeysStyle + "\" is invalid. Using default style instead.", true);
                 extraKeysStyle = "default";
             }
 
             mExtraKeysInfo = new ExtraKeysInfo(extrakeys, extraKeysStyle, ExtraKeysConstants.CONTROL_CHARS_ALIASES);
         } catch (JSONException e) {
-            mActivity.showToast("Could not load and set the extra keys property from the properties file: " + e, true);
+            mActivity.showTransientMessage("Could not load and set the extra keys property from the properties file: " + e, true);
 
             //try {
                 mExtraKeysInfo = null; // TODO: new ExtraKeysInfo(TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE, ExtraKeysConstants.CONTROL_CHARS_ALIASES);

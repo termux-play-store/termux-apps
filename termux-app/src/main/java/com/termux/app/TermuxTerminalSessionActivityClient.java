@@ -139,7 +139,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
             // Only show toast for other sessions than the current one, since the user
             // probably consciously caused the title change to change in the current session
             // and don't want an annoying toast for that.
-            mActivity.showToast(toToastTitle(updatedSession), true);
+            mActivity.showTransientMessage(toToastTitle(updatedSession), true);
         }
 
         termuxSessionListNotifyUpdated();
@@ -166,7 +166,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
             // Show toast for non-current sessions that exit.
             // Verify that session was not removed before we got told about it finishing:
             if (index >= 0)
-                mActivity.showToast(toToastTitle(finishedSession) + " - exited", true);
+                mActivity.showTransientMessage(toToastTitle(finishedSession) + " - exited", true);
         }
 
         if (mActivity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
@@ -270,7 +270,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
     void notifyOfSessionChange() {
         if (!mActivity.isVisible()) return;
         TerminalSession session = mActivity.getCurrentSession();
-        mActivity.showToast(toToastTitle(session), false);
+        mActivity.showTransientMessage(toToastTitle(session), false);
     }
 
     public void switchToSession(boolean forward) {

@@ -269,6 +269,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                         var bytesReceived = out.toByteArray();
                         var isColors = styleFileUri.getPath().startsWith("/colors/");
                         var fileToWrite = new File(isColors ? TermuxConstants.COLORS_PATH : TermuxConstants.FONT_PATH);
+                        var parentDir = fileToWrite.getParentFile();
+                        if (parentDir == null || (!parentDir.isDirectory() && !parentDir.mkdirs())) {
+                            showTransientMessage("Cannot create ~/.termux/ directory - check permissions in $HOME", true);
+                            return;
+                        }
                         if (bytesReceived.length == 0) {
                             if (!fileToWrite.delete()) {
                                 Log.e("termux", "Unable to delete file: " + fileToWrite.getAbsolutePath());
@@ -282,7 +287,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     }
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                Log.e(TermuxConstants.LOG_TAG, "Error updating files", e);
+                showTransientMessage("Error updating files - check file permissions in $HOME", true);
             }
         }
     }
@@ -495,9 +501,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     /**
-     * Show a toast and dismiss the last one if still visible.
+     * Show a transient message and dismiss the last one if still visible.
      */
-    public void showToast(String text, boolean longDuration) {
+    public void showTransientMessage(String text, boolean longDuration) {
         if (text == null || text.isEmpty()) return;
         var snackbar = Snackbar.make(mTerminalView, text, longDuration ? BaseTransientBottomBar.LENGTH_LONG : BaseTransientBottomBar.LENGTH_SHORT);
         var terminalToolbarViewPager = getTerminalToolbarViewPager();
@@ -563,7 +569,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             case CONTEXT_MENU_RESET_TERMINAL_ID:
                 if (session != null) {
                     session.reset();
-                    showToast(getResources().getString(R.string.msg_terminal_reset), true);
+                    showTransientMessage(getResources().getString(R.string.msg_terminal_reset), true);
                 }
                 return true;
             case CONTEXT_MENU_KILL_PROCESS_ID:

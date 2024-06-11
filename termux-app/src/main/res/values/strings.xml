@@ -47,7 +47,7 @@
     <string name="action_toggle_keep_screen_on">Keep screen on</string>
     <string name="action_fullscreen">Fullscreen</string>
     <string name="action_open_help">Help</string>
-    <string name="error_styling_not_installed">The Termux:Style app is not installed.</string>
+    <string name="error_styling_not_installed">The latest Termux:Style app version is not installed.</string>
     <string name="action_styling_install">Install</string>
 
     <!-- Share -->
