@@ -156,9 +156,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     public TermuxPreferences mPreferences;
 
+    private TermuxBiometrics biometrics;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        biometrics = new TermuxBiometrics(this);
 
         if (savedInstanceState != null) {
             // mIsActivityRecreated = savedInstanceState.getBoolean(ARG_ACTIVITY_RECREATED, false);
@@ -302,6 +306,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @Override
     public void onResume() {
         super.onResume();
+        biometrics.showPrompt();
         mTermuxTerminalSessionActivityClient.onResume();
         if (!mPreferences.isFullscreen()) {
             mTerminalView.requestFocus();
