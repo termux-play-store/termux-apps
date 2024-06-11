@@ -100,7 +100,7 @@ public final class ExtraKeysView extends GridLayout {
     /**
      * Defines whether text for the extra keys button should be all capitalized automatically.
      */
-    protected boolean mButtonTextAllCaps = true;
+    private boolean mButtonTextAllCaps = true;
 
 
     /**
@@ -110,7 +110,7 @@ public final class ExtraKeysView extends GridLayout {
      * The duration must be in between {@link #MIN_LONG_PRESS_DURATION} and {@link #MAX_LONG_PRESS_DURATION},
      * otherwise {@link #FALLBACK_LONG_PRESS_DURATION} is used.
      */
-    protected int mLongPressTimeout;
+    private int mLongPressTimeout;
 
     /**
      * Defines the duration in milliseconds for the delay between trigger of each repeat of
@@ -118,19 +118,19 @@ public final class ExtraKeysView extends GridLayout {
      * The duration must be in between {@link #MIN_LONG_PRESS__REPEAT_DELAY} and
      * {@link #MAX_LONG_PRESS__REPEAT_DELAY}, otherwise {@link #DEFAULT_LONG_PRESS_REPEAT_DELAY} is used.
      */
-    protected int mLongPressRepeatDelay;
+    private int mLongPressRepeatDelay;
 
 
     /**
      * The popup window shown if {@link ExtraKeyButton#getPopup()} returns a {@code non-null} value
      * and a swipe up action is done on an extra key.
      */
-    protected PopupWindow mPopupWindow;
+    private PopupWindow mPopupWindow;
 
-    protected ScheduledExecutorService mScheduledExecutor;
-    protected Handler mHandler;
-    protected SpecialButtonsLongHoldRunnable mSpecialButtonsLongHoldRunnable;
-    protected int mLongPressCount;
+    private ScheduledExecutorService mScheduledExecutor;
+    private Handler mHandler;
+    private SpecialButtonsLongHoldRunnable mSpecialButtonsLongHoldRunnable;
+    private int mLongPressCount;
 
 
     public ExtraKeysView(Context context, AttributeSet attrs) {
