@@ -29,6 +29,8 @@ import java.util.Stack;
  */
 public final class TerminalEmulator {
 
+    private static final String LOG_TAG = "TerminalEmulator";
+
     /**
      * Log unknown or unimplemented escape sequences received from the shell process.
      */
@@ -189,6 +191,29 @@ public final class TerminalEmulator {
      */
     private static final int DECSET_BIT_RECTANGULAR_CHANGEATTRIBUTE = 1 << 12;
 
+    /**
+     * The number of terminal transcript rows that can be scrolled back to.
+     */
+    public static final int TERMINAL_TRANSCRIPT_ROWS_MIN = 100;
+    public static final int TERMINAL_TRANSCRIPT_ROWS_MAX = 50000;
+    public static final int DEFAULT_TERMINAL_TRANSCRIPT_ROWS = 2000;
+
+    /**
+     * One possible value of {@link #mCursorStyle} - for a block cursor.
+     */
+    public static final int TERMINAL_CURSOR_STYLE_BLOCK = 0;
+    /**
+     * One possible value of {@link #mCursorStyle} - for a underline cursor.
+     */
+    public static final int TERMINAL_CURSOR_STYLE_UNDERLINE = 1;
+    /**
+     * One possible value of {@link #mCursorStyle} - for a bar cursor.
+     */
+    public static final int TERMINAL_CURSOR_STYLE_BAR = 2;
+    /**
+     * The default value of {@link #mCursorStyle}.
+     */
+    public static final int DEFAULT_TERMINAL_CURSOR_STYLE = TERMINAL_CURSOR_STYLE_BLOCK;
 
     private String mTitle;
     private final Stack<String> mTitleStack = new Stack<>();
@@ -211,22 +236,6 @@ public final class TerminalEmulator {
      * The number of character rows and columns in the terminal screen.
      */
     public int mRows, mColumns;
-
-    /**
-     * The number of terminal transcript rows that can be scrolled back to.
-     */
-    public static final int TERMINAL_TRANSCRIPT_ROWS_MIN = 100;
-    public static final int TERMINAL_TRANSCRIPT_ROWS_MAX = 50000;
-    public static final int DEFAULT_TERMINAL_TRANSCRIPT_ROWS = 2000;
-
-
-    /* The supported terminal cursor styles. */
-
-    public static final int TERMINAL_CURSOR_STYLE_BLOCK = 0;
-    public static final int TERMINAL_CURSOR_STYLE_UNDERLINE = 1;
-    public static final int TERMINAL_CURSOR_STYLE_BAR = 2;
-    public static final int DEFAULT_TERMINAL_CURSOR_STYLE = TERMINAL_CURSOR_STYLE_BLOCK;
-    public static final Integer[] TERMINAL_CURSOR_STYLES_LIST = new Integer[]{TERMINAL_CURSOR_STYLE_BLOCK, TERMINAL_CURSOR_STYLE_UNDERLINE, TERMINAL_CURSOR_STYLE_BAR};
 
     /**
      * The terminal cursor styles.
@@ -349,8 +358,6 @@ public final class TerminalEmulator {
     private int mLastEmittedCodePoint = -1;
 
     public final TerminalColors mColors = new TerminalColors();
-
-    private static final String LOG_TAG = "TerminalEmulator";
 
     private boolean isDecsetInternalBitSet(int bit) {
         return (mCurrentDecSetFlags & bit) != 0;
