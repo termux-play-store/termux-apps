@@ -15,7 +15,6 @@ android {
 
     dependencies {
         implementation("androidx.annotation:annotation:1.8.0")
-        implementation("androidx.biometric:biometric:1.1.0")
         implementation("androidx.core:core:1.13.1")
         implementation("androidx.drawerlayout:drawerlayout:1.2.0")
         implementation("androidx.viewpager:viewpager:1.0.0")

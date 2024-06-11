@@ -1,14 +1,16 @@
 package com.termux.app;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.BiometricPrompt;
+import android.os.CancellationSignal;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.biometric.BiometricManager;
-import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
 import java.util.concurrent.Executor;
@@ -19,12 +21,11 @@ import java.util.concurrent.Executor;
 public final class TermuxBiometrics {
     private Executor executor;
     private BiometricPrompt biometricPrompt;
-    private BiometricPrompt.PromptInfo promptInfo;
     private final TermuxActivity activity;
 
     public TermuxBiometrics(TermuxActivity context) {
         this.activity = context;
-        var biometricManager = BiometricManager.from(context);
+        var biometricManager = context.getSystemService(BiometricManager.class);
         var authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
         switch (biometricManager.canAuthenticate(authenticators)) {
             case BiometricManager.BIOMETRIC_SUCCESS:
@@ -44,17 +45,13 @@ public final class TermuxBiometrics {
                 break;
             case BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED:
                 break;
-            case BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED:
-                break;
-            case BiometricManager.BIOMETRIC_STATUS_UNKNOWN:
-                break;
         }
 
     }
 
     void showPrompt() {
         executor = ContextCompat.getMainExecutor(activity);
-        biometricPrompt = new BiometricPrompt(activity, executor, new BiometricPrompt.AuthenticationCallback() {
+        var authenticationCallback = new BiometricPrompt.AuthenticationCallback() {
             @Override
             public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
                 super.onAuthenticationError(errorCode, errString);
@@ -72,15 +69,18 @@ public final class TermuxBiometrics {
                 super.onAuthenticationFailed();
                 Toast.makeText(activity, "Authentication failed", Toast.LENGTH_SHORT).show();
             }
-        });
+        };
 
-        promptInfo = new BiometricPrompt.PromptInfo.Builder()
+        biometricPrompt = new BiometricPrompt.Builder(activity)
             .setTitle("Biometric login for my app")
             .setSubtitle("Log in using your biometric credential")
-            .setNegativeButtonText("Use account password")
+            .setNegativeButton("Cancel", executor, (dialog, which) -> Log.e(TermuxConstants.LOG_TAG, "Biometrics authentication aborted"))
             .build();
 
-        biometricPrompt.authenticate(promptInfo);
+        var cancellationSignal = new CancellationSignal();
+        cancellationSignal.setOnCancelListener(() -> Log.e(TermuxConstants.LOG_TAG, "Biometrics authentication cancelled"));
+
+        biometricPrompt.authenticate(cancellationSignal, executor, authenticationCallback);
     }
 
 }
