@@ -34,6 +34,17 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="com.termux.permission.TERMUX_INTERNAL"/>
 
+    <!-- See https://developer.android.com/about/versions/14/changes/partial-photo-video-access -->
+    <!-- Devices running Android 12L (API level 32) or lower: -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <!-- Devices running Android 13 (API level 33) or higher:-->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <!-- To handle the reselection within the app on devices running Android 14
+     or higher if your app targets Android 14 (API level 34) or higher.  -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+
     <application
         android:dataExtractionRules="@xml/backup"
         android:enableOnBackInvokedCallback="true"

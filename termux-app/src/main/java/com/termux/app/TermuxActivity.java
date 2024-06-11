@@ -315,7 +315,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         applyFullscreenSetting(mPreferences.isFullscreen());
 
         if (Build.VERSION.SDK_INT >= 33 && TermuxService.USE_NOTIFICATIONS) {
-            TermuxPermissionUtils.requestPermission(this, Manifest.permission.POST_NOTIFICATIONS, TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS);
+            TermuxPermissionUtils.requestPermissions(this,
+                TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS,
+                Manifest.permission.POST_NOTIFICATIONS
+            );
         }
     }
 
@@ -700,7 +703,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     private void registerTermuxActivityBroadcastReceiver() {
-        IntentFilter intentFilter = new IntentFilter();
+        var intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_RELOAD_STYLE);
         intentFilter.addAction(ACTION_REQUEST_PERMISSIONS);
 
