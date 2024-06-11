@@ -1,5 +1,7 @@
 package com.termux.terminal;
 
+import androidx.annotation.NonNull;
+
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
@@ -12,6 +14,9 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class TerminalTestCase extends TestCase {
+
+    public static final int INITIAL_CELL_WIDTH_PIXELS = 13;
+    public static final int INITIAL_CELL_HEIGHT_PIXELS = 15;
 
 	public static class MockTerminalOutput extends TerminalOutput {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -80,7 +85,8 @@ public abstract class TerminalTestCase extends TestCase {
 			return Objects.hash(oldTitle, newTitle);
 		}
 
-		@Override
+		@NonNull
+        @Override
 		public String toString() {
 			return "ChangedTitle[oldTitle=" + oldTitle + ", newTitle=" + newTitle + "]";
 		}
@@ -108,7 +114,7 @@ public abstract class TerminalTestCase extends TestCase {
 
 	protected TerminalTestCase withTerminalSized(int columns, int rows) {
 	    // The tests aren't currently using the client, so a null client will suffice, a dummy client should be implemented if needed
-		mTerminal = new TerminalEmulator(mOutput, columns, rows, rows * 2, null);
+		mTerminal = new TerminalEmulator(mOutput, columns, rows, INITIAL_CELL_WIDTH_PIXELS, INITIAL_CELL_HEIGHT_PIXELS, rows * 2, null);
 		return this;
 	}
 
@@ -201,7 +207,7 @@ public abstract class TerminalTestCase extends TestCase {
 	}
 
 	public TerminalTestCase resize(int cols, int rows) {
-		mTerminal.resize(cols, rows);
+		mTerminal.resize(cols, rows, INITIAL_CELL_WIDTH_PIXELS, INITIAL_CELL_HEIGHT_PIXELS);
 		assertInvariants();
 		return this;
 	}

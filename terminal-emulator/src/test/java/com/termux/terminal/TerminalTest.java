@@ -1,15 +1,13 @@
 package com.termux.terminal;
 
-import java.io.UnsupportedEncodingException;
-
 public class TerminalTest extends TerminalTestCase {
 
-	public void testCursorPositioning() throws Exception {
+	public void testCursorPositioning() {
 		withTerminalSized(10, 10).placeCursorAndAssert(1, 2).placeCursorAndAssert(3, 5).placeCursorAndAssert(2, 2).enterString("A")
 				.assertCursorAt(2, 3);
 	}
 
-	public void testScreen() throws UnsupportedEncodingException {
+	public void testScreen() {
 		withTerminalSized(3, 3);
 		assertLinesAre("   ", "   ", "   ");
 
@@ -40,7 +38,7 @@ public class TerminalTest extends TerminalTestCase {
 		assertForegroundColorAt(2, 0, 115);
 	}
 
-	public void testMouseClick() throws Exception {
+	public void testMouseClick() {
 		withTerminalSized(10, 10);
 		assertFalse(mTerminal.isMouseTrackingActive());
 		enterString("\033[?1000h");
@@ -73,7 +71,7 @@ public class TerminalTest extends TerminalTestCase {
 		assertEquals("\033[<0;10;10m", mOutput.getOutputAndClear());
 	}
 
-	public void testNormalization() throws UnsupportedEncodingException {
+	public void testNormalization() {
 		// int lowerCaseN = 0x006E;
 		// int combiningTilde = 0x0303;
 		// int combined = 0x00F1;
@@ -85,19 +83,19 @@ public class TerminalTest extends TerminalTestCase {
 	}
 
 	/** On "\e[18t" xterm replies with "\e[8;${HEIGHT};${WIDTH}t" */
-	public void testReportTerminalSize() throws Exception {
+	public void testReportTerminalSize() {
 		withTerminalSized(5, 5);
 		assertEnteringStringGivesResponse("\033[18t", "\033[8;5;5t");
 		for (int width = 3; width < 12; width++) {
 			for (int height = 3; height < 12; height++) {
-				mTerminal.resize(width, height);
+                resize(width, height);
 				assertEnteringStringGivesResponse("\033[18t", "\033[8;" + height + ";" + width + "t");
 			}
 		}
 	}
 
 	/** Device Status Report (DSR) and Report Cursor Position (CPR). */
-	public void testDeviceStatusReport() throws Exception {
+	public void testDeviceStatusReport() {
 		withTerminalSized(5, 5);
 		assertEnteringStringGivesResponse("\033[5n", "\033[0n");
 
@@ -109,7 +107,7 @@ public class TerminalTest extends TerminalTestCase {
 	}
 
 	/** Test the cursor shape changes using DECSCUSR. */
-	public void testSetCursorStyle() throws Exception {
+	public void testSetCursorStyle() {
 		withTerminalSized(5, 5);
 		assertEquals(TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK, mTerminal.getCursorStyle());
 		enterString("\033[3 q");
@@ -303,7 +301,7 @@ public class TerminalTest extends TerminalTestCase {
 		assertEquals(4, mOutput.bellsRung);
 	}
 
-	public void testAutomargins() throws UnsupportedEncodingException {
+	public void testAutoMargins() {
 		withTerminalSized(3, 3).enterString("abc").assertLinesAre("abc", "   ", "   ").assertCursorAt(0, 2);
 		enterString("d").assertLinesAre("abc", "d  ", "   ").assertCursorAt(1, 1);
 
