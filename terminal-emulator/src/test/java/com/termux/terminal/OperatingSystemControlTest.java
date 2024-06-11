@@ -9,7 +9,7 @@ import java.util.Random;
 /** "ESC ]" is the Operating System Command. */
 public class OperatingSystemControlTest extends TerminalTestCase {
 
-	public void testSetTitle() throws Exception {
+	public void testSetTitle() {
 		List<ChangedTitle> expectedTitleChanges = new ArrayList<>();
 
 		withTerminalSized(10, 10);
@@ -67,7 +67,7 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 		assertEquals(expectedTitleChanges, mOutput.titleChanges);
 	}
 
-	public void testTitleStack() throws Exception {
+	public void testTitleStack() {
 		// echo -ne '\e]0;BEFORE\007' # set title
 		// echo -ne '\e[22t' # push to stack
 		// echo -ne '\e]0;AFTER\007' # set new title
@@ -86,7 +86,7 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 		assertEquals("InitialTitle", mTerminal.getTitle());
 	}
 
-	public void testSetColor() throws Exception {
+	public void testSetColor() {
 		// "OSC 4; $INDEX; $COLORSPEC BEL" => Change color $INDEX to the color specified by $COLORSPEC.
 		withTerminalSized(4, 4).enterString("\033]4;5;#00FF00\007");
 		assertEquals(Integer.toHexString(0xFF00FF00), Integer.toHexString(mTerminal.mColors.mCurrentColors[5]));
@@ -105,7 +105,7 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 			assertEquals("index=" + i, expected[i], mTerminal.mColors.mCurrentColors[i]);
 	}
 
-	public void testResetColor() throws Exception {
+	public void testResetColor() {
 		withTerminalSized(4, 4);
 		int[] initialColors = new int[TextStyle.NUM_INDEXED_COLORS];
 		System.arraycopy(mTerminal.mColors.mCurrentColors, 0, initialColors, 0, initialColors.length);
@@ -137,12 +137,13 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 		assertIndexColorsMatch(TerminalColors.COLOR_SCHEME.mDefaultColors);
 	}
 
-	public void disabledTestSetClipboard() {
-		// Cannot run this as a unit test since Base64 is a android.util class.
+	public void testSetClipboard() {
+        withTerminalSized(4, 4).enterString("\033]4;5;#00FF00\007");
 		enterString("\033]52;c;" + Base64.encodeToString("Hello, world".getBytes(), 0) + "\007");
+        assertEquals(List.of("Hello, world"), mOutput.clipboardPuts);
 	}
 
-	public void testResettingTerminalResetsColor() throws Exception {
+	public void testResettingTerminalResetsColor() {
 		// "OSC 4; $INDEX; $COLORSPEC BEL" => Change color $INDEX to the color specified by $COLORSPEC.
 		withTerminalSized(4, 4).enterString("\033]4;5;#00FF00\007");
 		enterString("\033]4;5;#00FFAB\007").assertColor(5, 0xFF00FFAB);

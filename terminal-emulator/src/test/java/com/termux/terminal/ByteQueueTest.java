@@ -15,7 +15,7 @@ public class ByteQueueTest extends TestCase {
 		}
 	}
 
-	public void testCompleteWrites() throws Exception {
+	public void testCompleteWrites() {
 		ByteQueue q = new ByteQueue(10);
 		assertTrue(q.write(new byte[]{1, 2, 3}, 0, 3));
 
@@ -28,7 +28,7 @@ public class ByteQueueTest extends TestCase {
 		assertArrayEquals(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, arr);
 	}
 
-	public void testQueueWraparound() throws Exception {
+	public void testQueueWraparound() {
 		ByteQueue q = new ByteQueue(10);
 
 		byte[] origArray = new byte[]{1, 2, 3, 4, 5, 6};
@@ -40,13 +40,13 @@ public class ByteQueueTest extends TestCase {
 		}
 	}
 
-	public void testWriteNotesClosing() throws Exception {
+	public void testWriteNotesClosing() {
 		ByteQueue q = new ByteQueue(10);
 		q.close();
 		assertFalse(q.write(new byte[]{1, 2, 3}, 0, 3));
 	}
 
-	public void testReadNonBlocking() throws Exception {
+	public void testReadNonBlocking() {
 		ByteQueue q = new ByteQueue(10);
 		assertEquals(0, q.read(new byte[128], false));
 	}
