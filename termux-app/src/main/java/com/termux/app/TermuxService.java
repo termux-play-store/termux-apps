@@ -13,6 +13,7 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
@@ -49,7 +50,7 @@ public final class TermuxService extends Service {
     /**
      * The usage of notifications was questioned by a Google Play reviewer as
      * not being necessary for the app functionality.
-     *
+     * <p>
      * Disable it for now.
      */
     public static boolean USE_NOTIFICATIONS = false;
@@ -406,20 +407,20 @@ public final class TermuxService extends Service {
         Resources res = getResources();
 
         // Set pending intent to be launched when notification is clicked
-        Intent notificationIntent = new Intent(this, TermuxActivity.class);
+        var notificationIntent = new Intent(this, TermuxActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+        var contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
         // Set notification text
-        int sessionCount = getTermuxSessionsSize();
-        int taskCount = mTermuxTasks.size();
-        String notificationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
+        var sessionCount = getTermuxSessionsSize();
+        var taskCount = mTermuxTasks.size();
+        var notificationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
         if (taskCount > 0) {
             notificationText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
         }
 
-        final boolean wakeLockHeld = mWakeLock != null;
+        var wakeLockHeld = mWakeLock != null;
         if (wakeLockHeld) notificationText += " (wake lock held)";
 
         // Set notification priority
@@ -429,13 +430,13 @@ public final class TermuxService extends Service {
         // TODO: This has moved to the notification channel - see setupNotificationChannel(), where we currently
         //       always use NotificationManager.IMPORTANCE_HIGH
 
-        Intent exitIntent = new Intent(this, TermuxService.class).setAction(TermuxService.ACTION_STOP_SERVICE);
+        var exitIntent = new Intent(this, TermuxService.class).setAction(TermuxService.ACTION_STOP_SERVICE);
 
         // Set Wakelock button actions
-        String newWakeAction = wakeLockHeld ? TermuxService.ACTION_WAKE_UNLOCK : TermuxService.ACTION_WAKE_LOCK;
-        Intent toggleWakeLockIntent = new Intent(this, TermuxService.class).setAction(newWakeAction);
-        String actionTitle = res.getString(wakeLockHeld ? R.string.notification_action_wake_unlock : R.string.notification_action_wake_lock);
-        int wakeLockIcon = wakeLockHeld ? android.R.drawable.ic_lock_idle_lock : android.R.drawable.ic_lock_lock;
+        var newWakeAction = wakeLockHeld ? TermuxService.ACTION_WAKE_UNLOCK : TermuxService.ACTION_WAKE_LOCK;
+        var toggleWakeLockIntent = new Intent(this, TermuxService.class).setAction(newWakeAction);
+        var actionTitle = res.getString(wakeLockHeld ? R.string.notification_action_wake_unlock : R.string.notification_action_wake_lock);
+        var wakeLockIcon = wakeLockHeld ? android.R.drawable.ic_lock_idle_lock : android.R.drawable.ic_lock_lock;
 
         return new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentText(notificationText)
@@ -458,14 +459,17 @@ public final class TermuxService extends Service {
     /**
      * Update the shown foreground service notification after making any changes that affect it.
      */
+    @SuppressLint("NotificationPermission")
     private synchronized void updateNotification() {
         if (mWakeLock == null && mTerminalSessions.isEmpty() && mTermuxTasks.isEmpty()) {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
-            if (USE_NOTIFICATIONS) {
-                // var notificationManager = getSystemService(NotificationManager.class);
-                // notificationManager.notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
+            if (Build.VERSION.SDK_INT < 33) {
+                // On Android 33+ we do not yet have the required POST_NOTIFICATIONS permission.
+                // For earlier Android versions we have a notification that needs to be updated.
+                var notificationManager = getSystemService(NotificationManager.class);
+                notificationManager.notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
             }
         }
     }
