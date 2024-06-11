@@ -81,100 +81,97 @@ final class TermuxInstaller {
         }
 
         final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    // Delete prefix staging directory or any file at its destination
-                    File stagingPrefixFile = new File(TERMUX_STAGING_PREFIX_DIR_PATH);
-                    if (stagingPrefixFile.exists() && !deleteDir(stagingPrefixFile)) {
-                        showBootstrapErrorDialog(activity, whenDone, "Unable to delete old staging area.");
-                        return;
-                    }
+        new Thread(() -> {
+            try {
+                // Delete prefix staging directory or any file at its destination
+                File stagingPrefixFile = new File(TERMUX_STAGING_PREFIX_DIR_PATH);
+                if (stagingPrefixFile.exists() && !deleteDir(stagingPrefixFile)) {
+                    showBootstrapErrorDialog(activity, whenDone, "Unable to delete old staging area.");
+                    return;
+                }
 
-                    File prefixFile = new File(TERMUX_STAGING_PREFIX_DIR_PATH);
-                    if (prefixFile.exists() && !deleteDir(prefixFile)) {
-                        showBootstrapErrorDialog(activity, whenDone, "Unable to delete old PREFIX.");
-                        return;
-                    }
+                File prefixFile = new File(TERMUX_STAGING_PREFIX_DIR_PATH);
+                if (prefixFile.exists() && !deleteDir(prefixFile)) {
+                    showBootstrapErrorDialog(activity, whenDone, "Unable to delete old PREFIX.");
+                    return;
+                }
 
-                    final byte[] buffer = new byte[8096];
-                    final List<Pair<String, String>> symlinks = new ArrayList<>(50);
+                final byte[] buffer = new byte[8096];
+                final List<Pair<String, String>> symlinks = new ArrayList<>(50);
 
-                    final byte[] zipBytes = loadZipBytes();
-                    try (ZipInputStream zipInput = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
-                        ZipEntry zipEntry;
-                        while ((zipEntry = zipInput.getNextEntry()) != null) {
-                            if (zipEntry.getName().equals("SYMLINKS.txt")) {
-                                BufferedReader symlinksReader = new BufferedReader(new InputStreamReader(zipInput));
-                                String line;
-                                while ((line = symlinksReader.readLine()) != null) {
-                                    String[] parts = line.split("←");
-                                    if (parts.length != 2)
-                                        throw new RuntimeException("Malformed symlink line: " + line);
-                                    String oldPath = parts[0];
-                                    String newPath = TERMUX_STAGING_PREFIX_DIR_PATH + "/" + parts[1];
-                                    symlinks.add(Pair.create(oldPath, newPath));
-                                }
+                final byte[] zipBytes = loadZipBytes();
+                try (ZipInputStream zipInput = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
+                    ZipEntry zipEntry;
+                    while ((zipEntry = zipInput.getNextEntry()) != null) {
+                        if (zipEntry.getName().equals("SYMLINKS.txt")) {
+                            BufferedReader symlinksReader = new BufferedReader(new InputStreamReader(zipInput));
+                            String line;
+                            while ((line = symlinksReader.readLine()) != null) {
+                                String[] parts = line.split("←");
+                                if (parts.length != 2)
+                                    throw new RuntimeException("Malformed symlink line: " + line);
+                                String oldPath = parts[0];
+                                String newPath = TERMUX_STAGING_PREFIX_DIR_PATH + "/" + parts[1];
+                                symlinks.add(Pair.create(oldPath, newPath));
+                            }
+                        } else {
+                            String zipEntryName = zipEntry.getName();
+                            File targetFile = new File(TERMUX_STAGING_PREFIX_DIR_PATH, zipEntryName);
+
+                            // Silence google play scanning flagging about this: https://support.google.com/faqs/answer/9294009
+                            var canonicalPath = targetFile.getCanonicalPath();
+                            if (!canonicalPath.startsWith(TERMUX_STAGING_PREFIX_DIR_PATH)) {
+                                throw new RuntimeException("Invalid zip entry: " + zipEntryName);
+                            }
+
+                            boolean isDirectory = zipEntry.isDirectory();
+
+                            if (isDirectory) {
+                                targetFile.mkdirs();
                             } else {
-                                String zipEntryName = zipEntry.getName();
-                                File targetFile = new File(TERMUX_STAGING_PREFIX_DIR_PATH, zipEntryName);
-
-                                // Silence google play scanning flagging about this: https://support.google.com/faqs/answer/9294009
-                                var canonicalPath = targetFile.getCanonicalPath();
-                                if (!canonicalPath.startsWith(TERMUX_STAGING_PREFIX_DIR_PATH)) {
-                                    throw new RuntimeException("Invalid zip entry: " + zipEntryName);
+                                File parentDir = targetFile.getParentFile();
+                                if (!parentDir.exists() && !parentDir.mkdirs()) {
+                                    throw new RuntimeException("Cannot create parent dir for: " + targetFile.getAbsolutePath());
                                 }
-
-                                boolean isDirectory = zipEntry.isDirectory();
-
-                                if (isDirectory) {
-                                    targetFile.mkdirs();
-                                } else {
-                                    File parentDir = targetFile.getParentFile();
-                                    if (!parentDir.exists() && !parentDir.mkdirs()) {
-                                        throw new RuntimeException("Cannot create parent dir for: " + targetFile.getAbsolutePath());
-                                    }
-                                    try (FileOutputStream outStream = new FileOutputStream(targetFile)) {
-                                        int readBytes;
-                                        while ((readBytes = zipInput.read(buffer)) != -1)
-                                            outStream.write(buffer, 0, readBytes);
-                                    }
-                                    if (zipEntryName.startsWith("bin/") || zipEntryName.startsWith("libexec") ||
-                                        zipEntryName.startsWith("lib/apt/apt-helper") || zipEntryName.startsWith("lib/apt/methods")) {
-                                        //noinspection OctalInteger
-                                        Os.chmod(targetFile.getAbsolutePath(), 0700);
-                                    }
+                                try (FileOutputStream outStream = new FileOutputStream(targetFile)) {
+                                    int readBytes;
+                                    while ((readBytes = zipInput.read(buffer)) != -1)
+                                        outStream.write(buffer, 0, readBytes);
+                                }
+                                if (zipEntryName.startsWith("bin/") || zipEntryName.startsWith("libexec") ||
+                                    zipEntryName.startsWith("lib/apt/apt-helper") || zipEntryName.startsWith("lib/apt/methods")) {
+                                    //noinspection OctalInteger
+                                    Os.chmod(targetFile.getAbsolutePath(), 0700);
                                 }
                             }
                         }
                     }
-
-                    for (Pair<String, String> symlink : symlinks) {
-                        var linkFile = new File(symlink.second);
-                        if (!linkFile.getParentFile().exists() && !linkFile.getParentFile().mkdirs()) {
-                            throw new RuntimeException("Cannot create dir: " + linkFile.getParentFile());
-                        }
-                        Os.symlink(symlink.first, symlink.second);
-                    }
-
-                    Os.rename(TERMUX_STAGING_PREFIX_DIR_PATH, TermuxConstants.PREFIX_PATH);
-
-                    activity.runOnUiThread(whenDone);
-                } catch (final Exception e) {
-                    Log.e(TermuxConstants.LOG_TAG, "Error in installation", e);
-                    showBootstrapErrorDialog(activity, whenDone, "Error in installation: " + e.getMessage());
-                } finally {
-                    activity.runOnUiThread(() -> {
-                        try {
-                            progress.dismiss();
-                        } catch (RuntimeException e) {
-                            // Activity already dismissed - ignore.
-                        }
-                    });
                 }
+
+                for (Pair<String, String> symlink : symlinks) {
+                    var linkFile = new File(symlink.second);
+                    if (!linkFile.getParentFile().exists() && !linkFile.getParentFile().mkdirs()) {
+                        throw new RuntimeException("Cannot create dir: " + linkFile.getParentFile());
+                    }
+                    Os.symlink(symlink.first, symlink.second);
+                }
+
+                Os.rename(TERMUX_STAGING_PREFIX_DIR_PATH, TermuxConstants.PREFIX_PATH);
+
+                activity.runOnUiThread(whenDone);
+            } catch (final Exception e) {
+                Log.e(TermuxConstants.LOG_TAG, "Error in installation", e);
+                showBootstrapErrorDialog(activity, whenDone, "Error in installation: " + e.getMessage());
+            } finally {
+                activity.runOnUiThread(() -> {
+                    try {
+                        progress.dismiss();
+                    } catch (RuntimeException e) {
+                        // Activity already dismissed - ignore.
+                    }
+                });
             }
-        }.start();
+        }).start();
     }
 
     public static void showBootstrapErrorDialog(Activity activity, Runnable whenDone, String message) {
@@ -287,8 +284,8 @@ final class TermuxInstaller {
         if (dir.isDirectory()) {
             String[] children = dir.list();
             if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    boolean success = deleteDir(new File(dir, children[i]));
+                for (String child : children) {
+                    boolean success = deleteDir(new File(dir, child));
                     if (!success) {
                         return false;
                     }

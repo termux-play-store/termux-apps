@@ -62,7 +62,7 @@ public class UnicodeInputTest extends TerminalTestCase {
 		mTerminal.append(b, b.length);
 		enterString("Y");
 		assertEquals(1, Character.charCount(TerminalEmulator.UNICODE_REPLACEMENT_CHAR));
-		assertLineStartsWith(0, TerminalEmulator.UNICODE_REPLACEMENT_CHAR, (int) 'Y', ' ');
+		assertLineStartsWith(0, TerminalEmulator.UNICODE_REPLACEMENT_CHAR, 'Y', ' ');
 	}
 
 	public void testStuff() {

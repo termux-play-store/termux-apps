@@ -26,7 +26,7 @@ public abstract class TerminalTestCase extends TestCase {
 		}
 
 		public String getOutputAndClear() {
-			String result = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+			String result = baos.toString(StandardCharsets.UTF_8);
 			baos.reset();
 			return result;
 		}

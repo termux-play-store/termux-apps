@@ -1,8 +1,5 @@
 package com.termux.app;
 
-import android.graphics.Rect;
-import android.util.Log;
-import android.view.RoundedCorner;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 

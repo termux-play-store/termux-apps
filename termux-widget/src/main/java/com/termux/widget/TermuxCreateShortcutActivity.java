@@ -4,18 +4,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.ShortcutManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 public class TermuxCreateShortcutActivity extends Activity {
@@ -29,9 +25,7 @@ public class TermuxCreateShortcutActivity extends Activity {
         setContentView(R.layout.shortcuts_listview);
         mListView = findViewById(R.id.list);
 
-        TermuxPathLister.listPaths(this, TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH, path -> {
-            mAllFiles.add(new ShortcutFile(new File(path)));
-        });
+        TermuxPathLister.listPaths(this, TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH, path -> mAllFiles.add(new ShortcutFile(new File(path))));
     }
 
     @Override
