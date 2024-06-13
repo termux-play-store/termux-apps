@@ -11,6 +11,7 @@ public class TermuxConstants {
     public static final String PREFIX_PATH = FILES_PATH + "/usr";
     public static final String BIN_PATH = PREFIX_PATH + "/bin";
     public static final String HOME_PATH = FILES_PATH + "/home";
+    public static final String APP_LIB_PATH = FILES_PATH + "/applib";
 
     public static final String FONT_PATH = TermuxConstants.HOME_PATH + "/.termux/font.ttf";
     public static final String COLORS_PATH = TermuxConstants.HOME_PATH + "/.termux/colors.properties";

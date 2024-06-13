@@ -27,7 +27,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -319,5 +321,36 @@ final class TermuxInstaller {
     }
 
     public static native byte[] getZip();
+
+    public static void setupAppLibSymlink(Context context) {
+        var nativeLibraryDir = context.getApplicationInfo().nativeLibraryDir;
+        var targetFile = new File(TermuxConstants.APP_LIB_PATH);
+        new Thread(() -> {
+            try {
+                if (targetFile.exists()) {
+                    if (targetFile.getCanonicalPath().equals(nativeLibraryDir)) {
+                        return;
+                    } else {
+                        Log.w(TermuxConstants.LOG_TAG, "Existing incorrect symlink: " + targetFile.getAbsolutePath());
+                        if (!targetFile.delete()) {
+                            Log.e(TermuxConstants.LOG_TAG, "Cannot delete: " + targetFile.getAbsolutePath());
+                            return;
+                        }
+                    }
+                } else {
+                    if (Files.isSymbolicLink(targetFile.toPath())) {
+                        Log.w(TermuxConstants.LOG_TAG, "Broken symlink - deleting: " + targetFile.getAbsolutePath());
+                        if (!targetFile.delete()) {
+                            Log.e(TermuxConstants.LOG_TAG, "Could not delete broken symlink: " + targetFile.getAbsolutePath());
+                            return;
+                        }
+                    }
+                }
+                Os.symlink(nativeLibraryDir, targetFile.getAbsolutePath());
+            } catch (ErrnoException | IOException e) {
+                Log.e(TermuxConstants.LOG_TAG, "Error symlinking " + nativeLibraryDir + " <- " + targetFile.getAbsolutePath(), e);
+            }
+        }).start();
+    }
 
 }

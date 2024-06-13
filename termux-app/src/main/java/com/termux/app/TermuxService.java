@@ -107,6 +107,13 @@ public final class TermuxService extends Service {
 
     private static final String LOG_TAG = "TermuxService";
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        TermuxInstaller.setupAppLibSymlink(this);
+    }
+
     @SuppressLint("Wakelock")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
