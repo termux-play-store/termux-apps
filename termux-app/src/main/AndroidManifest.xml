@@ -160,7 +160,10 @@
                     https://developer.android.com/guide/components/fg-service-types#special-use
             -->
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="As a terminal emulator Termux needs to ensure that spawned tasks are not killed while the app is in the background. Having a special foreground service type ensures this."/>
+                android:value="As a Linux environment Termux needs to ensure that running tasks are not killed or paused while the app is in the background.
+                For example, a user might start a web server that serves HTML pages and then interact with that from the browser app while the Termux
+                app is in the background. If the system were to interrupt or defer the Termux app while it is in the background the user
+                experience would be negatively affected since the above described use case would be broken." />
         </service>
 
         <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
