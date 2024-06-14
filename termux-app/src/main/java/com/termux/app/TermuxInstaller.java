@@ -346,6 +346,8 @@ final class TermuxInstaller {
                         }
                     }
                 }
+                // Make sures the files dir exists.
+                context.getFilesDir();
                 Os.symlink(nativeLibraryDir, targetFile.getAbsolutePath());
             } catch (ErrnoException | IOException e) {
                 Log.e(TermuxConstants.LOG_TAG, "Error symlinking " + nativeLibraryDir + " <- " + targetFile.getAbsolutePath(), e);
