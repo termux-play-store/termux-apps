@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.GITHUB_REF }}
+
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Attach APK to release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
+        run: |
+          SHORT_TAG_NAME="${GITHUB_REF/refs\/tags\//}"
+          RELEASED_APP=${SHORT_TAG_NAME%-*}
+          RELEASED_VERSION=${SHORT_TAG_NAME##*-}
+
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo "SHORT_TAG_NAME=$SHORT_TAG_NAME"
+          echo "RELEASED_APP=$RELEASED_APP"
+          echo "RELEASED_VERSION=$RELEASED_VERSION"
+
+          if [ "$RELEASED_APP" = "termux-app" ]; then
+            RELEASED_APP_NAME=Termux
+          elif [ "$RELEASED_APP" = "termux-api" ]; then
+            RELEASED_APP_NAME=Termux:API
+          elif [ "$RELEASED_APP" = "termux-style" ]; then
+            RELEASED_APP_NAME=Termux:Style
+          elif [ "$RELEASED_APP" = "termux-widget" ]; then
+            RELEASED_APP_NAME=Termux:Widget
+          else
+            echo "Unhandled RELEASED_APP=$RELEASED_APP"
+          fi
+          EXPECTED_RELEASE_NAME="$RELEASED_APP_NAME $RELEASED_VERSION"
+          if [ "${{ github.event.release.name }}" != "$EXPECTED_RELEASE_NAME" ]; then
+            echo "Invalid release name - expected '$EXPECTED_RELEASE_NAME', was '${{ github.event.release.name }}'"
+            exit 1
+          fi
+
+          if ! [[ "$RELEASED_VERSION" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "Bad version: $RELEASED_VERSION"
+            exit 1
+          fi
+
+          # One initial build to get rid of the one-time "License for package NDK .. accepted" outputs
+          ./gradlew -q :"$RELEASED_APP":versionName
+          VERSION_FROM_SRC=$(./gradlew -q :"$RELEASED_APP":versionName)
+          if [ "$VERSION_FROM_SRC" != "$RELEASED_VERSION" ]; then
+            echo "Version mismatch: RELEASED_VERSION=$RELEASED_VERSION, VERSION_FROM_SRC=$VERSION_FROM_SRC"
+            exit 1
+          fi
+
+          ./gradlew :"$RELEASED_APP":assembleDebug
+
+          BUILT_APK=./"$RELEASED_APP"/build/outputs/apk/debug/"$RELEASED_APP"-debug.apk
+          UPLOAD_APK="$RELEASED_APP"-debug-$RELEASED_VERSION.apk
+
+          mv "$BUILT_APK" "$UPLOAD_APK"
+
+          gh release upload ${{ github.event.release.tag_name }} "${UPLOAD_APK}"
