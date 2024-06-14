@@ -37,12 +37,14 @@ jobs:
       shell: bash
       run: |
         ./gradlew assembleDebug
-        shopt -s globstar; for file in **/*.apk; do cp "$file" "$(basename "$file")"; done
+        DIRNAME=upload/termux-debug-apks-"$GITHUB_SHA"
+        mkdir -p "$DIRNAME"
+        shopt -s globstar; for file in termux-*/**/*.apk; do FILENAME="$(basename "$file")"; cp "$file" "$DIRNAME"/"${FILENAME/.apk/-$GITHUB_SHA.apk}"; done
     - uses: actions/upload-artifact@v4
       if: matrix.javaVersion == '21'
       with:
-        name: debug-apks
-        path: ./*.apk
+        name: termux-debug-apks-${{ github.sha }}
+        path: upload/
 
   gradle-wrapper-validation:
     name: Validate gradle wrappers
