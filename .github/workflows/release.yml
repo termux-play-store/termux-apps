@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -26,7 +23,7 @@ jobs:
       - name: Attach APK to release
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
         run: |
           SHORT_TAG_NAME="${GITHUB_REF/refs\/tags\//}"
           RELEASED_APP=${SHORT_TAG_NAME%-*}
