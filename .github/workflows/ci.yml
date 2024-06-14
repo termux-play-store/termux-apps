@@ -32,7 +32,7 @@ jobs:
     - name: Lint
       run: ./gradlew lint
     - name: Test
-      run: ./gradlew lint
+      run: ./gradlew test
     - name: Assemble Debug
       shell: bash
       run: |
