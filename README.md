@@ -1,4 +1,5 @@
 # Termux apps on Google Play
+test
 
 This repository contains the source code used in the [current Termux build](https://play.google.com/store/apps/details?id=com.termux&hl=en) on Google Play.
 
