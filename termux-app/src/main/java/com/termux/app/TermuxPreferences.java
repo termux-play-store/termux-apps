@@ -3,6 +3,7 @@ package com.termux.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.TypedValue;
+import android.view.Display;
 
 public class TermuxPreferences {
 
@@ -18,9 +19,11 @@ public class TermuxPreferences {
 
 
     private final SharedPreferences prefs;
+    private final Context context;
 
     TermuxPreferences(TermuxActivity activity) {
         prefs = activity.getPreferences(Context.MODE_PRIVATE);
+        context = activity;
         setupFontSizeDefaults(activity);
     }
 
@@ -64,8 +67,17 @@ public class TermuxPreferences {
         return newValue;
     }
 
+    /**
+     * Use different font sizes on different displays.
+     */
+    private String fontSizePrefName() {
+        var display = context.getDisplay();
+        var displayId = (display == null) ? Display.DEFAULT_DISPLAY : display.getDisplayId();
+        return PREF_FONT_SIZE + ((displayId == Display.DEFAULT_DISPLAY) ? "" : Integer.toString(displayId));
+    }
+
     public int getFontSize() {
-        return prefs.getInt(PREF_FONT_SIZE, defaultFontSize);
+        return prefs.getInt(fontSizePrefName(), defaultFontSize);
     }
 
     public int changeFontSize(boolean increase) {
@@ -74,7 +86,7 @@ public class TermuxPreferences {
         fontSize += (increase ? 1 : -1) * 2;
         fontSize = Math.max(minFontSize, Math.min(fontSize, maxFontSize));
 
-        prefs.edit().putInt(PREF_FONT_SIZE, fontSize).apply();
+        prefs.edit().putInt(fontSizePrefName(), fontSize).apply();
         return fontSize;
     }
 
