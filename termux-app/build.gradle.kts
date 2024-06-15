@@ -66,6 +66,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -161,7 +165,7 @@ task("downloadPrebuilt") {
         downloadFile("src/main/cpp/bootstrap-aarch64.zip", "https://bootstrap.termux.net/bootstrap-aarch64-v$bootstrapVersion.zip", "1829d0a082aaadddd6bb67be56b07a71a3414928982abf0f32898e18323700a7")
         downloadFile("src/main/cpp/bootstrap-x86_64.zip", "https://bootstrap.termux.net/bootstrap-x86_64-v$bootstrapVersion.zip", "fd899704f6b8351fefd477d89f8c6ef3163ef2572d7cfdf29b85fb3f0e497fa5")
 
-        val prootVersion = "5.1.107-65";
+        val prootVersion = "5.1.107-65"
         downloadFile("src/main/jniLibs/arm64-v8a/libproot-loader.so", "https://bootstrap.termux.net/libproot-loader-aarch64-$prootVersion.so", "23cbee2320ed6f55ec4c47d50573a3ee59163f84c6e1bfaf7fb67049f71a2b59")
         downloadFile("src/main/jniLibs/x86_64/libproot-loader.so", "https://bootstrap.termux.net/libproot-loader-x86_64-$prootVersion.so", "bf69995d5c9d35591197ce61f6046e80116858334109bf9b6ea9d787ca2fe256")
         downloadFile("src/main/jniLibs/arm64-v8a/libproot-loader32.so", "https://bootstrap.termux.net/libproot-loader32-aarch64-$prootVersion.so", "8e0d7fbdc5937886c272a3ef7c2c1d1b62ab51dcfc542b938675bf05baf4a83a")

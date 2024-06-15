@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.termux.BuildConfig;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
@@ -106,6 +107,7 @@ public class TermuxShellUtils {
         environment.put("COLORTERM", "truecolor");
         environment.put("PREFIX", TermuxConstants.PREFIX_PATH);
         environment.put("TERM", "xterm-256color");
+        environment.put("TERMUX_VERSION", BuildConfig.VERSION_NAME);
         putToEnvIfInSystemEnv(environment, "ANDROID_ART_ROOT");
         putToEnvIfInSystemEnv(environment, "ANDROID_ASSETS");
         putToEnvIfInSystemEnv(environment, "ANDROID_DATA");
