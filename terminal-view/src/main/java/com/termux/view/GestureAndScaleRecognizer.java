@@ -5,6 +5,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import androidx.annotation.NonNull;
+
 /**
  * A combination of {@link GestureDetector} and {@link ScaleGestureDetector}.
  */
@@ -38,22 +40,22 @@ final class GestureAndScaleRecognizer {
 
         mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
             @Override
-            public boolean onScroll(MotionEvent e1, MotionEvent e2, float dx, float dy) {
+            public boolean onScroll(MotionEvent e1, @NonNull MotionEvent e2, float dx, float dy) {
                 return mListener.onScroll(e2, dx, dy);
             }
 
             @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            public boolean onFling(MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
                 return mListener.onFling(e2, velocityX, velocityY);
             }
 
             @Override
-            public boolean onDown(MotionEvent e) {
+            public boolean onDown(@NonNull MotionEvent e) {
                 return mListener.onDown(e.getX(), e.getY());
             }
 
             @Override
-            public void onLongPress(MotionEvent e) {
+            public void onLongPress(@NonNull MotionEvent e) {
                 mListener.onLongPress(e);
                 isAfterLongPress = true;
             }
@@ -61,29 +63,29 @@ final class GestureAndScaleRecognizer {
 
         mGestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
             @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
+            public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
                 return mListener.onSingleTapUp(e);
             }
 
             @Override
-            public boolean onDoubleTap(MotionEvent e) {
+            public boolean onDoubleTap(@NonNull MotionEvent e) {
                 return mListener.onDoubleTap(e);
             }
 
             @Override
-            public boolean onDoubleTapEvent(MotionEvent e) {
+            public boolean onDoubleTapEvent(@NonNull MotionEvent e) {
                 return true;
             }
         });
 
         mScaleDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
-            public boolean onScaleBegin(ScaleGestureDetector detector) {
+            public boolean onScaleBegin(@NonNull ScaleGestureDetector detector) {
                 return true;
             }
 
             @Override
-            public boolean onScale(ScaleGestureDetector detector) {
+            public boolean onScale(@NonNull ScaleGestureDetector detector) {
                 return mListener.onScale(detector.getFocusX(), detector.getFocusY(), detector.getScaleFactor());
             }
         });

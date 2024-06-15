@@ -107,9 +107,7 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 
 	public void testResetColor() {
 		withTerminalSized(4, 4);
-		int[] initialColors = new int[TextStyle.NUM_INDEXED_COLORS];
-		System.arraycopy(mTerminal.mColors.mCurrentColors, 0, initialColors, 0, initialColors.length);
-		int[] expectedColors = new int[initialColors.length];
+		int[] expectedColors = new int[TextStyle.NUM_INDEXED_COLORS];
 		System.arraycopy(mTerminal.mColors.mCurrentColors, 0, expectedColors, 0, expectedColors.length);
 		Random rand = new Random();
 		for (int endType = 0; endType < 3; endType++) {

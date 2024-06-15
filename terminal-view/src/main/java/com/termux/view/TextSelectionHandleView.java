@@ -12,6 +12,8 @@ import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
+import androidx.annotation.NonNull;
+
 import com.termux.view.R;
 import com.termux.view.TerminalView;
 import com.termux.view.TextSelectionCursorController;
@@ -272,7 +274,7 @@ public class TextSelectionHandleView extends View {
     }
 
     @Override
-    public void onDraw(Canvas c) {
+    public void onDraw(@NonNull Canvas c) {
         final int width = mHandleDrawable.getIntrinsicWidth();
         int height = mHandleDrawable.getIntrinsicHeight();
         mHandleDrawable.setBounds(0, 0, width, height);

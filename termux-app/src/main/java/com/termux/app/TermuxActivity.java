@@ -597,7 +597,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     @Override
-    public void onContextMenuClosed(Menu menu) {
+    public void onContextMenuClosed(@NonNull Menu menu) {
         super.onContextMenuClosed(menu);
         // onContextMenuClosed() is triggered twice if back button is pressed to dismiss instead of tap for some reason
         mTerminalView.onContextMenuClosed(menu);
