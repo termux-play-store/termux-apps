@@ -13,7 +13,6 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
@@ -47,14 +46,6 @@ import java.util.List;
  */
 public final class TermuxService extends Service {
 
-    /**
-     * The usage of notifications was questioned by a Google Play reviewer as
-     * not being necessary for the app functionality.
-     * <p>
-     * Disable it for now.
-     */
-    public static boolean USE_NOTIFICATIONS = false;
-
     public static final String ACTION_STOP_SERVICE = "com.termux.service.action.service_stop";
     public static final String ACTION_SERVICE_EXECUTE = "com.termux.service.action.service_execute";
     public static final String ACTION_ON_BOOT = "com.termux.app.ACTION_ON_BOOT";
@@ -65,7 +56,8 @@ public final class TermuxService extends Service {
     public static final String TERMUX_EXECUTE_WORKDIR = "com.termux.execute.workdir";
     public static final String TERMUX_EXECUTE_EXTRA_BACKGROUND = "com.termux.execute.background";
 
-    public static final String NOTIFICATION_CHANNEL_ID = "com.termu.service.notification_channel";
+    public static final String NOTIFICATION_CHANNEL_LOW_ID = "com.termu.service.notification_channel_low";
+    public static final String NOTIFICATION_CHANNEL_HIGH_ID = "com.termu.service.notification_channel_high";
 
 
     /**
@@ -430,13 +422,6 @@ public final class TermuxService extends Service {
         var wakeLockHeld = mWakeLock != null;
         if (wakeLockHeld) notificationText += " (wake lock held)";
 
-        // Set notification priority
-        // If holding a wake or wifi lock consider the notification of high priority since it's using power,
-        // otherwise use a low priority
-        // int priority = (wakeLockHeld) ? Notification.PRIORITY_HIGH : Notification.PRIORITY_LOW;
-        // TODO: This has moved to the notification channel - see setupNotificationChannel(), where we currently
-        //       always use NotificationManager.IMPORTANCE_HIGH
-
         var exitIntent = new Intent(this, TermuxService.class).setAction(TermuxService.ACTION_STOP_SERVICE);
 
         // Set Wakelock button actions
@@ -445,7 +430,11 @@ public final class TermuxService extends Service {
         var actionTitle = res.getString(wakeLockHeld ? R.string.notification_action_wake_unlock : R.string.notification_action_wake_lock);
         var wakeLockIcon = wakeLockHeld ? android.R.drawable.ic_lock_idle_lock : android.R.drawable.ic_lock_lock;
 
-        return new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+        // If holding a wake lock consider the notification of high priority since
+        // it's using power, otherwise use a low priority notification channel.
+        var channelId = wakeLockHeld ? NOTIFICATION_CHANNEL_HIGH_ID : NOTIFICATION_CHANNEL_LOW_ID;
+
+        return new Notification.Builder(this, channelId)
             .setContentText(notificationText)
             .setContentIntent(contentIntent)
             .setShowWhen(false)
@@ -458,8 +447,12 @@ public final class TermuxService extends Service {
     }
 
     private void setupNotificationChannel() {
-        var channel = new NotificationChannel(TermuxService.NOTIFICATION_CHANNEL_ID, "Termux", NotificationManager.IMPORTANCE_HIGH);
         var notificationManager = getSystemService(NotificationManager.class);
+
+        var channel = new NotificationChannel(TermuxService.NOTIFICATION_CHANNEL_LOW_ID, getString(R.string.notification_channel_low_priority), NotificationManager.IMPORTANCE_LOW);
+        notificationManager.createNotificationChannel(channel);
+
+        channel = new NotificationChannel(TermuxService.NOTIFICATION_CHANNEL_HIGH_ID, getString(R.string.notification_channel_high_priority), NotificationManager.IMPORTANCE_HIGH);
         notificationManager.createNotificationChannel(channel);
     }
 
@@ -472,12 +465,8 @@ public final class TermuxService extends Service {
             // Exit if we are updating after the user disabled all locks with no sessions or tasks running.
             requestStopService();
         } else {
-            if (Build.VERSION.SDK_INT < 33) {
-                // On Android 33+ we do not yet have the required POST_NOTIFICATIONS permission.
-                // For earlier Android versions we have a notification that needs to be updated.
-                var notificationManager = getSystemService(NotificationManager.class);
-                notificationManager.notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
-            }
+            var notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.notify(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
         }
     }
 
