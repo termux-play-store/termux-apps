@@ -303,6 +303,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTermuxTerminalViewClient.onStart();
         }
         registerTermuxActivityBroadcastReceiver();
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            TermuxPermissionUtils.requestPermissions(this,
+                TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS,
+                Manifest.permission.POST_NOTIFICATIONS
+            );
+        }
     }
 
     @Override
@@ -313,13 +320,6 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTerminalView.requestFocus();
         }
         applyFullscreenSetting(mPreferences.isFullscreen());
-
-        if (Build.VERSION.SDK_INT >= 33 && TermuxService.USE_NOTIFICATIONS) {
-            TermuxPermissionUtils.requestPermissions(this,
-                TermuxPermissionUtils.REQUEST_POST_NOTIFICATIONS,
-                Manifest.permission.POST_NOTIFICATIONS
-            );
-        }
     }
 
     @Override

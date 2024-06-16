@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Environment;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -49,13 +48,9 @@ public class TermuxPermissionUtils {
             }
         }
         if (!permissionsToRequest.isEmpty()) {
-            Log.e(TermuxConstants.LOG_TAG, "Requesting Permissions: " + permissionsToRequest);
+            Log.i(TermuxConstants.LOG_TAG, "Requesting Permissions: " + permissionsToRequest);
             ((Activity) context).requestPermissions(permissionsToRequest.toArray(new String[0]), requestCode);
         }
-    }
-
-    public static boolean checkStoragePermission(@NonNull Context context) {
-        return Environment.isExternalStorageManager();
     }
 
     /**
