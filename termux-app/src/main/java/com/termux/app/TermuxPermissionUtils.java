@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 public class TermuxPermissionUtils {
 
-    public static final int REQUEST_GRANT_STORAGE_PERMISSION = 2000;
     public static final int REQUEST_DISABLE_BATTERY_OPTIMIZATIONS = 2001;
     public static final int REQUEST_POST_NOTIFICATIONS = 2002;
 

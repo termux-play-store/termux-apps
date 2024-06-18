@@ -1,20 +1,15 @@
 package com.termux.app;
 
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.Manifest.permission.READ_MEDIA_AUDIO;
-import static android.Manifest.permission.READ_MEDIA_IMAGES;
-import static android.Manifest.permission.READ_MEDIA_VIDEO;
-import static android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.os.Build;
 import android.os.Environment;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.provider.Settings;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
@@ -207,15 +202,7 @@ final class TermuxInstaller {
     static void setupStorageSymlinks(final Context context) {
         Log.i(TermuxConstants.LOG_TAG, "Setting up storage symlinks.");
 
-        String[] permissions;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            permissions = new String[]{READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, READ_MEDIA_AUDIO, READ_MEDIA_VISUAL_USER_SELECTED};
-        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.TIRAMISU) {
-            permissions = new String[]{READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, READ_MEDIA_AUDIO};
-        } else {
-            permissions = new String[]{READ_EXTERNAL_STORAGE};
-        }
-        TermuxPermissionUtils.requestPermissions(context, TermuxPermissionUtils.REQUEST_GRANT_STORAGE_PERMISSION, permissions);
+        context.startActivity(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
 
         new Thread(() -> {
             try {
