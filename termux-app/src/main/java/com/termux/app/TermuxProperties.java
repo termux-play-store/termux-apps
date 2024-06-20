@@ -11,18 +11,21 @@ public final class TermuxProperties {
 
     private final Properties properties = new Properties();
 
-    void reloadProperties() {
+    public static final String EXTRA_KEYS_DEFAULT = "[['ESC','/',{key: '-', popup: '|'},'HOME','UP','END','PGUP'], ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN']]";
+    public static final String EXTRA_KEYS_STYLE_DEFAULT = "default";
+
+    void reloadProperties(TermuxActivity activity) {
         properties.clear();
         try {
-            for (String subPath : new String[]{".termux.properties", ".config/termux.properties"}) {
+            for (String subPath : new String[]{".termux/termux.properties", ".config/termux/termux.properties"}) {
                 File propertiesFile = new File(TermuxConstants.HOME_PATH + '/' + subPath);
-                if (propertiesFile.exists()) {
+                if (propertiesFile.isFile()) {
                     try (FileInputStream in = new FileInputStream(propertiesFile)) {
                         try {
                             properties.load(in);
                         } catch (Exception e) {
                             Log.e(TermuxConstants.LOG_TAG, "Error reading termux properties", e);
-                            // TODO: Show toast
+                            activity.showTransientMessage("Cannot read termux.properties - check syntax", true);
                         }
                     }
                 }
@@ -45,11 +48,10 @@ public final class TermuxProperties {
     }
 
     public String getExtraKeys() {
-        String defaultValue = "[['ESC','/',{key: '-', popup: '|'},'HOME','UP','END','PGUP'], ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN']]";
-        return properties.getProperty("extra-keys", defaultValue);
+        return properties.getProperty("extra-keys", EXTRA_KEYS_DEFAULT);
     }
 
     public String getExtraKeysStyle() {
-        return properties.getProperty("extra-keys-style", "default");
+        return properties.getProperty("extra-keys-style", EXTRA_KEYS_STYLE_DEFAULT);
     }
 }

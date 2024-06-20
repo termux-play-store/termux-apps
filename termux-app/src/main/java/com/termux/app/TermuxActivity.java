@@ -164,7 +164,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             // mIsActivityRecreated = savedInstanceState.getBoolean(ARG_ACTIVITY_RECREATED, false);
         }
 
-        mProperties.reloadProperties();
+        mProperties.reloadProperties(this);
         mPreferences = new TermuxPreferences(this);
 
         setContentView(R.layout.activity_termux);
@@ -712,10 +712,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     private void reloadActivityStyling() {
-        mProperties.reloadProperties();
+        mProperties.reloadProperties(this);
 
         if (mExtraKeysView != null) {
             //mExtraKeysView.setButtonTextAllCaps(mProperties.shouldExtraKeysTextBeAllCaps());
+            mTermuxTerminalExtraKeys.loadExtraKeysFromProperties();
             mExtraKeysView.reload(mTermuxTerminalExtraKeys.getExtraKeysInfo(), mTerminalToolbarDefaultHeight);
         }
 
