@@ -1,6 +1,7 @@
 package com.termux.app.extrakeys;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -11,6 +12,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.button.MaterialButton;
 import com.termux.app.TermuxActivity;
+import com.termux.app.TermuxConstants;
+import com.termux.app.TermuxProperties;
 import com.termux.app.TermuxTerminalSessionActivityClient;
 import com.termux.app.TermuxTerminalViewClient;
 import com.termux.view.TerminalView;
@@ -57,8 +60,6 @@ public final class TermuxTerminalExtraKeys {
     final TermuxTerminalViewClient mTermuxTerminalViewClient;
     final TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
 
-    private static final String LOG_TAG = "TermuxTerminalExtraKeys";
-
     public TermuxTerminalExtraKeys(TermuxActivity activity, @NonNull TerminalView terminalView,
                                    TermuxTerminalViewClient termuxTerminalViewClient,
                                    TermuxTerminalSessionActivityClient termuxTerminalSessionActivityClient) {
@@ -66,16 +67,14 @@ public final class TermuxTerminalExtraKeys {
         mTermuxTerminalViewClient = termuxTerminalViewClient;
         mTermuxTerminalSessionActivityClient = termuxTerminalSessionActivityClient;
 
-        setExtraKeys();
+        loadExtraKeysFromProperties();
     }
 
 
     /**
      * Set the terminal extra keys and style.
      */
-    private void setExtraKeys() {
-        mExtraKeysInfo = null;
-
+    public void loadExtraKeysFromProperties() {
         try {
             // The mMap stores the extra key and style string values while loading properties
             // Check {@link #getExtraKeysInternalPropertyValueFromValue(String)} and
@@ -91,14 +90,17 @@ public final class TermuxTerminalExtraKeys {
 
             mExtraKeysInfo = new ExtraKeysInfo(extrakeys, extraKeysStyle, ExtraKeysConstants.CONTROL_CHARS_ALIASES);
         } catch (JSONException e) {
+            Log.e(TermuxConstants.LOG_TAG, "Cannot load extra keys JSON", e);
             mActivity.showTransientMessage("Could not load and set the extra keys property from the properties file: " + e, true);
 
-            //try {
-                mExtraKeysInfo = null; // TODO: new ExtraKeysInfo(TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS, TermuxPropertyConstants.DEFAULT_IVALUE_EXTRA_KEYS_STYLE, ExtraKeysConstants.CONTROL_CHARS_ALIASES);
-            //} catch (JSONException e2) {
+            try {
+                mExtraKeysInfo = new ExtraKeysInfo(TermuxProperties.EXTRA_KEYS_DEFAULT,
+                    TermuxProperties.EXTRA_KEYS_STYLE_DEFAULT,
+                    ExtraKeysConstants.CONTROL_CHARS_ALIASES);
+            } catch (JSONException e2) {
                 // We should be able to handle our own defaults!
-                //throw new RuntimeException(e2);
-            //}
+                throw new RuntimeException(e2);
+            }
         }
     }
 
