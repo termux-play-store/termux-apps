@@ -28,9 +28,8 @@ import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 import com.termux.R;
 import com.termux.app.extrakeys.ExtraKeysView;
 import com.termux.app.extrakeys.TermuxTerminalExtraKeys;
@@ -143,6 +142,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             }
         }
     };
+
+    /**
+     * The last toast shown, used cancel current toast before showing new in {@link #showTransientMessage(String, boolean)}}.
+     */
+    Toast mLastToast;
 
     /**
      * If between onStart() and onStop(). Note that only one session is in the foreground of the terminal view at the
@@ -477,7 +481,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (terminalToolbarViewPager == null) return;
 
         final boolean showNow = mPreferences.toggleShowTerminalToolbar();
-        TermuxMessageDialogUtils.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)));
+        showTransientMessage((showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), false);
         terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
         if (showNow && isTerminalToolbarTextInputViewSelected()) {
             // Focus the text input view if just revealed.
@@ -508,12 +512,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
      */
     public void showTransientMessage(String text, boolean longDuration) {
         if (text == null || text.isEmpty()) return;
-        var snackbar = Snackbar.make(mTerminalView, text, longDuration ? BaseTransientBottomBar.LENGTH_LONG : BaseTransientBottomBar.LENGTH_SHORT);
-        var terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (terminalToolbarViewPager != null && terminalToolbarViewPager.getVisibility() == View.VISIBLE) {
-            snackbar.setAnchorView(mExtraKeysView);
-        }
-        snackbar.show();
+        if (mLastToast != null) mLastToast.cancel();
+        mLastToast = Toast.makeText(this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
+        mLastToast.show();
     }
 
     @Override
