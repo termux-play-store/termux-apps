@@ -202,7 +202,9 @@ final class TermuxInstaller {
     static void setupStorageSymlinks(final Context context) {
         Log.i(TermuxConstants.LOG_TAG, "Setting up storage symlinks.");
 
-        context.startActivity(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
+        if (!Environment.isExternalStorageManager()) {
+            context.startActivity(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
+        }
 
         new Thread(() -> {
             try {
