@@ -35,6 +35,12 @@
     <!-- See https://developer.android.com/training/data-storage/manage-all-files -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
 
+    <queries>
+        <!-- See https://developer.android.com/training/package-visibility
+             and https://github.com/termux/termux-x11/blob/master/shell-loader/src/main/java/com/termux/x11/Loader.java -->
+        <package android:name="com.termux.x11"/>
+    </queries>
+
     <application
         android:dataExtractionRules="@xml/backup"
         android:enableOnBackInvokedCallback="true"
