@@ -5,6 +5,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Properties;
 
 public final class TermuxProperties {
@@ -54,4 +55,24 @@ public final class TermuxProperties {
     public String getExtraKeysStyle() {
         return properties.getProperty("extra-keys-style", EXTRA_KEYS_STYLE_DEFAULT);
     }
+
+    public enum BellBehaviour {
+        VIBRATE, BEEP, IGNORE
+    }
+
+    public BellBehaviour getBellBehaviour() {
+        var prop = properties.getProperty("bell-character", "vibrate").trim().toLowerCase(Locale.ROOT);
+        switch (prop) {
+            case "vibrate":
+                return BellBehaviour.VIBRATE;
+            case "beep":
+                return BellBehaviour.BEEP;
+            case "ignore":
+                return BellBehaviour.IGNORE;
+            default:
+                Log.w(TermuxConstants.LOG_TAG, "Invalid 'bell-character' value: '" + prop + "'");
+                return BellBehaviour.VIBRATE;
+        }
+    }
+
 }
