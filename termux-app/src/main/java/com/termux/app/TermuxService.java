@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
+import com.termux.app.api.TermuxApiHandler;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
@@ -51,6 +52,7 @@ public final class TermuxService extends Service {
     public static final String ACTION_ON_BOOT = "com.termux.app.ACTION_ON_BOOT";
     public static final String ACTION_WAKE_LOCK = "com.termux.service_wake_lock";
     public static final String ACTION_WAKE_UNLOCK = "com.termux.service_wake_unlock";
+    public static final String ACTION_API = "com.termux.service_api";
 
     public static final String TERMUX_EXECUTE_EXTRA_ARGUMENTS = "com.termux.execute.arguments";
     public static final String TERMUX_EXECUTE_WORKDIR = "com.termux.execute.workdir";
@@ -132,6 +134,9 @@ public final class TermuxService extends Service {
                     break;
                 case ACTION_ON_BOOT:
                     runOnBoot();
+                    break;
+                case ACTION_API:
+                    TermuxApiHandler.handleApiIntent(this, intent);
                     break;
                 default:
                     Log.e(LOG_TAG, "Invalid action: \"" + intent.getAction() + "\"");
