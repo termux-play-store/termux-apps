@@ -3,12 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="internalOnly">
 
-    <uses-feature
-        android:name="android.hardware.touchscreen"
-        android:required="false" />
-    <uses-feature
-        android:name="android.software.leanback"
-        android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
     <!--
         See https://blog.oversecured.com/Common-mistakes-when-using-permissions-in-Android/
@@ -21,6 +18,10 @@
         android:description="@string/permission_termux_internal_description"
         android:icon="@mipmap/ic_launcher"
         android:protectionLevel="signature" />
+
+    <!-- This permission is not used, but a permission is needed on the sharedfile contentprovider,
+         which will always use FLAG_GRANT_READ_URI_PERMISSION. -->
+    <permission android:name="com.termux.sharedfile.READ_WRITE" android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -121,6 +122,16 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".app.api.SAFAPI$SAFActivity"
+            android:theme="@style/TransparentTheme"
+            android:exported="false"
+            android:excludeFromRecents="true"/>
+
+        <activity android:name=".app.api.StorageGetAPI$StorageActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:exported="false" />
+
         <provider
             android:name=".app.TermuxDocumentsProvider"
             android:authorities="com.termux.documents"
@@ -138,6 +149,13 @@
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="com.termux.permission.TERMUX_INTERNAL" />
+
+        <provider
+            android:name=".app.api.ShareAPI$ContentProvider"
+            android:authorities="com.termux.sharedfile"
+            android:permission="com.termux.sharedfile.READ_WRITE"
+            android:grantUriPermissions="true"
+            android:exported="true" />
 
         <receiver
             android:name=".app.TermuxOpenReceiver"

@@ -1,5 +1,6 @@
 package com.termux.api.apis;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -69,7 +70,7 @@ public class FingerprintAPI {
     public static void onReceive(final Context context, final Intent intent) {
         resetFingerprintResult();
 
-        FingerprintManagerCompat fingerprintManagerCompat = FingerprintManagerCompat.from(context);
+        @SuppressLint("RestrictedApi") FingerprintManagerCompat fingerprintManagerCompat = FingerprintManagerCompat.from(context);
         // make sure we have a valid fingerprint sensor before attempting to launch Fingerprint activity
         if (validateFingerprintSensor(context, fingerprintManagerCompat)) {
             Intent fingerprintIntent = new Intent(context, FingerprintActivity.class);
@@ -112,6 +113,7 @@ public class FingerprintAPI {
     /**
      * Ensure that we have a fingerprint sensor and that the user has already enrolled fingerprints
      */
+    @SuppressLint("RestrictedApi")
     protected static boolean validateFingerprintSensor(Context context, FingerprintManagerCompat fingerprintManagerCompat) {
         boolean result = true;
 
@@ -135,8 +137,6 @@ public class FingerprintAPI {
      * Activity that is necessary for authenticating w/ fingerprint sensor
      */
     public static class FingerprintActivity extends FragmentActivity{
-
-        private static final String LOG_TAG = "FingerprintActivity";
 
         @Override
         public void onCreate(Bundle savedInstanceState) {

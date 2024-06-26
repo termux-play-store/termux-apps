@@ -1,12 +1,9 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.util.Log;
-
-import com.termux.api.TermuxApiReceiver;
-import com.termux.api.util.ResultReturner;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -17,7 +14,7 @@ public class MediaScannerAPI {
 
     private static final String LOG_TAG = "MediaScannerAPI";
 
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
+    public static void onReceive(final Context context, Intent intent) {
         final String[] filePaths = intent.getStringArrayExtra("paths");
         final boolean recursive = intent.getBooleanExtra("recursive", false);
         final Integer[] totalScanned = {0};
@@ -26,7 +23,7 @@ public class MediaScannerAPI {
             filePaths[i] = filePaths[i].replace("\\,", ",");
         }
 
-        ResultReturner.returnData(apiReceiver, intent, out -> {
+        ResultReturner.returnData(intent, out -> {
             scanFiles(out, context, filePaths, totalScanned, verbose);
             if (recursive) scanFilesRecursively(out, context, filePaths, totalScanned, verbose);
             out.println(String.format(Locale.ENGLISH, "Finished scanning %d file(s)", totalScanned[0]));

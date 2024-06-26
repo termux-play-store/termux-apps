@@ -16,13 +16,12 @@
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.NFC"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -39,10 +38,6 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <!-- This permission is not used, but a permission is needed on the sharedfiles contentprovider,
-         which will always use FLAG_GRANT_READ_URI_PERMISSION. -->
-    <permission android:name="com.termux.sharedfiles.READ_WRITE" android:protectionLevel="signature" />
-
     <!-- Some of the used permissions imply uses-feature, so we need to make it optional.
          See http://developer.android.com/guide/topics/manifest/uses-feature-element.html#permissions -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -57,7 +52,6 @@
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
     <application
-        android:name=".TermuxAPIApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -111,32 +105,9 @@
 
         </activity>
 
-        <activity android:name=".apis.SAFAPI$SAFActivity"
-            android:theme="@style/TransparentTheme"
-            android:excludeFromRecents="true"
-            android:exported="false" />
-
-        <activity android:name=".apis.StorageGetAPI$StorageActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:excludeFromRecents="true"
-            android:exported="false" />
-
-        <provider
-            android:name=".apis.ShareAPI$ContentProvider"
-            android:authorities="com.termux.sharedfiles"
-            android:permission="com.termux.sharedfiles.READ_WRITE"
-            android:grantUriPermissions="true"
-            android:exported="true" />
-
-        <receiver android:name=".TermuxApiReceiver"
+        <service android:name=".TermuxApiService"
             android:permission="com.termux.permission.TERMUX_INTERNAL"
             android:exported="true" />
-
-        <service
-            android:name=".KeepAliveService"
-            android:description="@string/keep_alive_service"
-            android:enabled="true"
-            android:exported="false" />
 
         <service
             android:name=".apis.JobSchedulerAPI$JobSchedulerService"
@@ -164,9 +135,6 @@
             android:exported="false" />
 
         <service android:name=".apis.SpeechToTextAPI$SpeechToTextService"
-            android:exported="false" />
-
-        <service android:name=".apis.TextToSpeechAPI$TextToSpeechService"
             android:exported="false" />
 
         <service android:name=".apis.WallpaperAPI$WallpaperService"

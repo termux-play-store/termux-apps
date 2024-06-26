@@ -23,7 +23,6 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 
 import java.io.File;
@@ -41,11 +40,11 @@ public class CameraPhotoAPI {
 
     private static final String LOG_TAG = "CameraPhotoAPI";
 
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
+    public static void onReceive(final Context context, Intent intent) {
         final String filePath = intent.getStringExtra("file");
         final String cameraId = Objects.toString(intent.getStringExtra("camera"), "0");
 
-        ResultReturner.returnData(apiReceiver, intent, stdout -> {
+        ResultReturner.returnData(context, intent, stdout -> {
             if (filePath == null || filePath.isEmpty()) {
                 stdout.println("ERROR: " + "File path not passed");
                 return;

@@ -1,32 +1,30 @@
 package com.termux.api.apis;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.JsonWriter;
 
-import com.termux.api.TermuxApiReceiver;
+import com.termux.api.activities.TermuxApiPermissionActivity;
 import com.termux.api.util.ResultReturner;
 
 import java.util.List;
 
 public class WifiAPI {
 
-    private static final String LOG_TAG = "WifiAPI";
-
-    public static void onReceiveWifiConnectionInfo(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
+    public static void onReceiveWifiConnectionInfo(final Context context, final Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
             @SuppressLint("HardwareIds")
             @Override
             public void writeJson(JsonWriter out) throws Exception {
-                WifiManager manager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                WifiInfo info = manager.getConnectionInfo();
+                var manager = context.getSystemService(WifiManager.class);
+                var info = manager.getConnectionInfo();
                 out.beginObject();
                 if (info == null) {
                     out.name("API_ERROR").value("No current connection");
@@ -53,12 +51,16 @@ public class WifiAPI {
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
-    public static void onReceiveWifiScanInfo(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
+    public static void onReceiveWifiScanInfo(final Context context, final Intent intent) {
+        if (!TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            return;
+        }
+
+        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
-                WifiManager manager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                List<ScanResult> scans = manager.getScanResults();
+                var manager = context.getSystemService(WifiManager.class);
+                @SuppressLint("MissingPermission") List<ScanResult> scans = manager.getScanResults();
                 if (scans == null) {
                     out.beginObject().name("API_ERROR").value("Failed getting scan results").endObject();
                 } else if (scans.isEmpty() && !isLocationEnabled(context)) {
@@ -103,6 +105,9 @@ public class WifiAPI {
                             // centerFreq0 says "Not used if the AP bandwidth is 20 MHz".
                             out.name("center_frequency_mhz").value(scan.centerFreq0);
                         }
+                        if (!TextUtils.isEmpty(scan.capabilities)) {
+                            out.name("capabilities").value(scan.capabilities);
+                        }
                         if (!TextUtils.isEmpty(scan.operatorFriendlyName)) {
                             out.name("operator_name").value(scan.operatorFriendlyName.toString());
                         }
@@ -117,13 +122,13 @@ public class WifiAPI {
         });
     }
 
-    public static void onReceiveWifiEnable(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
+    public static void onReceiveWifiEnable(final Context context, final Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
             @Override
-            public void writeJson(JsonWriter out) {
-                WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-                boolean state = intent.getBooleanExtra("enabled", false);
-                manager.setWifiEnabled(state);
+            public void writeJson(JsonWriter out) throws Exception {
+                out.beginObject();
+                out.name("API_ERROR").value("Enabling/disabling WIFI is not possible in the Google Play build - install Termux from F-Droid for that");
+                out.endObject();
             }
         });
     }

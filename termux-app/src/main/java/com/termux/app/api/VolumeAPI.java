@@ -1,4 +1,4 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,16 +6,13 @@ import android.media.AudioManager;
 import android.util.JsonWriter;
 import android.util.SparseArray;
 
-import com.termux.api.TermuxApiReceiver;
-import com.termux.api.util.ResultReturner;
-
 import java.io.IOException;
 
 public class VolumeAPI {
     private static final int STREAM_UNKNOWN = -1;
 
     // string representations for each of the available audio streams
-    private static SparseArray<String> streamMap = new SparseArray<>();
+    private static final SparseArray<String> streamMap = new SparseArray<>();
     static {
         streamMap.append(AudioManager.STREAM_ALARM,         "alarm");
         streamMap.append(AudioManager.STREAM_MUSIC,         "music");
@@ -25,9 +22,7 @@ public class VolumeAPI {
         streamMap.append(AudioManager.STREAM_VOICE_CALL,    "call");
     }
 
-    private static final String LOG_TAG = "VolumeAPI";
-
-    public static void onReceive(final TermuxApiReceiver receiver, final Context context, final Intent intent) {
+    public static void onReceive(final Context context, final Intent intent) {
         final AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
         String action = intent.getAction();
 
@@ -37,21 +32,21 @@ public class VolumeAPI {
 
             if (stream == STREAM_UNKNOWN) {
                 String error = "ERROR: Unknown stream: " + streamName;
-                printError(context, intent, error);
+                printError(intent, error);
             } else {
                 setStreamVolume(intent, audioManager, stream);
-                ResultReturner.noteDone(receiver, intent);
+                ResultReturner.noteDone(intent);
             }
         } else {
-            printAllStreamInfo(context, intent, audioManager);
+            printAllStreamInfo(intent, audioManager);
         }
     }
 
     /**
      * Prints error to console
      */
-    private static void printError(Context context, Intent intent, final String error) {
-        ResultReturner.returnData(context, intent, out -> {
+    private static void printError(Intent intent, final String error) {
+        ResultReturner.returnData(intent, out -> {
             out.append(error).append("\n");
             out.flush();
             out.close();
@@ -76,8 +71,8 @@ public class VolumeAPI {
     /**
      * Print information about all available audio streams
      */
-    private static void printAllStreamInfo(Context context, Intent intent, final AudioManager audioManager) {
-        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
+    private static void printAllStreamInfo(Intent intent, final AudioManager audioManager) {
+        ResultReturner.returnData(intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 getStreamsInfo(audioManager, out);

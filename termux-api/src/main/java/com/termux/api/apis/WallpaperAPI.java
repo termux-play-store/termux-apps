@@ -23,11 +23,9 @@ import java.util.concurrent.TimeoutException;
 
 public class WallpaperAPI {
 
-    private static final String LOG_TAG = "WallpaperAPI";
-
     public static void onReceive(final Context context, final Intent intent) {
-        Intent wallpaperService = new Intent(context, WallpaperService.class);
-        wallpaperService.putExtras(intent.getExtras());
+        var wallpaperService = new Intent(context, WallpaperService.class)
+            .putExtras(intent.getExtras());
         context.startService(wallpaperService);
     }
 
@@ -58,6 +56,7 @@ public class WallpaperAPI {
         protected void getWallpaperFromFile(final Intent intent) {
             WallpaperResult wallpaperResult = new WallpaperResult();
             String file = intent.getStringExtra("file");
+            // TODO: Use content provider instead of fs access.
             wallpaperResult.wallpaper = BitmapFactory.decodeFile(file);
             if (wallpaperResult.wallpaper == null) {
                 wallpaperResult.error = "Error: Invalid image file!";

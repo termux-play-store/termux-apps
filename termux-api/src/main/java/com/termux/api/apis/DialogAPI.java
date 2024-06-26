@@ -20,8 +20,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -59,12 +57,11 @@ import java.util.Objects;
  */
 public class DialogAPI {
 
-    private static final String LOG_TAG = "DialogAPI";
-
     public static void onReceive(final Context context, final Intent intent) {
-        context.startActivity(new Intent(context, DialogActivity.class).putExtras(intent.getExtras()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        context.startActivity(new Intent(context, DialogActivity.class)
+            .putExtras(intent.getExtras())
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
-
 
 
     public static class DialogActivity extends AppCompatActivity {
@@ -127,7 +124,7 @@ public class DialogAPI {
          * Extract value extras from intent into String array
          */
         static String[] getInputValues(Intent intent) {
-            String[] items = new String[] { };
+            String[] items = new String[]{};
 
             if (intent != null && intent.hasExtra("input_values")) {
                 String[] temp = intent.getStringExtra("input_values").split("(?<!\\\\),");
@@ -167,7 +164,7 @@ public class DialogAPI {
 
                     out.name("code").value(result.code);
                     out.name("text").value(result.text);
-                    if(result.index > -1) {
+                    if (result.index > -1) {
                         out.name("index").value(result.index);
                     }
                     if (result.values.size() > 0) {
@@ -422,7 +419,7 @@ public class DialogAPI {
                     max = DEFAULT_MAX;
 
                     // halfway
-                    counter = (DEFAULT_MAX - DEFAULT_MIN) /  2;
+                    counter = (DEFAULT_MAX - DEFAULT_MIN) / 2;
                 }
                 updateLabel();
             }
@@ -711,7 +708,7 @@ public class DialogAPI {
                     if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
                         for (final String activeProcess : processInfo.pkgList) {
                             //if (activeProcess.equals(TermuxConstants.TERMUX_PACKAGE_NAME)) {
-                                //return true;
+                            //return true;
                             //}
                         }
                     }
@@ -782,7 +779,7 @@ public class DialogAPI {
             @Override
             public void create(final AppCompatActivity activity, final InputResultListener resultListener) {
                 // Since we're using the microphone, we need to make sure we have proper permission
-                if (!TermuxApiPermissionActivity.checkAndRequestPermissions(activity, activity.getIntent(), Manifest.permission.RECORD_AUDIO)) {
+                if (!TermuxApiPermissionActivity.checkAndRequestPermission(activity, activity.getIntent(), Manifest.permission.RECORD_AUDIO)) {
                     activity.finish();
                 }
 
@@ -803,9 +800,9 @@ public class DialogAPI {
                 });
 
                 Dialog dialog = getDialogBuilder(activity, clickListener)
-                        .setPositiveButton(null, null)
-                        .setOnDismissListener(null)
-                        .create();
+                    .setPositiveButton(null, null)
+                    .setOnDismissListener(null)
+                    .create();
 
                 dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
@@ -876,25 +873,32 @@ public class DialogAPI {
 
                     // unused
                     @Override
-                    public void onEndOfSpeech() { }
+                    public void onEndOfSpeech() {
+                    }
 
                     @Override
-                    public void onReadyForSpeech(Bundle bundle) { }
+                    public void onReadyForSpeech(Bundle bundle) {
+                    }
 
                     @Override
-                    public void onBeginningOfSpeech() { }
+                    public void onBeginningOfSpeech() {
+                    }
 
                     @Override
-                    public void onRmsChanged(float v) { }
+                    public void onRmsChanged(float v) {
+                    }
 
                     @Override
-                    public void onBufferReceived(byte[] bytes) { }
+                    public void onBufferReceived(byte[] bytes) {
+                    }
 
                     @Override
-                    public void onPartialResults(Bundle bundle) { }
+                    public void onPartialResults(Bundle bundle) {
+                    }
 
                     @Override
-                    public void onEvent(int i, Bundle bundle) { }
+                    public void onEvent(int i, Bundle bundle) {
+                    }
                 });
                 return recognizer;
             }
@@ -903,6 +907,7 @@ public class DialogAPI {
 
         /**
          * Base Dialog class to extend from for adding specific views / widgets to a Dialog interface
+         *
          * @param <T> Main view type that will be displayed within dialog
          */
         abstract static class InputDialog<T extends View> implements InputMethod {
@@ -1005,11 +1010,11 @@ public class DialogAPI {
                 final View layoutView = getLayoutView(activity, widgetView);
 
                 return new AlertDialog.Builder(activity)
-                        .setTitle(intent.hasExtra("input_title") ? intent.getStringExtra("input_title") : "")
-                        .setNegativeButton(getNegativeButtonText(), clickListener)
-                        .setPositiveButton(getPositiveButtonText(), clickListener)
-                        .setOnDismissListener(getDismissListener())
-                        .setView(layoutView);
+                    .setTitle(intent.hasExtra("input_title") ? intent.getStringExtra("input_title") : "")
+                    .setNegativeButton(getNegativeButtonText(), clickListener)
+                    .setPositiveButton(getPositiveButtonText(), clickListener)
+                    .setOnDismissListener(getDismissListener())
+                    .setView(layoutView);
 
             }
 

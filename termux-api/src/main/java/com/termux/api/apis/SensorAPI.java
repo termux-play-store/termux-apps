@@ -34,9 +34,9 @@ public class SensorAPI {
      * Starts our SensorReader service
      */
     public static void onReceive(final Context context, final Intent intent) {
-        Intent serviceIntent = new Intent(context, SensorReaderService.class);
-        serviceIntent.setAction(intent.getAction());
-        serviceIntent.putExtras(intent.getExtras());
+        var serviceIntent = new Intent(context, SensorReaderService.class)
+            .setAction(intent.getAction())
+            .putExtras(intent.getExtras());
         context.startService(serviceIntent);
     }
 

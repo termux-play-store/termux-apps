@@ -1,5 +1,6 @@
 package com.termux.api.apis;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,21 +9,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.RequiresPermission;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
 import androidx.core.util.Pair;
 
 import com.termux.api.R;
-import com.termux.api.TermuxAPIConstants;
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 
 import java.io.File;
@@ -43,11 +41,11 @@ public class NotificationAPI {
     /**
      * Show a notification. Driven by the termux-show-notification script.
      */
-    public static void onReceiveShowNotification(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
+    public static void onReceiveShowNotification(final Context context, final Intent intent) {
         Pair<NotificationCompat.Builder, String> pair = buildNotification(context, intent);
         NotificationCompat.Builder notification = pair.first;
         String notificationId = pair.second;
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.WithStringInput() {
+        ResultReturner.returnData(context, intent, new ResultReturner.WithStringInput() {
             @Override
             public void writeResult(PrintWriter out) {
                 NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -62,48 +60,42 @@ public class NotificationAPI {
                     }
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                            CHANNEL_TITLE, priorityFromIntent(intent));
-                    manager.createNotificationChannel(channel);
-                }
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                        CHANNEL_TITLE, priorityFromIntent(intent));
+                manager.createNotificationChannel(channel);
 
                 manager.notify(notificationId, 0, notification.build());
             }
         });
     }
 
-    public static void onReceiveChannel(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                NotificationManager m = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                String channelId = intent.getStringExtra("id");
-                String channelName = intent.getStringExtra("name");
-                
-                if (channelId == null || channelId.equals("")) {
-                    ResultReturner.returnData(apiReceiver, intent, out -> out.println("Channel id not specified."));
-                    return;
-                }
-                
-                if (intent.getBooleanExtra("delete",false)) {
-                    m.deleteNotificationChannel(channelId);
-                    ResultReturner.returnData(apiReceiver, intent, out -> out.println("Deleted channel with id \""+channelId+"\"."));
-                    return;
-                }
-                
-                if (channelName == null || channelName.equals("")) {
-                    ResultReturner.returnData(apiReceiver, intent, out -> out.println("Cannot create a channel without a name."));
-                }
-                
-                NotificationChannel c = new NotificationChannel(channelId, channelName, priorityFromIntent(intent));
-                m.createNotificationChannel(c);
-                ResultReturner.returnData(apiReceiver, intent, out -> out.println("Created channel with id \""+channelId+"\" and name \""+channelName+"\"."));
-            } catch (Exception e) {
-                e.printStackTrace();
-                ResultReturner.returnData(apiReceiver, intent, out -> out.println("Could not create/delete channel."));
+    public static void onReceiveChannel(final Context context, final Intent intent) {
+        try {
+            NotificationManager m = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            String channelId = intent.getStringExtra("id");
+            String channelName = intent.getStringExtra("name");
+
+            if (channelId == null || channelId.equals("")) {
+                ResultReturner.returnData(context, intent, out -> out.println("Channel id not specified."));
+                return;
             }
-        } else {
-            ResultReturner.returnData(apiReceiver, intent, out -> out.println("Notification channels are only available on Android 8.0 and higher, use the options for termux-notification instead."));
+
+            if (intent.getBooleanExtra("delete",false)) {
+                m.deleteNotificationChannel(channelId);
+                ResultReturner.returnData(context, intent, out -> out.println("Deleted channel with id \""+channelId+"\"."));
+                return;
+            }
+
+            if (channelName == null || channelName.equals("")) {
+                ResultReturner.returnData(context, intent, out -> out.println("Cannot create a channel without a name."));
+            }
+
+            NotificationChannel c = new NotificationChannel(channelId, channelName, priorityFromIntent(intent));
+            m.createNotificationChannel(c);
+            ResultReturner.returnData(context, intent, out -> out.println("Created channel with id \""+channelId+"\" and name \""+channelName+"\"."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            ResultReturner.returnData(context, intent, out -> out.println("Could not create/delete channel."));
         }
     }
     
@@ -309,8 +301,8 @@ public class NotificationAPI {
         return id;
     }
 
-    public static void onReceiveRemoveNotification(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.noteDone(apiReceiver, intent);
+    public static void onReceiveRemoveNotification(final Context context, final Intent intent) {
+        ResultReturner.noteDone(context, intent);
         String notificationId = intent.getStringExtra("id");
         if (notificationId != null) {
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -364,8 +356,8 @@ public class NotificationAPI {
         return "\"" + input.toString().replace("\"", "\\\"") + "\"";
     }
 
-    public static void onReceiveReplyToNotification(TermuxApiReceiver termuxApiReceiver,
-                                                    Context context, Intent intent) {
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    public static void onReceiveReplyToNotification(Context context, Intent intent) {
         CharSequence reply = getMessageText(intent);
 
         String action = intent.getStringExtra("action");
@@ -413,6 +405,6 @@ public class NotificationAPI {
 
     static PendingIntent createAction(final Context context, String action){
         Intent executeIntent = createExecuteIntent(action);
-        return PendingIntent.getService(context, 0, executeIntent, 0);
+        return PendingIntent.getService(context, 0, executeIntent, PendingIntent.FLAG_IMMUTABLE);
     }
 }

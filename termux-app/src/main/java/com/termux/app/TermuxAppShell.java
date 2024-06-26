@@ -40,7 +40,7 @@ public final class TermuxAppShell {
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    Log.e("termux", "Task (" + shell + "): " + line);
+                    Log.e(TermuxConstants.LOG_TAG, "Task (" + shell + "): " + line);
                 }
             } catch (IOException e) {
                 // reader probably closed, expected exit condition

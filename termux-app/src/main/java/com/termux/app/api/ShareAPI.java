@@ -1,4 +1,4 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,21 +12,19 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
-import com.termux.api.R;
-import com.termux.api.TermuxAPIConstants;
-import com.termux.api.TermuxApiReceiver;
-import com.termux.api.util.ResultReturner;
+import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Locale;
 
 public class ShareAPI {
 
     private static final String LOG_TAG = "ShareAPI";
 
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
+    public static void onReceive(final Context context, final Intent intent) {
         final String fileExtra = intent.getStringExtra("file");
         final String titleExtra = intent.getStringExtra("title");
         final String contentTypeExtra = intent.getStringExtra("content-type");
@@ -56,7 +54,7 @@ public class ShareAPI {
 
         if (fileExtra == null) {
             // Read text to share from stdin.
-            ResultReturner.returnData(apiReceiver, intent, new ResultReturner.WithStringInput() {
+            ResultReturner.returnData(intent, new ResultReturner.WithStringInput() {
                 @Override
                 public void writeResult(PrintWriter out) {
                     if (TextUtils.isEmpty(inputString)) {
@@ -72,13 +70,14 @@ public class ShareAPI {
                     if (titleExtra != null) sendIntent.putExtra(Intent.EXTRA_SUBJECT, titleExtra);
                     sendIntent.setType(contentTypeExtra == null ? "text/plain" : contentTypeExtra);
 
-                    context.startActivity(Intent.createChooser(sendIntent, context.getResources().getText(R.string.share_file_chooser_title)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    context.startActivity(Intent.createChooser(sendIntent, context.getResources().getText(com.termux.R.string.share_file_chooser_title))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 
                 }
             });
         } else {
             // Share specified file.
-            ResultReturner.returnData(apiReceiver, intent, out -> {
+            ResultReturner.returnData(intent, out -> {
                 final File fileToShare = new File(fileExtra);
                 if (!(fileToShare.isFile() && fileToShare.canRead())) {
                     out.println("ERROR: Not a readable file: '" + fileToShare.getAbsolutePath() + "'");
@@ -88,8 +87,7 @@ public class ShareAPI {
                 Intent sendIntent = new Intent();
                 sendIntent.setAction(finalIntentAction);
 
-                // Do not create Uri with Uri.parse() and use Uri.Builder().path(), check UriUtils.getUriFilePath().
-                Uri uriToShare = null; // TODO: UriUtils.getContentUri(TermuxAPIConstants.TERMUX_API_FILE_SHARE_URI_AUTHORITY, fileToShare.getAbsolutePath());
+                Uri uriToShare = new Uri.Builder().scheme("content").authority("com.termux.sharedfile").path(fileToShare.getAbsolutePath()).build();
                 sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                 String contentTypeToUse;
@@ -99,7 +97,7 @@ public class ShareAPI {
                     String fileExtension = fileName.substring(lastDotIndex + 1);
                     MimeTypeMap mimeTypes = MimeTypeMap.getSingleton();
                     // Lower casing makes it work with e.g. "JPG":
-                    contentTypeToUse = mimeTypes.getMimeTypeFromExtension(fileExtension.toLowerCase());
+                    contentTypeToUse = mimeTypes.getMimeTypeFromExtension(fileExtension.toLowerCase(Locale.ENGLISH));
                     if (contentTypeToUse == null) contentTypeToUse = "application/octet-stream";
                 } else {
                     contentTypeToUse = contentTypeExtra;
@@ -115,7 +113,7 @@ public class ShareAPI {
                 }
 
                 if (!defaultReceiverExtra) {
-                    sendIntent = Intent.createChooser(sendIntent, context.getResources().getText(R.string.share_file_chooser_title)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    sendIntent = Intent.createChooser(sendIntent, context.getResources().getText(com.termux.R.string.share_file_chooser_title)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
                 context.startActivity(sendIntent);
             });
@@ -134,7 +132,6 @@ public class ShareAPI {
         @Override
         public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
             File file = new File(uri.getPath());
-            String fileName = file.getName();
 
             if (projection == null) {
                 projection = new String[]{
@@ -170,27 +167,27 @@ public class ShareAPI {
         }
 
         @Override
-        public String getType(Uri uri) {
+        public String getType(@NonNull Uri uri) {
             return null;
         }
 
         @Override
-        public Uri insert(Uri uri, ContentValues values) {
+        public Uri insert(@NonNull Uri uri, ContentValues values) {
             return null;
         }
 
         @Override
-        public int delete(Uri uri, String selection, String[] selectionArgs) {
+        public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
             return 0;
         }
 
         @Override
-        public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
             return 0;
         }
 
         @Override
-        public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+        public ParcelFileDescriptor openFile(Uri uri, @NonNull String mode) throws FileNotFoundException {
             File file = new File(uri.getPath());
 
             try {

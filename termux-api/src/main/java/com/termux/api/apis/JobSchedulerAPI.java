@@ -1,5 +1,6 @@
 package com.termux.api.apis;
 
+import android.annotation.SuppressLint;
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
@@ -7,13 +8,10 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.PersistableBundle;
-import androidx.annotation.RequiresApi;
 import android.text.TextUtils;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 
 import java.io.File;
@@ -25,6 +23,7 @@ public class JobSchedulerAPI {
 
     private static final String LOG_TAG = "JobSchedulerAPI";
 
+    @SuppressLint("ObsoleteSdkInt")
     private static String formatJobInfo(JobInfo jobInfo) {
         final String path = jobInfo.getExtras().getString(JobSchedulerService.SCRIPT_FILE_PATH);
         List<String> description = new ArrayList<String>();
@@ -56,7 +55,8 @@ public class JobSchedulerAPI {
                 TextUtils.join(" ", description));
     }
 
-    public static void onReceive(TermuxApiReceiver apiReceiver, Context context, Intent intent) {
+    @SuppressLint("ObsoleteSdkInt")
+    public static void onReceive(Context context, Intent intent) {
         final String scriptPath = intent.getStringExtra("script");
 
         final int jobId = intent.getIntExtra("job_id", 0);
@@ -105,22 +105,22 @@ public class JobSchedulerAPI {
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
 
         if (pending) {
-            displayPendingJobs(apiReceiver, intent, jobScheduler);
+            displayPendingJobs(context, intent, jobScheduler);
             return;
         }
         if (cancelAll) {
-            displayPendingJobs(apiReceiver, intent, jobScheduler);
-            ResultReturner.returnData(apiReceiver, intent, out -> out.println("Cancelling all jobs"));
+            displayPendingJobs(context, intent, jobScheduler);
+            ResultReturner.returnData(context, intent, out -> out.println("Cancelling all jobs"));
             jobScheduler.cancelAll();
             return;
         } else if (cancel) {
-            cancelJob(apiReceiver, intent, jobScheduler, jobId);
+            cancelJob(context, intent, jobScheduler, jobId);
             return;
         }
 
         // Schedule new job
         if (scriptPath == null) {
-            ResultReturner.returnData(apiReceiver, intent, out -> out.println("No script path given"));
+            ResultReturner.returnData(context, intent, out -> out.println("No script path given"));
             return;
         }
         final File file = new File(scriptPath);
@@ -136,7 +136,7 @@ public class JobSchedulerAPI {
         }
 
         if (!fileCheckMsg.isEmpty()) {
-            ResultReturner.returnData(apiReceiver, intent, out -> out.println(String.format(fileCheckMsg, scriptPath)));
+            ResultReturner.returnData(context, intent, out -> out.println(String.format(fileCheckMsg, scriptPath)));
             return;
         }
 
@@ -165,14 +165,14 @@ public class JobSchedulerAPI {
         final int scheduleResponse = jobScheduler.schedule(job);
 
         final String message = String.format(Locale.ENGLISH, "Scheduling %s - response %d", formatJobInfo(job), scheduleResponse);
-        ResultReturner.returnData(apiReceiver, intent, out -> out.println(message));
+        ResultReturner.returnData(context, intent, out -> out.println(message));
 
 
-        displayPendingJobs(apiReceiver, intent, jobScheduler);
+        displayPendingJobs(context, intent, jobScheduler);
 
     }
 
-    private static void displayPendingJobs(TermuxApiReceiver apiReceiver, Intent intent, JobScheduler jobScheduler) {
+    private static void displayPendingJobs(Context apiReceiver, Intent intent, JobScheduler jobScheduler) {
         // Display pending jobs
         final List<JobInfo> jobs = jobScheduler.getAllPendingJobs();
         if (jobs.isEmpty()) {
@@ -187,8 +187,7 @@ public class JobSchedulerAPI {
         ResultReturner.returnData(apiReceiver, intent, out -> out.println(stringBuilder.toString()));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private static void cancelJob(TermuxApiReceiver apiReceiver, Intent intent, JobScheduler jobScheduler, int jobId) {
+    private static void cancelJob(Context apiReceiver, Intent intent, JobScheduler jobScheduler, int jobId) {
         final JobInfo jobInfo = jobScheduler.getPendingJob(jobId);
         if (jobInfo == null) {
             ResultReturner.returnData(apiReceiver, intent, out -> out.println(String.format(Locale.ENGLISH, "No job %d found", jobId)));
@@ -204,8 +203,6 @@ public class JobSchedulerAPI {
     public static class JobSchedulerService extends JobService {
 
         public static final String SCRIPT_FILE_PATH = "com.termux.api.jobscheduler_script_path";
-
-        private static final String LOG_TAG = "JobSchedulerService";
 
         @Override
         public boolean onStartJob(JobParameters params) {
