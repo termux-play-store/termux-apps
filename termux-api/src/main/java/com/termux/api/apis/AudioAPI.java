@@ -2,70 +2,49 @@ package com.termux.api.apis;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.os.Build;
 import android.util.JsonWriter;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 
 public class AudioAPI {
 
-    private static final String LOG_TAG = "AudioAPI";
-
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
-        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        final String SampleRate = am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
-        final String framesPerBuffer = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-        final boolean bluetootha2dp = am.isBluetoothA2dpOn();
-        final boolean wiredhs = am.isWiredHeadsetOn();
+    public static void onReceive(final Context context, Intent intent) {
+        var am = context.getSystemService(AudioManager.class);
+        var sampleRate = am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+        var framesPerBuffer = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        var bluetootha2dp = am.isBluetoothA2dpOn();
+        var wiredhs = am.isWiredHeadsetOn();
 
         final int sr, bs, sr_ll, bs_ll, sr_ps, bs_ps;
-        AudioTrack at;
-        at = new AudioTrack.Builder()
+        var at = new AudioTrack.Builder()
             .setBufferSizeInBytes(4) // one 16bit 2ch frame
             .build();
         sr = at.getSampleRate();
         bs = at.getBufferSizeInFrames();
         at.release();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            at = new AudioTrack.Builder()
-                .setBufferSizeInBytes(4) // one 16bit 2ch frame
-                .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
-                .build();
-        } else {
-            AudioAttributes aa = new AudioAttributes.Builder()
-                .setFlags(AudioAttributes.FLAG_LOW_LATENCY)
-                .build();
-            at = new AudioTrack.Builder()
-                .setAudioAttributes(aa)
-                .setBufferSizeInBytes(4) // one 16bit 2ch frame
-                .build();
-        }
+        at = new AudioTrack.Builder()
+            .setBufferSizeInBytes(4) // one 16bit 2ch frame
+            .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+            .build();
         sr_ll = at.getSampleRate();
         bs_ll = at.getBufferSizeInFrames();
         at.release();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            at = new AudioTrack.Builder()
-                .setBufferSizeInBytes(4) // one 16bit 2ch frame
-                .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_POWER_SAVING)
-                .build();
-            sr_ps = at.getSampleRate();
-            bs_ps = at.getBufferSizeInFrames();
-            at.release();
-        } else {
-            sr_ps = sr;
-            bs_ps = bs;
-        }
+        at = new AudioTrack.Builder()
+            .setBufferSizeInBytes(4) // one 16bit 2ch frame
+            .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_POWER_SAVING)
+            .build();
+        sr_ps = at.getSampleRate();
+        bs_ps = at.getBufferSizeInFrames();
+        at.release();
 
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
+        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
             public void writeJson(JsonWriter out) throws Exception {
                 out.beginObject();
-                out.name("PROPERTY_OUTPUT_SAMPLE_RATE").value(SampleRate);
+                out.name("PROPERTY_OUTPUT_SAMPLE_RATE").value(sampleRate);
                 out.name("PROPERTY_OUTPUT_FRAMES_PER_BUFFER").value(framesPerBuffer);
                 out.name("AUDIOTRACK_SAMPLE_RATE").value(sr);
                 out.name("AUDIOTRACK_BUFFER_SIZE_IN_FRAMES").value(bs);

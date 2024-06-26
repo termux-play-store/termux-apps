@@ -10,7 +10,6 @@ import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 
 import java.io.PrintWriter;
@@ -20,8 +19,8 @@ public class SmsSendAPI {
 
     private static final String LOG_TAG = "SmsSendAPI";
 
-    public static void onReceive(TermuxApiReceiver apiReceiver, Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.WithStringInput() {
+    public static void onReceive(Context context, final Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultReturner.WithStringInput() {
             @RequiresPermission(allOf = {Manifest.permission.READ_PHONE_STATE, Manifest.permission.SEND_SMS})
             @Override
             public void writeResult(PrintWriter out) {

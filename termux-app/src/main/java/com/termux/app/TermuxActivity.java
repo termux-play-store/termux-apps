@@ -280,7 +280,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                         }
                         if (bytesReceived.length == 0) {
                             if (!fileToWrite.delete()) {
-                                Log.e("termux", "Unable to delete file: " + fileToWrite.getAbsolutePath());
+                                Log.e(TermuxConstants.LOG_TAG, "Unable to delete file: " + fileToWrite.getAbsolutePath());
                             }
                         } else {
                             try (var fos = new FileOutputStream(fileToWrite)) {

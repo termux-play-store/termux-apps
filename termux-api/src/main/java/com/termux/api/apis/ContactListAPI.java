@@ -10,14 +10,13 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.JsonWriter;
 import android.util.SparseArray;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.util.ResultReturner.ResultJsonWriter;
 
 public class ContactListAPI {
 
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultJsonWriter() {
+    public static void onReceive(final Context context, Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 listContacts(context, out);

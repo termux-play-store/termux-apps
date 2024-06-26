@@ -12,7 +12,6 @@ import android.provider.Telephony.Sms.Conversations;
 import android.provider.Telephony.TextBasedSmsColumns;
 import android.util.JsonWriter;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.util.ResultReturner.ResultJsonWriter;
 
@@ -33,9 +32,7 @@ public class SmsInboxAPI {
 
     private static final String[] DISPLAY_NAME_PROJECTION = {PhoneLookup.DISPLAY_NAME};
 
-    private static final String LOG_TAG = "SmsInboxAPI";
-
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
+    public static void onReceive(final Context context, Intent intent) {
         final int offset = intent.getIntExtra("offset", 0);
         final int limit = intent.getIntExtra("limit", 10);
         final String number = intent.hasExtra("from") ? intent.getStringExtra("from"):"";
@@ -44,7 +41,7 @@ public class SmsInboxAPI {
                 typeToContentURI(number==null || number.isEmpty() ?
                         intent.getIntExtra("type", TextBasedSmsColumns.MESSAGE_TYPE_INBOX): 0);
 
-        ResultReturner.returnData(apiReceiver, intent, new ResultJsonWriter() {
+        ResultReturner.returnData(context, intent, new ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 if (conversation_list) getConversations(context, out, offset, limit);
@@ -64,7 +61,7 @@ public class SmsInboxAPI {
 
             out.beginArray();
             for (int i = 0, count = c.getCount(); i < count; i++) {
-                int id = c.getInt(c.getColumnIndex(THREAD_ID));
+                int id = c.getInt(c.getColumnIndexOrThrow(THREAD_ID));
 
                 Cursor cc = cr.query(Sms.CONTENT_URI, null,
                         THREAD_ID + " == '" + id +"'",
@@ -89,7 +86,7 @@ public class SmsInboxAPI {
         int threadID = c.getInt(c.getColumnIndexOrThrow(THREAD_ID));
         String smsAddress = c.getString(c.getColumnIndexOrThrow(ADDRESS));
         String smsBody = c.getString(c.getColumnIndexOrThrow(BODY));
-        boolean read = (c.getInt(c.getColumnIndex(READ)) != 0);
+        boolean read = (c.getInt(c.getColumnIndexOrThrow(READ)) != 0);
         long smsReceivedDate = c.getLong(c.getColumnIndexOrThrow(DATE));
         // long smsSentDate = c.getLong(c.getColumnIndexOrThrow(TextBasedSmsColumns.DATE_SENT));
         int smsID = c.getInt(c.getColumnIndexOrThrow("_id"));
@@ -150,7 +147,7 @@ public class SmsInboxAPI {
             return cache.get(number);
         Uri contactUri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
         try (Cursor c = context.getContentResolver().query(contactUri, DISPLAY_NAME_PROJECTION, null, null, null)) {
-            String name = c.moveToFirst() ? c.getString(c.getColumnIndex(PhoneLookup.DISPLAY_NAME)) : null;
+            String name = c.moveToFirst() ? c.getString(c.getColumnIndexOrThrow(PhoneLookup.DISPLAY_NAME)) : null;
             cache.put(number, name);
             return name;
         }

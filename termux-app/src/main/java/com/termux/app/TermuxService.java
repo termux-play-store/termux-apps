@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.termux.R;
+import com.termux.app.api.TermuxApiHandler;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 
@@ -69,6 +70,8 @@ public final class TermuxService extends Service {
 
     private final IBinder mBinder = new LocalBinder();
 
+    private final TermuxApiHandler mTermuxApiHandler = new TermuxApiHandler(this);
+
     /**
      * The full implementation of the {@link TerminalSessionClient} interface to be used by {@link TerminalSession}
      * that holds activity references for activity related functions.
@@ -113,29 +116,34 @@ public final class TermuxService extends Service {
         startForeground(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
 
         if (intent != null && intent.getAction() != null) {
-            switch (intent.getAction()) {
-                case ACTION_STOP_SERVICE:
-                    Log.d(LOG_TAG, "ACTION_STOP_SERVICE intent received");
-                    actionStopService();
-                    break;
-                case ACTION_WAKE_LOCK:
-                    Log.d(LOG_TAG, "ACTION_WAKE_LOCK intent received");
-                    actionAcquireWakeLock();
-                    break;
-                case ACTION_WAKE_UNLOCK:
-                    Log.d(LOG_TAG, "ACTION_WAKE_UNLOCK intent received");
-                    actionReleaseWakeLock(true);
-                    break;
-                case ACTION_SERVICE_EXECUTE:
-                    Log.d(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
-                    actionServiceExecute(intent);
-                    break;
-                case ACTION_ON_BOOT:
-                    runOnBoot();
-                    break;
-                default:
-                    Log.e(LOG_TAG, "Invalid action: \"" + intent.getAction() + "\"");
-                    break;
+            var apiMethod = intent.getStringExtra("api_method");
+            if (apiMethod != null) {
+                mTermuxApiHandler.handleApiIntent(this, intent, apiMethod);
+            } else if (intent.getAction() != null) {
+                switch (intent.getAction()) {
+                    case ACTION_STOP_SERVICE:
+                        Log.d(LOG_TAG, "ACTION_STOP_SERVICE intent received");
+                        actionStopService();
+                        break;
+                    case ACTION_WAKE_LOCK:
+                        Log.d(LOG_TAG, "ACTION_WAKE_LOCK intent received");
+                        actionAcquireWakeLock();
+                        break;
+                    case ACTION_WAKE_UNLOCK:
+                        Log.d(LOG_TAG, "ACTION_WAKE_UNLOCK intent received");
+                        actionReleaseWakeLock(true);
+                        break;
+                    case ACTION_SERVICE_EXECUTE:
+                        Log.d(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
+                        actionServiceExecute(intent);
+                        break;
+                    case ACTION_ON_BOOT:
+                        runOnBoot();
+                        break;
+                    default:
+                        Log.e(LOG_TAG, "Invalid action: \"" + intent.getAction() + "\"");
+                        break;
+                }
             }
         }
 
@@ -148,6 +156,8 @@ public final class TermuxService extends Service {
         if (!mWantsToStop) {
             killAllTermuxExecutionCommands();
         }
+
+        mTermuxApiHandler.onDestroy();
     }
 
     @Override
@@ -284,7 +294,6 @@ public final class TermuxService extends Service {
 
     /**
      * Create a {@link TerminalSession}.
-     * Currently called by {@link TermuxTerminalSessionActivityClient#addNewSession(boolean, String)} to add a new {@link TerminalSession}.
      */
     public @NonNull TerminalSession createTermuxSession(File executable,
                                                         @NonNull String[] arguments,

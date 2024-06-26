@@ -3,12 +3,9 @@ package com.termux.api.apis;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.termux.api.util.ResultReturner;
@@ -21,7 +18,7 @@ public class ToastAPI {
 
     public static void onReceive(final Context context, Intent intent) {
         final int durationExtra = intent.getBooleanExtra("short", false) ? Toast.LENGTH_SHORT : Toast.LENGTH_LONG;
-        final int backgroundColor = getColorExtra(intent, "background", Color.GRAY);
+        // final int backgroundColor = getColorExtra(intent, "background", Color.GRAY);
         final int textColor = getColorExtra(intent, "text_color", Color.WHITE);
         final int gravity = getGravityExtra(intent);
 
@@ -32,13 +29,13 @@ public class ToastAPI {
             public void writeResult(PrintWriter out) {
                 handler.post(() -> {
                     Toast toast = Toast.makeText(context, inputString, durationExtra);
-                    View toastView = toast.getView();
+                    // View toastView = toast.getView();
 
-                    Drawable background = toastView.getBackground();
-                    background.setTint(backgroundColor);
+                    // Drawable background = toastView.getBackground();
+                    // background.setTint(backgroundColor);
 
-                    TextView textView = toastView.findViewById(android.R.id.message);
-                    textView.setTextColor(textColor);
+                    // TextView textView = toastView.findViewById(android.R.id.message);
+                    // textView.setTextColor(textColor);
 
                     toast.setGravity(gravity, 0, 0);
                     toast.show();

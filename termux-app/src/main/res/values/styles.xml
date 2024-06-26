@@ -4,4 +4,15 @@
     <style name="TermuxActivity.Drawer.ButtonBarStyle.Light" parent="@style/Widget.MaterialComponents.Button.TextButton">
     </style>
 
+    <style name="TransparentTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="background">@android:color/transparent</item>
+
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:color/transparent</item>
+    </style>
+
 </resources>

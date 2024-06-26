@@ -53,6 +53,7 @@
     <!-- Share -->
     <string name="title_share_with">Share With</string>
     <string name="title_open_url_with">Open URL With</string>
+    <string name="share_file_chooser_title">Share with</string>
 
     <!-- Termux Notifications -->
     <string name="notification_action_exit">Exit</string>

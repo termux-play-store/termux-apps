@@ -10,26 +10,23 @@ import android.util.JsonWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.util.ResultReturner.ResultJsonWriter;
 
 
 public class NotificationListAPI {
 
-    private static final String LOG_TAG = "NotificationListAPI";
-
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultJsonWriter() {
+    public static void onReceive(final Context context, Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
-                listNotifications(context, out);
+                listNotifications(out);
             }
         });
     }
 
 
-    static void listNotifications(Context context, JsonWriter out) throws Exception {
+    static void listNotifications(JsonWriter out) throws Exception {
         NotificationService notificationService = NotificationService.get();
         StatusBarNotification[] notifications = notificationService.getActiveNotifications();
 
@@ -70,14 +67,14 @@ public class NotificationListAPI {
                 packageName = n.getPackageName();
             }
             out.beginObject()
-                    .name("id").value(id)
-                    .name("tag").value(tag)
-                    .name("key").value(key)
-                    .name("group").value(group)
-                    .name("packageName").value(packageName)
-                    .name("title").value(title)
-                    .name("content").value(text)
-                    .name("when").value(when);
+                .name("id").value(id)
+                .name("tag").value(tag)
+                .name("key").value(key)
+                .name("group").value(group)
+                .name("packageName").value(packageName)
+                .name("title").value(title)
+                .name("content").value(text)
+                .name("when").value(when);
             if (lines != null) {
                 out.name("lines").beginArray();
                 for (CharSequence line : lines) {
@@ -89,7 +86,6 @@ public class NotificationListAPI {
         }
         out.endArray();
     }
-
 
 
     public static class NotificationService extends NotificationListenerService {

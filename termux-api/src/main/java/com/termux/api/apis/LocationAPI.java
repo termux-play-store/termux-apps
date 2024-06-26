@@ -15,7 +15,6 @@ import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.util.ResultReturner.ResultJsonWriter;
 
@@ -29,8 +28,8 @@ public class LocationAPI {
     private static final String REQUEST_ONCE = "once";
     private static final String REQUEST_UPDATES = "updates";
 
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultJsonWriter() {
+    public static void onReceive(final Context context, final Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultJsonWriter() {
             @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
             @Override
             public void writeJson(final JsonWriter out) throws Exception {
@@ -151,9 +150,7 @@ public class LocationAPI {
         out.name("longitude").value(lastKnownLocation.getLongitude());
         out.name("altitude").value(lastKnownLocation.getAltitude());
         out.name("accuracy").value(lastKnownLocation.getAccuracy());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            out.name("vertical_accuracy").value(lastKnownLocation.getVerticalAccuracyMeters());
-        }
+        out.name("vertical_accuracy").value(lastKnownLocation.getVerticalAccuracyMeters());
         out.name("bearing").value(lastKnownLocation.getBearing());
         out.name("speed").value(lastKnownLocation.getSpeed());
         long elapsedMs = (SystemClock.elapsedRealtimeNanos() - lastKnownLocation.getElapsedRealtimeNanos()) / 1000000;

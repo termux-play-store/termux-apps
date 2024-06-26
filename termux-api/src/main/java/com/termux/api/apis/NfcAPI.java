@@ -85,7 +85,7 @@ public class NfcAPI {
             super.onResume();
             adapter = NfcAdapter.getDefaultAdapter(this);
             Intent intentNew = new Intent(this, NfcActivity.class).addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intentNew, 0);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intentNew, PendingIntent.FLAG_MUTABLE);
             IntentFilter[] intentFilter = new IntentFilter[]{
                 new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED),
                 new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED),

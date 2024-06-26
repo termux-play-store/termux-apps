@@ -4,18 +4,19 @@ import android.app.Activity;
 import android.app.IntentService;
 import android.content.BroadcastReceiver;
 import android.content.BroadcastReceiver.PendingResult;
+import android.content.Context;
 import android.content.Intent;
 import android.net.LocalSocket;
-import android.net.LocalSocketAddress;
 import android.os.ParcelFileDescriptor;
 import android.util.JsonWriter;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
@@ -24,16 +25,16 @@ public abstract class ResultReturner {
     private static final String LOG_TAG = "ResultReturner";
 
     /**
-     * An extra intent parameter which specifies a linux abstract namespace socket address where output from the API
+     * An extra intent parameter which specifies a file descriptor where output from the API
      * call should be written.
      */
-    private static final String SOCKET_OUTPUT_EXTRA = "socket_output";
+    private static final String SOCKET_OUTPUT_EXTRA = "com.termux.api.output_socket_fd";
 
     /**
-     * An extra intent parameter which specifies a linux abstract namespace socket address where input to the API call
+     * An extra intent parameter which specifies a file descriptor input to the API call
      * can be read from.
      */
-    private static final String SOCKET_INPUT_EXTRA = "socket_input";
+    private static final String SOCKET_INPUT_EXTRA = "com.termux.api.input_socket_fd";
 
     public interface ResultWriter {
         void writeResult(PrintWriter out) throws Exception;
@@ -50,27 +51,6 @@ public abstract class ResultReturner {
         }
     }
     
-    /**
-     * Possible subclass of {@link ResultWriter} when the output is binary data instead of text.
-     */
-    public static abstract class BinaryOutput implements ResultWriter {
-        private OutputStream out;
-        
-        public void setOutput(OutputStream outputStream) {
-            this.out = outputStream;
-        }
-        
-        public abstract void writeResult(OutputStream out) throws Exception;
-    
-        /**
-         * writeResult with a PrintWriter is marked as final and overwritten, so you don't accidentally use it
-         */
-        public final void writeResult(PrintWriter unused) throws Exception {
-            writeResult(out);
-            out.flush();
-        }
-    }
-
     /**
      * Possible marker interface for a {@link ResultWriter} when input is to be read from stdin.
      */
@@ -94,18 +74,6 @@ public abstract class ResultReturner {
         }
     }
 
-    public static abstract class WithAncillaryFd implements ResultWriter {
-        private int fd = -1;
-
-        public final void setFd(int newFd) {
-            fd = newFd;
-        }
-
-        public final int getFd() {
-            return fd;
-        }
-    }
-
     public static abstract class ResultJsonWriter implements ResultWriter {
         @Override
         public final void writeResult(PrintWriter out) throws Exception {
@@ -121,8 +89,8 @@ public abstract class ResultReturner {
     /**
      * Just tell termux-api.c that we are done.
      */
-    public static void noteDone(BroadcastReceiver receiver, final Intent intent) {
-        returnData(receiver, intent, null);
+    public static void noteDone(Context context, final Intent intent) {
+        returnData(context, intent, null);
     }
 
     public static void copyIntentExtras(Intent origIntent, Intent newIntent) {
@@ -142,45 +110,29 @@ public abstract class ResultReturner {
 
         final Runnable runnable = () -> {
             PrintWriter writer = null;
-            LocalSocket outputSocket = null;
+            ParcelFileDescriptor outFd = null;
+            ParcelFileDescriptor inFd = null;
             try {
-                final ParcelFileDescriptor[] pfds = { null };
-                outputSocket = new LocalSocket();
-                String outputSocketAdress = intent.getStringExtra(SOCKET_OUTPUT_EXTRA);
-                if (outputSocketAdress == null || outputSocketAdress.isEmpty())
+                outFd = intent.getParcelableExtra(SOCKET_OUTPUT_EXTRA);
+                if (outFd == null) {
                     throw new IOException("Missing '" + SOCKET_OUTPUT_EXTRA + "' extra");
-                outputSocket.connect(new LocalSocketAddress(outputSocketAdress));
-                writer = new PrintWriter(outputSocket.getOutputStream());
+                }
+                var outStream = new FileOutputStream(outFd.getFileDescriptor());
+                writer = new PrintWriter(outStream);
 
                 if (resultWriter != null) {
-                    if (resultWriter instanceof BinaryOutput) {
-                        BinaryOutput bout = (BinaryOutput) resultWriter;
-                        bout.setOutput(outputSocket.getOutputStream());
+                    inFd = intent.getParcelableExtra(SOCKET_INPUT_EXTRA);
+                    if (inFd == null) {
+                        throw new IOException("Missing '" + SOCKET_INPUT_EXTRA + "' extra");
                     }
                     if (resultWriter instanceof WithInput) {
-                        try (LocalSocket inputSocket = new LocalSocket()) {
-                            String inputSocketAdress = intent.getStringExtra(SOCKET_INPUT_EXTRA);
-                            if (inputSocketAdress == null || inputSocketAdress.isEmpty())
-                                throw new IOException("Missing '" + SOCKET_INPUT_EXTRA + "' extra");
-                            inputSocket.connect(new LocalSocketAddress(inputSocketAdress));
-                            ((WithInput) resultWriter).setInput(inputSocket.getInputStream());
-                            resultWriter.writeResult(writer);
-                        }
+                        var inStream = new FileInputStream(inFd.getFileDescriptor());
+                        ((WithInput) resultWriter).setInput(inStream);
                     } else {
-                        resultWriter.writeResult(writer);
+                        inFd.close();
                     }
-                    if(resultWriter instanceof WithAncillaryFd) {
-                        int fd = ((WithAncillaryFd) resultWriter).getFd();
-                        if (fd >= 0) {
-                            pfds[0] = ParcelFileDescriptor.adoptFd(fd);
-                            FileDescriptor[] fds = { pfds[0].getFileDescriptor() };
-                            outputSocket.setFileDescriptorsForSend(fds);
-                        }
-                    }
-                }
 
-                if(pfds[0] != null) {
-                    pfds[0].close();
+                    resultWriter.writeResult(writer);
                 }
 
                 if (asyncResult != null) {
@@ -199,10 +151,15 @@ public abstract class ResultReturner {
                 }
             } finally {
                 try {
-                    if (writer != null)
+                    if (writer != null) {
                         writer.close();
-                    if (outputSocket != null)
-                        outputSocket.close();
+                    }
+                    if (outFd != null) {
+                        outFd.close();
+                    }
+                    if (inFd != null) {
+                        inFd.close();
+                    }
                 } catch (Exception e) {
                     Log.e(LOG_TAG, "Failed to close", e);
                 }

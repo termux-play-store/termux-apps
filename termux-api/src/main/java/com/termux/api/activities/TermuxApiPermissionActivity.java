@@ -3,6 +3,7 @@ package com.termux.api.activities;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.text.TextUtils;
 import android.util.JsonWriter;
 import android.util.Log;
@@ -26,12 +27,12 @@ public class TermuxApiPermissionActivity extends Activity {
      *
      * @return if all permissions were already granted
      */
-    public static boolean checkAndRequestPermissions(Context context, Intent intent, String... permissions) {
-        final ArrayList<String> permissionsToRequest = new ArrayList<>();
-        for (String permission : permissions) {
-            //TODO: if (!PermissionUtils.checkPermission(context, permission)) {
-                //permissionsToRequest.add(permission);
-            //}
+    public static boolean checkAndRequestPermission(Context context, Intent intent, String... permissions) {
+        var permissionsToRequest = new ArrayList<String>();
+        for (var permission : permissions) {
+            if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_DENIED) {
+                permissionsToRequest.add(permission);
+            }
         }
 
         if (permissionsToRequest.isEmpty()) {
@@ -42,17 +43,20 @@ public class TermuxApiPermissionActivity extends Activity {
                 public void writeJson(JsonWriter out) throws Exception {
                     String errorMessage = "Please grant the following permission"
                             + (permissionsToRequest.size() > 1 ? "s" : "")
-                            + " to use this command: "
-                            + TextUtils.join(" ,", permissionsToRequest);
+                            + " (at Settings > Apps > Termux:API > Permissions) to use this command: "
+                            + TextUtils.join(", ", permissionsToRequest);
                     out.beginObject().name("error").value(errorMessage).endObject();
                 }
             });
 
-            Intent startIntent = new Intent(context, TermuxApiPermissionActivity.class)
+            var startIntent = new Intent(context, TermuxApiPermissionActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     .putStringArrayListExtra(TermuxApiPermissionActivity.PERMISSIONS_EXTRA, permissionsToRequest);
-            ResultReturner.copyIntentExtras(intent, startIntent);
-            context.startActivity(startIntent);
+            try {
+                context.startActivity(startIntent);
+            } catch (Exception e) {
+                Log.e(TermuxAPIConstants.LOG_TAG, "Unable to start permission activity", e);
+            }
             return false;
         }
     }
@@ -68,8 +72,10 @@ public class TermuxApiPermissionActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Log.v(LOG_TAG, "onResume");
-        ArrayList<String> permissionValues = getIntent().getStringArrayListExtra(PERMISSIONS_EXTRA);
-        //PermissionUtils.requestPermissions(this, permissionValues.toArray(new String[0]), 0);
+        var permissionValues = getIntent().getStringArrayListExtra(PERMISSIONS_EXTRA);
+        if (permissionValues != null) {
+            requestPermissions(permissionValues.toArray(new String[0]), 0);
+        }
         finish();
     }
 

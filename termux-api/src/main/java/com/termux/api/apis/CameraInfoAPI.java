@@ -11,16 +11,13 @@ import android.util.JsonWriter;
 import android.util.Size;
 import android.util.SizeF;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 import com.termux.api.util.ResultReturner.ResultJsonWriter;
 
 public class CameraInfoAPI {
 
-    private static final String LOG_TAG = "CameraInfoAPI";
-
-    public static void onReceive(TermuxApiReceiver apiReceiver, final Context context, Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultJsonWriter() {
+    public static void onReceive(final Context context, Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 final CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);

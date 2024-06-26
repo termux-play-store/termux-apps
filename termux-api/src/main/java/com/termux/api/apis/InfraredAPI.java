@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.hardware.ConsumerIrManager;
 import android.util.JsonWriter;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 
 /**
@@ -13,10 +12,8 @@ import com.termux.api.util.ResultReturner;
  */
 public class InfraredAPI {
 
-    private static final String LOG_TAG = "InfraredAPI";
-
-    public static void onReceiveCarrierFrequency(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
+    public static void onReceiveCarrierFrequency(final Context context, final Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 ConsumerIrManager irManager = (ConsumerIrManager) context.getSystemService(Context.CONSUMER_IR_SERVICE);
@@ -43,8 +40,8 @@ public class InfraredAPI {
     }
 
 
-    public static void onReceiveTransmit(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
+    public static void onReceiveTransmit(final Context context, final Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 ConsumerIrManager irManager = (ConsumerIrManager) context.getSystemService(Context.CONSUMER_IR_SERVICE);

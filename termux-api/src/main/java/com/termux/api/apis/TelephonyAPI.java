@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoCdma;
 import android.telephony.CellInfoGsm;
@@ -21,7 +20,6 @@ import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
-import com.termux.api.TermuxApiReceiver;
 import com.termux.api.util.ResultReturner;
 
 import java.io.IOException;
@@ -51,8 +49,8 @@ public class TelephonyAPI {
         }
     }
 
-    public static void onReceiveTelephonyCellInfo(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
+    public static void onReceiveTelephonyCellInfo(final Context context, final Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -99,19 +97,12 @@ public class TelephonyAPI {
                             writeIfKnown(out, "mcc", lteInfo.getCellIdentity().getMcc());
                             writeIfKnown(out, "mnc", lteInfo.getCellIdentity().getMnc());
 
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                writeIfKnown(out, "rsrp", lteInfo.getCellSignalStrength().getRsrp());
-                                writeIfKnown(out, "rsrq", lteInfo.getCellSignalStrength().getRsrq());
-                            }
+                            writeIfKnown(out, "rsrp", lteInfo.getCellSignalStrength().getRsrp());
+                            writeIfKnown(out, "rsrq", lteInfo.getCellSignalStrength().getRsrq());
+                            writeIfKnown(out, "rssi", lteInfo.getCellSignalStrength().getRssi());
 
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                writeIfKnown(out, "rssi", lteInfo.getCellSignalStrength().getRssi());
-                            }
-
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                writeIfKnown(out, "bands", lteInfo.getCellIdentity().getBands());
-                            }
-                        } else if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) && (cellInfo instanceof CellInfoNr)) {
+                            writeIfKnown(out, "bands", lteInfo.getCellIdentity().getBands());
+                        } else if (cellInfo instanceof CellInfoNr) {
                             CellInfoNr nrInfo = (CellInfoNr) cellInfo;
                             CellIdentityNr nrcellIdent = (CellIdentityNr) nrInfo.getCellIdentity();
                             CellSignalStrength ssInfo = nrInfo.getCellSignalStrength();
@@ -135,9 +126,7 @@ public class TelephonyAPI {
                                 writeIfKnown(out, "ss_rsrq", nrssInfo.getSsRsrq());
                                 writeIfKnown(out, "ss_sinr", nrssInfo.getSsSinr());
                             }
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                writeIfKnown(out, "bands", nrcellIdent.getBands());
-                            }
+                            writeIfKnown(out, "bands", nrcellIdent.getBands());
                         } else if (cellInfo instanceof CellInfoCdma) {
                             CellInfoCdma cdmaInfo = (CellInfoCdma) cellInfo;
                             out.name("type").value("cdma");
@@ -183,19 +172,17 @@ public class TelephonyAPI {
         });
     }
 
-    public static void onReceiveTelephonyDeviceInfo(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultReturner.ResultJsonWriter() {
+    public static void onReceiveTelephonyDeviceInfo(final Context context, final Intent intent) {
+        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
             @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
-            @SuppressLint("HardwareIds")
+            @SuppressLint({"HardwareIds", "MissingPermission"})
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
                 out.beginObject();
 
                 {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        out.name("data_enabled").value(Boolean.toString(manager.isDataEnabled()));
-                    }
+                    out.name("data_enabled").value(Boolean.toString(manager.isDataEnabled()));
 
                     int dataActivity = manager.getDataActivity();
                     String dataActivityString;
@@ -246,15 +233,13 @@ public class TelephonyAPI {
 
                     String device_id = null;
 
-                    try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            device_id = phoneType == TelephonyManager.PHONE_TYPE_GSM ? manager.getImei() : manager.getMeid();
-                        }
-                    } catch (SecurityException e) {
+                    // try {
+                        // device_id = phoneType == TelephonyManager.PHONE_TYPE_GSM ? manager.getImei() : manager.getMeid();
+                    // } catch (SecurityException e) {
                         // Failed to obtain device id.
                         // Android 10+ requires READ_PRIVILEGED_PHONE_STATE
                         // https://source.android.com/devices/tech/config/device-identifiers
-                    }
+                    // }
 
                     out.name("device_id").value(device_id);
                     out.name("device_software_version").value(manager.getDeviceSoftwareVersion());
@@ -334,7 +319,7 @@ public class TelephonyAPI {
                             networkTypeName = "unknown";
                             break;
                         default:
-                            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) && (networkType == TelephonyManager.NETWORK_TYPE_NR)) {
+                            if (networkType == TelephonyManager.NETWORK_TYPE_NR) {
                                 networkTypeName = "nr";
                                 break;
                             }
@@ -349,13 +334,13 @@ public class TelephonyAPI {
 
                     String sim_serial = null;
                     String subscriber_id = null;
-                    try {
-                        sim_serial = manager.getSimSerialNumber();
-                        subscriber_id = manager.getSubscriberId();
-                    } catch (SecurityException e) {
+                    // try {
+                        // sim_serial = manager.getSimSerialNumber();
+                        // subscriber_id = manager.getSubscriberId();
+                    // } catch (SecurityException e) {
                         // Failed to obtain device id.
                         // Android 10+.
-                    }
+                    // }
                     out.name("sim_serial_number").value(sim_serial);
                     out.name("sim_subscriber_id").value(subscriber_id);
 
@@ -392,11 +377,11 @@ public class TelephonyAPI {
         });
     }
 
-    public static void onReceiveTelephonyCall(TermuxApiReceiver apiReceiver, final Context context, final Intent intent) {
+    public static void onReceiveTelephonyCall(final Context context, final Intent intent) {
         String numberExtra = intent.getStringExtra("number");
         if (numberExtra == null) {
             Log.e(LOG_TAG, "No 'number' extra");
-            ResultReturner.noteDone(apiReceiver, intent);
+            ResultReturner.noteDone(context, intent);
             return;
         }
 
@@ -415,7 +400,7 @@ public class TelephonyAPI {
             Log.e(LOG_TAG, "Exception in phone call", e);
         }
 
-        ResultReturner.noteDone(apiReceiver, intent);
+        ResultReturner.noteDone(context, intent);
     }
 
 }
