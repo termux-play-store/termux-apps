@@ -7,6 +7,11 @@ import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.WindowInsetsController;
@@ -32,7 +37,47 @@ import java.util.Properties;
  */
 public final class TermuxTerminalSessionActivityClient implements TerminalSessionClient {
 
+    private static class BellHandler {
+        private static final long DURATION = 50;
+        private static final long MIN_PAUSE = 3 * DURATION;
+
+        private final Handler handler = new Handler(Looper.getMainLooper());
+        private long lastBell = 0;
+        private final Runnable bellRunnable;
+
+        private BellHandler(final Vibrator vibrator) {
+            bellRunnable = () -> {
+                if (vibrator != null) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(DURATION, VibrationEffect.DEFAULT_AMPLITUDE));
+                }
+            };
+        }
+
+        public synchronized void doBell() {
+            long now = now();
+            long timeSinceLastBell = now - lastBell;
+
+            if (timeSinceLastBell < 0) {
+                // there is a next bell pending; don't schedule another one
+            } else if (timeSinceLastBell < MIN_PAUSE) {
+                // there was a bell recently, schedule the next one
+                handler.postDelayed(bellRunnable, MIN_PAUSE - timeSinceLastBell);
+                lastBell = lastBell + MIN_PAUSE;
+            } else {
+                // the last bell was long ago, do it now
+                bellRunnable.run();
+                lastBell = now;
+            }
+        }
+
+        private long now() {
+            return SystemClock.uptimeMillis();
+        }
+    }
+
     private final TermuxActivity mActivity;
+
+    private BellHandler mBellHandler;
 
     private static final int MAX_SESSIONS = 8;
 
@@ -50,6 +95,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
     public void onCreate() {
         // Set terminal fonts and colors
         onReloadActivityStyling();
+        this.mBellHandler = new BellHandler(mActivity.getSystemService(Vibrator.class));
     }
 
     /**
@@ -205,9 +251,18 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
     public void onBell(@NonNull TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
-        loadBellSoundPool();
-        if (mBellSoundPool != null) {
-            mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
+        switch (mActivity.mProperties.getBellBehaviour()) {
+            case VIBRATE:
+                mBellHandler.doBell();
+                break;
+            case BEEP:
+                loadBellSoundPool();
+                if (mBellSoundPool != null) {
+                    mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
+                }
+                break;
+            case IGNORE:
+                break;
         }
     }
 
