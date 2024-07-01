@@ -64,8 +64,9 @@ public final class TermuxAppShell {
     }
 
     public static @Nullable TermuxAppShell execute(File executable,
-                                                   String[] arguments,
-                                                   @NonNull final TermuxService termuxService) {
+                                                   @NonNull String[] arguments,
+                                                   @NonNull final TermuxService termuxService,
+                                                   @Nullable String workingDirectoryString) {
         var command = TermuxShellUtils.setupShellCommandArguments(executable, arguments, false);
         var environmentArray = TermuxShellUtils.setupEnvironment(false);
         final Process process;
@@ -74,8 +75,8 @@ public final class TermuxAppShell {
             runtimeExecArgs[0] = command.executablePath;
             // TODO: Skipping first arg such as "sh" since it's not possible using the java exec() api to set it:
             System.arraycopy(command.arguments, 1, runtimeExecArgs, 1, command.arguments.length - 1);
-            Log.e("termux", "TermuxAppShell::execute: runtimeExecArgs=" + Arrays.toString(runtimeExecArgs));
-            process = Runtime.getRuntime().exec(runtimeExecArgs, environmentArray, new File(TermuxConstants.HOME_PATH));
+            var workingDirectory = new File(workingDirectoryString == null ? TermuxConstants.HOME_PATH : workingDirectoryString);
+            process = Runtime.getRuntime().exec(runtimeExecArgs, environmentArray, workingDirectory);
         } catch (IOException e) {
             Log.e(TermuxConstants.LOG_TAG, "Error executing task", e);
             return null;

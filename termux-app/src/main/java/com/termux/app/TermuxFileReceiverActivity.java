@@ -20,11 +20,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public class TermuxFileReceiverActivity extends AppCompatActivity {
 
-    static final String TERMUX_RECEIVEDIR = TermuxConstants.HOME_PATH + "/downloads";
+    static final String TERMUX_RECEIVE_DIR = TermuxConstants.HOME_PATH + "/downloads";
     static final String EDITOR_PROGRAM = TermuxConstants.HOME_PATH + "/bin/termux-file-editor";
     static final String URL_OPENER_PROGRAM = TermuxConstants.HOME_PATH + "/bin/termux-url-opener";
 
@@ -36,7 +37,8 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
      */
     boolean mFinishOnDismissNameDialog = true;
 
-    private static final String LOG_TAG = "FileReceiverActivity";
+    /** If between {@link android.app.Activity#onResume()} and {@link android.app.Activity#onPause()}. */
+    boolean mIsVisible;
 
     static boolean isSharedTextAnUrl(String sharedText) {
         return Patterns.WEB_URL.matcher(sharedText).matches()
@@ -46,13 +48,14 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mIsVisible = true;
 
         final Intent intent = getIntent();
         final String action = intent.getAction();
         final String type = intent.getType();
         final String scheme = intent.getScheme();
 
-        final String sharedTitle = intent.getStringExtra(Intent.EXTRA_TITLE);
+        var sharedTitle = intent.getStringExtra(Intent.EXTRA_TITLE);
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             final String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
@@ -64,7 +67,7 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
                 if (isSharedTextAnUrl(sharedText)) {
                     handleUrlAndFinish(sharedText);
                 } else {
-                    String subject = intent.getStringExtra(Intent.EXTRA_SUBJECT);
+                    var subject = intent.getStringExtra(Intent.EXTRA_SUBJECT);
                     if (subject == null) subject = sharedTitle;
                     if (subject != null) subject += ".txt";
                     promptNameAndSave(new ByteArrayInputStream(sharedText.getBytes(StandardCharsets.UTF_8)), subject);
@@ -83,7 +86,7 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
             if ("content".equals(scheme)) {
                 handleContentUri(dataUri, sharedTitle);
             } else if ("file".equals(scheme)) {
-                Log.v(LOG_TAG, "uri: \"" + dataUri + "\", path: \"" + dataUri.getPath() + "\", fragment: \"" + dataUri.getFragment() + "\"");
+                Log.v(TermuxConstants.LOG_TAG, "uri: \"" + dataUri + "\", path: \"" + dataUri.getPath() + "\", fragment: \"" + dataUri.getFragment() + "\"");
 
                 String path = dataUri.getPath();
                 if (path == null || path.isEmpty()) {
@@ -104,6 +107,12 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mIsVisible = false;
+    }
+
     void showErrorDialogAndQuit(String message) {
         mFinishOnDismissNameDialog = false;
         TermuxMessageDialogUtils.showMessage(this, "Termux", message, null, (dialog, which) -> finish(), null, null, dialog -> finish());
@@ -111,7 +120,7 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
 
     void handleContentUri(@NonNull final Uri uri, String subjectFromIntent) {
         try {
-            Log.v(LOG_TAG, "uri: \"" + uri + "\", path: \"" + uri.getPath() + "\", fragment: \"" + uri.getFragment() + "\"");
+            Log.v(TermuxConstants.LOG_TAG, "uri: \"" + uri + "\", path: \"" + uri.getPath() + "\", fragment: \"" + uri.getFragment() + "\"");
             String attachmentFileName = null;
             String[] projection = new String[]{OpenableColumns.DISPLAY_NAME};
             try (Cursor c = getContentResolver().query(uri, projection, null, null, null)) {
@@ -132,7 +141,7 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
             promptNameAndSave(in, attachmentFileName);
         } catch (Exception e) {
             showErrorDialogAndQuit("Unable to handle shared content:\n\n" + e.getMessage());
-            Log.e(LOG_TAG, "handleContentUri(uri=" + uri + ") failed", e);
+            Log.e(TermuxConstants.LOG_TAG, "handleContentUri(uri=" + uri + ") failed", e);
         }
     }
 
@@ -143,72 +152,84 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
             attachmentFileName,
             R.string.action_file_received_edit,
             text -> {
-                File outFile = saveStreamWithName(in, text);
-                if (outFile == null) return;
+                saveStreamWithName(in, text, outFile -> {
+                    var editorProgramFile = new File(EDITOR_PROGRAM);
+                    if (!editorProgramFile.isFile()) {
+                        showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
+                            + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
+                        return;
+                    }
 
-                final File editorProgramFile = new File(EDITOR_PROGRAM);
-                if (!editorProgramFile.isFile()) {
-                    showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
-                        + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
-                    return;
-                }
+                    // Do this for the user if necessary:
+                    //noinspection ResultOfMethodCallIgnored
+                    editorProgramFile.setExecutable(true);
 
-                // Do this for the user if necessary:
-                //noinspection ResultOfMethodCallIgnored
-                editorProgramFile.setExecutable(true);
+                    var scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
 
-                final Uri scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
-
-                Intent executeIntent = new Intent(TermuxService.ACTION_SERVICE_EXECUTE, scriptUri);
-                executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-                executeIntent.putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
-                startService(executeIntent);
-                finish();
+                    var executeIntent = new Intent(Intent.ACTION_RUN, scriptUri)
+                        .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY)
+                        .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
+                    startActivity(executeIntent);
+                    finish();
+                });
             },
             R.string.action_file_received_open_directory,
             text -> {
-                if (saveStreamWithName(in, text) == null) return;
-
-                Intent executeIntent = new Intent(TermuxService.ACTION_SERVICE_EXECUTE);
-                executeIntent.putExtra(TermuxService.TERMUX_EXECUTE_WORKDIR, TERMUX_RECEIVEDIR);
-                executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-                startService(executeIntent);
-                finish();
+                saveStreamWithName(in, text, file -> {
+                    var executeIntent = new Intent(Intent.ACTION_RUN)
+                        .putExtra(TermuxService.TERMUX_EXECUTE_WORKDIR, TERMUX_RECEIVE_DIR)
+                        .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY);
+                    startActivity(executeIntent);
+                    finish();
+                });
             },
             R.string.cancel,
-            text -> finish(), dialog -> {
+            text -> finish(),
+            dismissedDialog -> {
                 if (mFinishOnDismissNameDialog) finish();
             });
     }
 
-    public File saveStreamWithName(InputStream in, String attachmentFileName) {
-        File receiveDir = new File(TERMUX_RECEIVEDIR);
+    public void saveStreamWithName(InputStream in, String attachmentFileName, Consumer<File> thenIfVisible) {
+        mFinishOnDismissNameDialog = false;
+        File receiveDir = new File(TERMUX_RECEIVE_DIR);
 
         if (attachmentFileName == null || attachmentFileName.isEmpty()) {
             showErrorDialogAndQuit("File name cannot be null or empty");
-            return null;
-        }
-
-        if (!receiveDir.isDirectory() && !receiveDir.mkdirs()) {
+            close(in);
+            return;
+        } else if (!receiveDir.isDirectory() && !receiveDir.mkdirs()) {
             showErrorDialogAndQuit("Cannot create directory: " + receiveDir.getAbsolutePath());
-            return null;
+            close(in);
+            return;
         }
 
-        try {
-            final File outFile = new File(receiveDir, attachmentFileName);
-            try (FileOutputStream f = new FileOutputStream(outFile)) {
-                byte[] buffer = new byte[4096];
-                int readBytes;
-                while ((readBytes = in.read(buffer)) > 0) {
-                    f.write(buffer, 0, readBytes);
+        var ioThread = new Thread(() -> {
+            try {
+                final File outFile = new File(receiveDir, attachmentFileName);
+                try (FileOutputStream f = new FileOutputStream(outFile)) {
+                    byte[] buffer = new byte[4096];
+                    int readBytes;
+                    while ((readBytes = in.read(buffer)) > 0) {
+                        f.write(buffer, 0, readBytes);
+                    }
                 }
+                runOnUiThread(() -> {
+                    if (mIsVisible) {
+                        thenIfVisible.accept(outFile);
+                    }
+                });
+            } catch (IOException e) {
+                Log.e(TermuxConstants.LOG_TAG, "Error saving file", e);
+                runOnUiThread(() -> {
+                    if (mIsVisible) {
+                        showErrorDialogAndQuit("Error saving file:\n\n" + e);
+                    }
+                });
             }
-            return outFile;
-        } catch (IOException e) {
-            showErrorDialogAndQuit("Error saving file:\n\n" + e);
-            Log.e(LOG_TAG, "Error saving file", e);
-            return null;
-        }
+        });
+        ioThread.setName(getClass().getSimpleName() + "IoThread");
+        ioThread.start();
     }
 
     void handleUrlAndFinish(final String url) {
@@ -225,11 +246,18 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
 
         final Uri urlOpenerProgramUri = new Uri.Builder().scheme("file").path(URL_OPENER_PROGRAM).build();
 
-        Intent executeIntent = new Intent(TermuxService.ACTION_SERVICE_EXECUTE, urlOpenerProgramUri);
-        executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-        executeIntent.putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{url});
-        startService(executeIntent);
+        var executeIntent = new Intent(Intent.ACTION_RUN, urlOpenerProgramUri)
+            .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY)
+            .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{url});
+        startActivity(executeIntent);
         finish();
     }
 
+    private static void close(InputStream in) {
+        try {
+            in.close();
+        } catch (IOException e) {
+            Log.e(TermuxConstants.LOG_TAG, "Error closing stream", e);
+        }
+    }
 }
