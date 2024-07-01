@@ -164,6 +164,7 @@ public class TermuxShellUtils {
     public static @NonNull TerminalSession executeTerminalSession(@NonNull TerminalSessionClient terminalSessionClient,
                                                                   @Nullable File executable,
                                                                   @Nullable String workingDirectory,
+                                                                  @Nullable String[] arguments,
                                                                   boolean failSafe) {
         boolean isLoginShell = executable == null;
 
@@ -185,7 +186,9 @@ public class TermuxShellUtils {
             executable = new File("/system/bin/sh");
         }
 
-        String[] arguments = new String[0];
+        if (arguments == null) {
+            arguments = new String[0];
+        }
         TermuxShellUtils.ExecuteCommand command = TermuxShellUtils.setupShellCommandArguments(executable, arguments, isLoginShell);
 
         var environmentArray = TermuxShellUtils.setupEnvironment(failSafe);

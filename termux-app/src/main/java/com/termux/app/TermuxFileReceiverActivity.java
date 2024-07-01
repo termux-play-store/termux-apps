@@ -143,10 +143,10 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
             attachmentFileName,
             R.string.action_file_received_edit,
             text -> {
-                File outFile = saveStreamWithName(in, text);
+                var outFile = saveStreamWithName(in, text);
                 if (outFile == null) return;
 
-                final File editorProgramFile = new File(EDITOR_PROGRAM);
+                var editorProgramFile = new File(EDITOR_PROGRAM);
                 if (!editorProgramFile.isFile()) {
                     showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
                         + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
@@ -157,22 +157,23 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
                 //noinspection ResultOfMethodCallIgnored
                 editorProgramFile.setExecutable(true);
 
-                final Uri scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
+                var scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
 
-                Intent executeIntent = new Intent(TermuxService.ACTION_SERVICE_EXECUTE, scriptUri);
-                executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-                executeIntent.putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
-                startService(executeIntent);
+                var executeIntent = new Intent(Intent.ACTION_RUN, scriptUri)
+                    .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY)
+                    .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
+                startActivity(executeIntent);
+
                 finish();
             },
             R.string.action_file_received_open_directory,
             text -> {
                 if (saveStreamWithName(in, text) == null) return;
 
-                Intent executeIntent = new Intent(TermuxService.ACTION_SERVICE_EXECUTE);
-                executeIntent.putExtra(TermuxService.TERMUX_EXECUTE_WORKDIR, TERMUX_RECEIVEDIR);
-                executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-                startService(executeIntent);
+                var executeIntent = new Intent(Intent.ACTION_RUN)
+                    .putExtra(TermuxService.TERMUX_EXECUTE_WORKDIR, TERMUX_RECEIVEDIR)
+                    .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY);
+                startActivity(executeIntent);
                 finish();
             },
             R.string.cancel,
@@ -225,10 +226,10 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
 
         final Uri urlOpenerProgramUri = new Uri.Builder().scheme("file").path(URL_OPENER_PROGRAM).build();
 
-        Intent executeIntent = new Intent(TermuxService.ACTION_SERVICE_EXECUTE, urlOpenerProgramUri);
-        executeIntent.setClass(TermuxFileReceiverActivity.this, TermuxService.class);
-        executeIntent.putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{url});
-        startService(executeIntent);
+        var executeIntent = new Intent(Intent.ACTION_RUN, urlOpenerProgramUri)
+            .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY)
+            .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{url});
+        startActivity(executeIntent);
         finish();
     }
 

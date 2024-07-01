@@ -119,7 +119,7 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 mActivity.getDrawer().closeDrawers();
             } else if (unicodeChar == 'c'/* create */) {
-                mTermuxTerminalSessionActivityClient.addNewSession(false, null, null);
+                mTermuxTerminalSessionActivityClient.addNewSession(false, null, null, null);
             } else if (unicodeChar == 'k'/* keyboard */) {
                 onToggleSoftKeyboardRequest();
             } else if (unicodeChar == 'm'/* menu */) {

@@ -3,6 +3,7 @@ package com.termux.app;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.AudioAttributes;
@@ -383,7 +384,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         sessionToRename.mSessionName = text;
     }
 
-    public void addNewSession(boolean isFailSafe, String sessionName, File executable) {
+    public void addNewSession(boolean isFailSafe, String sessionName, File executable, @Nullable Intent sessionIntent) {
         var service = mActivity.getTermuxService();
         if (service == null) {
             return;
@@ -400,8 +401,15 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
                 sessionName = "Failsafe";
             }
             var currentSession = mActivity.getCurrentSession();
-            var workingDirectory = currentSession == null ? TermuxConstants.HOME_PATH : currentSession.getCwd();
-            var newTermuxSession = service.createTermuxSession(executable, null, null, workingDirectory, isFailSafe, sessionName);
+            var workingDirectory = (sessionIntent == null) ? null : sessionIntent.getStringExtra(TermuxService.TERMUX_EXECUTE_WORKDIR);
+            var arguments = (sessionIntent == null) ? null : sessionIntent.getStringArrayExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS);
+            if (arguments == null) {
+                arguments = new String[0];
+            }
+            if (workingDirectory == null) {
+                workingDirectory = currentSession == null ? TermuxConstants.HOME_PATH : currentSession.getCwd();
+            }
+            var newTermuxSession = service.createTermuxSession(executable, arguments, null, workingDirectory, isFailSafe, sessionName);
             setCurrentSession(newTermuxSession);
             mActivity.getDrawer().closeDrawers();
         }

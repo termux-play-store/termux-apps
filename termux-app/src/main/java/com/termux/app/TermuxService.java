@@ -256,19 +256,20 @@ public final class TermuxService extends Service {
             arguments = new String[0];
         }
 
+        var workingDirectory = intent.getStringExtra(TERMUX_EXECUTE_WORKDIR);
+
         if (inBackground) {
-            executeBackgroundTask(executable, arguments);
+            executeBackgroundTask(executable, arguments, workingDirectory);
         } else {
             String stdin = null;
-            String workingDirectory = null;
             boolean isFailsafe = false;
             String sessionName = null;
             createTermuxSession(executable, arguments, stdin, workingDirectory, isFailsafe, sessionName);
         }
     }
 
-    private void executeBackgroundTask(File executable, String[] arguments) {
-        var newTermuxTask = TermuxAppShell.execute(executable, arguments, this);
+    private void executeBackgroundTask(File executable, @NonNull String[] arguments, @Nullable String workingDirectory) {
+        var newTermuxTask = TermuxAppShell.execute(executable, arguments, this, workingDirectory);
         if (newTermuxTask != null) {
             mTermuxTasks.add(newTermuxTask);
             updateNotification();
@@ -286,7 +287,7 @@ public final class TermuxService extends Service {
      * Currently called by {@link TermuxTerminalSessionActivityClient#addNewSession(boolean, String)} to add a new {@link TerminalSession}.
      */
     public @NonNull TerminalSession createTermuxSession(File executable,
-                                                        String[] arguments,
+                                                        @NonNull String[] arguments,
                                                         String stdin,
                                                         @Nullable String workingDirectory,
                                                         boolean isFailSafe,
@@ -356,6 +357,7 @@ public final class TermuxService extends Service {
             sessionClient,
             executable,
             workingDirectory,
+            arguments,
             isFailSafe
         );
 
@@ -550,7 +552,7 @@ public final class TermuxService extends Service {
                 if (!scriptFile.canExecute() && !scriptFile.setExecutable(true)) {
                     Log.e(TermuxConstants.LOG_TAG, "Cannot set file executable: " + scriptFile.getAbsolutePath());
                 }
-                executeBackgroundTask(scriptFile, new String[0]);
+                executeBackgroundTask(scriptFile, new String[0], null);
             }
         }
     }
