@@ -724,6 +724,15 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         setTerminalToolbarHeight();
 
         mTermuxTerminalSessionActivityClient.onReloadActivityStyling();
+
+        var horizontalPadding = Math.min(getWindow().getDecorView().getWidth() / 10, mProperties.terminalHorizontalMargin());
+        var verticalPadding = Math.min(getWindow().getDecorView().getHeight() / 10, mProperties.terminalVerticalMargin());
+        /*
+        var layoutParams = (ViewGroup.MarginLayoutParams) mTerminalView.getLayoutParams();
+        layoutParams.setMargins(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+        mTerminalView.requestLayout();
+        */
+        getWindow().getDecorView().setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
     }
 
     void applyFullscreenSetting(boolean doFullscreen) {

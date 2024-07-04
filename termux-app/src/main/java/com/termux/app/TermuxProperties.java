@@ -75,4 +75,24 @@ public final class TermuxProperties {
         }
     }
 
+    public int terminalHorizontalMargin() {
+        return parseMarginProp(true);
+    }
+
+    public int terminalVerticalMargin() {
+        return parseMarginProp(false);
+    }
+
+    private int parseMarginProp(boolean horizontal) {
+        var propertyName = "terminal-margin-" + (horizontal ? "horizontal" : "vertical");
+        var prop = properties.getProperty(propertyName, "0");
+        try {
+            var value = Integer.parseInt(prop);
+            return Math.max(0, value);
+        } catch (NumberFormatException e) {
+            Log.e(TermuxConstants.LOG_TAG, "Invalid property (not an integer): '" + propertyName + "'");
+            return 0;
+        }
+    }
+
 }
