@@ -33,7 +33,7 @@ import org.json.JSONObject;
  * For example {display: 'Custom name', ...}.
  *
  * Examples:
- * {@code
+ * <pre>{@code
  * # Empty:
  * []
  *
@@ -58,7 +58,7 @@ import org.json.JSONObject;
  *   {key: KEYBOARD, popup: {macro: "CTRL d", display: exit}}
  * ]]
  *
- * }
+ * }</pre>
  *
  * Aliases are also allowed for the keys that you can pass as {@code extraKeyAliasMap}. Check
  * {@link ExtraKeysConstants#CONTROL_CHARS_ALIASES}.
