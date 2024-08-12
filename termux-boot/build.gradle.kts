@@ -50,7 +50,7 @@ android {
 }
 
 dependencies {
-    implementation("androidx.annotation:annotation:1.8.0")
+    implementation("androidx.annotation:annotation:1.8.2")
 }
 
 task("versionName") {

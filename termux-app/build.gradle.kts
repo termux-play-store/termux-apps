@@ -14,7 +14,7 @@ android {
     namespace = "com.termux"
 
     dependencies {
-        implementation("androidx.annotation:annotation:1.8.0")
+        implementation("androidx.annotation:annotation:1.8.2")
         implementation("androidx.core:core:1.13.1")
         implementation("androidx.drawerlayout:drawerlayout:1.2.0")
         implementation("androidx.viewpager:viewpager:1.0.0")
