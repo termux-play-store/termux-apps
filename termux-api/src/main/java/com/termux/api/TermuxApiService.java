@@ -14,18 +14,14 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.termux.api.activities.TermuxApiPermissionActivity;
-import com.termux.api.apis.AudioAPI;
-import com.termux.api.apis.BatteryStatusAPI;
 import com.termux.api.apis.BrightnessAPI;
 import com.termux.api.apis.CallLogAPI;
 import com.termux.api.apis.CameraInfoAPI;
 import com.termux.api.apis.CameraPhotoAPI;
 import com.termux.api.apis.ContactListAPI;
-import com.termux.api.apis.DialogAPI;
 import com.termux.api.apis.FingerprintAPI;
 import com.termux.api.apis.InfraredAPI;
 import com.termux.api.apis.JobSchedulerAPI;
-import com.termux.api.apis.KeystoreAPI;
 import com.termux.api.apis.LocationAPI;
 import com.termux.api.apis.MediaPlayerAPI;
 import com.termux.api.apis.MicRecorderAPI;
@@ -38,7 +34,6 @@ import com.termux.api.apis.SmsSendAPI;
 import com.termux.api.apis.SpeechToTextAPI;
 import com.termux.api.apis.TelephonyAPI;
 import com.termux.api.apis.TextToSpeechAPI;
-import com.termux.api.apis.ToastAPI;
 import com.termux.api.apis.TorchAPI;
 import com.termux.api.apis.WallpaperAPI;
 import com.termux.api.apis.WifiAPI;
@@ -98,12 +93,6 @@ public class TermuxApiService extends Service {
         }
 
         switch (apiMethod) {
-            case "AudioInfo":
-                AudioAPI.onReceive(context, intent);
-                break;
-            case "BatteryStatus":
-                BatteryStatusAPI.onReceive(context, intent);
-                break;
             case "Brightness":
                 if (!Settings.System.canWrite(context)) {
                     TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, android.Manifest.permission.WRITE_SETTINGS);
@@ -135,9 +124,6 @@ public class TermuxApiService extends Service {
                     ContactListAPI.onReceive(context, intent);
                 }
                 break;
-            case "Dialog":
-                DialogAPI.onReceive(context, intent);
-                break;
             case "Fingerprint":
                 FingerprintAPI.onReceive(context, intent);
                 break;
@@ -153,9 +139,6 @@ public class TermuxApiService extends Service {
                 break;
             case "JobScheduler":
                 JobSchedulerAPI.onReceive(context, intent);
-                break;
-            case "Keystore":
-                KeystoreAPI.onReceive(context, intent);
                 break;
             case "Location":
                 if (TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -233,9 +216,6 @@ public class TermuxApiService extends Service {
                 break;
             case "TextToSpeech":
                 TextToSpeechAPI.onReceive(context, intent);
-                break;
-            case "Toast":
-                ToastAPI.onReceive(context, intent);
                 break;
             case "Torch":
                 TorchAPI.onReceive(context, intent);

@@ -1,19 +1,12 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyInfo;
 import android.security.keystore.KeyProperties;
-import androidx.annotation.RequiresApi;
 import android.util.Base64;
 import android.util.JsonWriter;
-
-import com.termux.api.util.ResultReturner;
-import com.termux.api.util.ResultReturner.ResultJsonWriter;
-import com.termux.api.util.ResultReturner.WithInput;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -42,22 +35,22 @@ public class KeystoreAPI {
     private static final String PROVIDER = "AndroidKeyStore";
 
     @SuppressLint("NewApi")
-    public static void onReceive(Context apiReceiver, Intent intent) {
+    public static void onReceive(Intent intent) {
         switch (intent.getStringExtra("command")) {
             case "list":
-                listKeys(apiReceiver, intent);
+                listKeys(intent);
                 break;
             case "generate":
-                generateKey(apiReceiver, intent);
+                generateKey(intent);
                 break;
             case "delete":
-                deleteKey(apiReceiver, intent);
+                deleteKey(intent);
                 break;
             case "sign":
-                signData(apiReceiver, intent);
+                signData(intent);
                 break;
             case "verify":
-                verifyData(apiReceiver, intent);
+                verifyData(intent);
                 break;
         }
     }
@@ -69,8 +62,8 @@ public class KeystoreAPI {
      *     <li>detailed: if set, key parameters (modulus etc.) are included in the response</li>
      * </ul>
      */
-    private static void listKeys(Context apiReceiver, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new ResultJsonWriter() {
+    private static void listKeys(final Intent intent) {
+        ResultReturner.returnData(intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws GeneralSecurityException, IOException {
                 KeyStore keyStore = getKeyStore();
@@ -147,8 +140,8 @@ public class KeystoreAPI {
      *     <li>alias: key alias</li>
      * </ul>
      */
-    private static void deleteKey(Context apiReceiver, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, out -> {
+    private static void deleteKey(final Intent intent) {
+        ResultReturner.returnData(intent, out -> {
             String alias = intent.getStringExtra("alias");
             // unfortunately this statement does not return anything
             // nor does it throw an exception if the alias does not exist
@@ -186,8 +179,8 @@ public class KeystoreAPI {
      * </ul>
      */
     @SuppressLint("WrongConstant")
-    private static void generateKey(Context apiReceiver, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, out -> {
+    private static void generateKey(final Intent intent) {
+        ResultReturner.returnData(intent, out -> {
             String alias = intent.getStringExtra("alias");
             String algorithm = intent.getStringExtra("algorithm");
             int purposes = intent.getIntExtra("purposes", 0);
@@ -236,8 +229,8 @@ public class KeystoreAPI {
      *     </li>
      * </ul>
      */
-    private static void signData(Context apiReceiver, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new WithInput() {
+    private static void signData(final Intent intent) {
+        ResultReturner.returnData(intent, new ResultReturner.WithInput() {
             @Override
             public void writeResult(PrintWriter out) throws Exception {
                 String alias = intent.getStringExtra("alias");
@@ -272,8 +265,8 @@ public class KeystoreAPI {
      *     <li>signature: path of the signature file</li>
      * </ul>
      */
-    private static void verifyData(Context apiReceiver, final Intent intent) {
-        ResultReturner.returnData(apiReceiver, intent, new WithInput() {
+    private static void verifyData(final Intent intent) {
+        ResultReturner.returnData(intent, new ResultReturner.WithInput() {
             @Override
             public void writeResult(PrintWriter out) throws GeneralSecurityException, IOException {
                 String alias = intent.getStringExtra("alias");

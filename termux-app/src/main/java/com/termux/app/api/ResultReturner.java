@@ -198,10 +198,12 @@ public abstract class ResultReturner {
                                 throw new IOException("Missing '" + SOCKET_INPUT_EXTRA + "' extra");
                             inputSocket.connect(new LocalSocketAddress(inputSocketAdress));
                             ((WithInput) resultWriter).setInput(inputSocket.getInputStream());
+                            resultWriter.writeResult(writer);
                         }
+                    } else {
+                        resultWriter.writeResult(writer);
                     }
 
-                    resultWriter.writeResult(writer);
 
                     if (resultWriter instanceof WithAncillaryFd) {
                         ((WithAncillaryFd) resultWriter).cleanupFds();

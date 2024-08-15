@@ -1,4 +1,4 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -41,9 +41,7 @@ import androidx.core.widget.NestedScrollView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.termux.api.R;
-import com.termux.api.util.ResultReturner;
-import com.termux.api.activities.TermuxApiPermissionActivity;
+import com.termux.R;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -150,7 +148,7 @@ public class DialogAPI {
                 Log.d(LOG_TAG, "postResult");
             }
 
-            ResultReturner.returnData(context, getIntent(), new ResultReturner.ResultJsonWriter() {
+            ResultReturner.returnData(getIntent(), new ResultReturner.ResultJsonWriter() {
 
                 @Override
                 public void writeJson(JsonWriter out) throws Exception {
@@ -472,7 +470,7 @@ public class DialogAPI {
                 if (intent.hasExtra("date_format")) {
                     String date_format = intent.getStringExtra("date_format");
                     try {
-                        SimpleDateFormat dateFormat = new SimpleDateFormat(date_format);
+                        @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat(date_format);
                         dateFormat.setTimeZone(calendar.getTimeZone());
                         return dateFormat.format(calendar.getTime());
                     } catch (Exception e) {
@@ -779,7 +777,7 @@ public class DialogAPI {
             @Override
             public void create(final AppCompatActivity activity, final InputResultListener resultListener) {
                 // Since we're using the microphone, we need to make sure we have proper permission
-                if (!TermuxApiPermissionActivity.checkAndRequestPermission(activity, activity.getIntent(), Manifest.permission.RECORD_AUDIO)) {
+                if (!TermuxApiHandler.checkAndRequestPermission(activity, activity.getIntent(), Manifest.permission.RECORD_AUDIO)) {
                     activity.finish();
                 }
 
@@ -787,7 +785,6 @@ public class DialogAPI {
                     Toast.makeText(activity, "No voice recognition found!", Toast.LENGTH_SHORT).show();
                     activity.finish();
                 }
-
 
                 Intent speechIntent = createSpeechIntent();
                 final SpeechRecognizer recognizer = createSpeechRecognizer(activity, resultListener);
