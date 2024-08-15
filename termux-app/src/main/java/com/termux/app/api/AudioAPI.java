@@ -1,12 +1,10 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.JsonWriter;
-
-import com.termux.api.util.ResultReturner;
 
 public class AudioAPI {
 
@@ -41,7 +39,7 @@ public class AudioAPI {
         bs_ps = at.getBufferSizeInFrames();
         at.release();
 
-        ResultReturner.returnData(context, intent, new ResultReturner.ResultJsonWriter() {
+        ResultReturner.returnData(intent, new ResultReturner.ResultJsonWriter() {
             public void writeJson(JsonWriter out) throws Exception {
                 out.beginObject();
                 out.name("PROPERTY_OUTPUT_SAMPLE_RATE").value(sampleRate);

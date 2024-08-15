@@ -1,5 +1,6 @@
 package com.termux.app.api;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,11 +13,14 @@ import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.system.Os;
+import android.text.TextUtils;
+import android.util.JsonWriter;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.termux.app.TermuxConstants;
+import com.termux.app.TermuxPermissionUtils;
 import com.termux.app.TermuxService;
 
 import java.io.Closeable;
@@ -135,11 +139,23 @@ public class TermuxApiHandler {
             // without sharedUserId) that does not require extra permissions
             // ourselves, and call out to Termux:API in the default case.
             switch (apiMethod) {
+                case "AudioInfo":
+                    AudioAPI.onReceive(context, intent);
+                    break;
+                case "BatteryStatus":
+                    BatteryStatusAPI.onReceive(context, intent);
+                    break;
                 case "Clipboard":
                     ClipboardApi.onReceive(context, intent);
                     break;
+                case "Dialog":
+                    DialogAPI.onReceive(context, intent);
+                    break;
                 case "Download":
                     DownloadAPI.onReceive(context, intent);
+                    break;
+                case "Keystore":
+                    KeystoreAPI.onReceive(intent);
                     break;
                 case "MediaScanner":
                     MediaScannerAPI.onReceive(context, intent);
@@ -152,6 +168,9 @@ public class TermuxApiHandler {
                     break;
                 case "StorageGet":
                     StorageGetAPI.onReceive(context, intent);
+                    break;
+                case "Toast":
+                    ToastAPI.onReceive(context, intent);
                     break;
                 case "Usb":
                     UsbAPI.onReceive(context, intent);
@@ -196,4 +215,32 @@ public class TermuxApiHandler {
             mServiceConnected = false;
         }
     }
+
+    /**
+     * Check for and request permissions if necessary.
+     *
+     * @return if all permissions were already granted
+     */
+    public static boolean checkAndRequestPermission(Activity activity, Intent intent, String... permissions) {
+        var permissionsToRequest = TermuxPermissionUtils.checkNonGrantedPermissions(activity, permissions);
+
+        if (permissionsToRequest.isEmpty()) {
+            return true;
+        } else {
+            ResultReturner.returnData(intent, new ResultReturner.ResultJsonWriter() {
+                @Override
+                public void writeJson(JsonWriter out) throws Exception {
+                    String errorMessage = "Please grant the following permission"
+                        + (permissionsToRequest.size() > 1 ? "s" : "")
+                        + " (at Settings > Apps > Termux > Permissions) to use this command: "
+                        + TextUtils.join(", ", permissionsToRequest);
+                    out.beginObject().name("error").value(errorMessage).endObject();
+                }
+            });
+
+            activity.requestPermissions(permissionsToRequest.toArray(new String[0]), 0);
+            return false;
+        }
+    }
+
 }

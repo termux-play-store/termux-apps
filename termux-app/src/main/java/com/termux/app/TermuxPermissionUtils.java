@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class TermuxPermissionUtils {
 
@@ -22,20 +23,20 @@ public class TermuxPermissionUtils {
     public static final int REQUEST_POST_NOTIFICATIONS = 2002;
 
     /**
-     * Check if app has been granted the required permissions.
+     * Check which permissions that has not been granted.
      *
      * @param context     The context for operations.
      * @param permissions The {@link String[]} names for permissions to check.
-     * @return Returns {@code true} if permissions are granted, otherwise {@code false}.
+     * @return Returns the list of permissions not granted.
      */
-    public static boolean checkPermissions(@NonNull Context context, @NonNull String ... permissions) {
-        // checkSelfPermission may return true for permissions not even requested
+    public static List<String> checkNonGrantedPermissions(@NonNull Context context, @NonNull String ... permissions) {
+        var result = new ArrayList<String>();
         for (String permission : permissions) {
             if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_DENIED) {
-                return false;
+                result.add(permission);
             }
         }
-        return true;
+        return result;
     }
 
     public static void requestPermissions(@NonNull Context context, int requestCode, @NonNull String ... desiredPermissions) {

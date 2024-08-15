@@ -4,6 +4,7 @@
     android:installLocation="internalOnly">
 
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
@@ -27,6 +28,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Used by DialogAPI -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- See https://developer.android.com/guide/components/foreground-services -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -121,6 +124,12 @@
                 <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".app.api.DialogAPI$DialogActivity"
+            android:theme="@style/DialogTheme"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:exported="false" />
 
         <activity android:name=".app.api.SAFAPI$SAFActivity"
             android:theme="@style/TransparentTheme"

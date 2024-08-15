@@ -1,4 +1,4 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,15 +7,12 @@ import android.os.BatteryManager;
 import android.util.JsonWriter;
 import android.util.Log;
 
-import com.termux.api.util.ResultReturner;
-import com.termux.api.util.ResultReturner.ResultJsonWriter;
-
 public class BatteryStatusAPI {
 
     private static final String LOG_TAG = "BatteryStatusAPI";
 
     public static void onReceive(final Context context, Intent intent) {
-        ResultReturner.returnData(context, intent, new ResultJsonWriter() {
+        ResultReturner.returnData(intent, new ResultReturner.ResultJsonWriter() {
             @Override
             public void writeJson(JsonWriter out) throws Exception {
                 Intent batteryStatus = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
