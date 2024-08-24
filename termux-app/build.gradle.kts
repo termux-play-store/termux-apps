@@ -13,6 +13,9 @@ plugins {
 android {
     namespace = "com.termux"
 
+    val ndkVersion: String by project
+    this.ndkVersion = ndkVersion
+
     dependencies {
         implementation("androidx.annotation:annotation:1.8.2")
         implementation("androidx.core:core:1.13.1")
