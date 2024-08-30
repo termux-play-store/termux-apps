@@ -15,6 +15,7 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.JsonWriter;
 import android.util.Log;
 import android.view.View;
@@ -776,6 +777,16 @@ public class DialogAPI {
 
             @Override
             public void create(final AppCompatActivity activity, final InputResultListener resultListener) {
+                ResultReturner.returnData(activity.getIntent(), new ResultReturner.ResultJsonWriter() {
+                    @Override
+                    public void writeJson(JsonWriter out) throws Exception {
+                        var errorMessage = "Speech input is not yet supported in Termux for Google Play";
+                        out.beginObject().name("error").value(errorMessage).endObject();
+                    }
+                });
+                activity.finish();
+
+                /*
                 // Since we're using the microphone, we need to make sure we have proper permission
                 if (!TermuxApiHandler.checkAndRequestPermission(activity, activity.getIntent(), Manifest.permission.RECORD_AUDIO)) {
                     activity.finish();
@@ -805,6 +816,7 @@ public class DialogAPI {
                 dialog.show();
 
                 recognizer.startListening(speechIntent);
+                 */
             }
 
             private boolean hasSpeechRecognizer(Context context) {
