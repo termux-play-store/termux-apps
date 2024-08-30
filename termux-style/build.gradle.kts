@@ -60,7 +60,7 @@ android {
 }
 
 dependencies {
-    val kotlinVersion = rootProject.extra.get("kotlin_version") as String
+    val kotlinVersion: String by project
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 }
 
