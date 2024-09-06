@@ -93,17 +93,13 @@ public final class TerminalEmulator {
      */
     private static final int ESC_OSC = 10;
     /**
-     * Escape processing: ESC ] (AKA OSC - Operating System Controls) ESC
-     */
-    private static final int ESC_OSC_ESC = 11;
-    /**
      * Escape processing: ESC [ >
      */
     private static final int ESC_CSI_BIGGERTHAN = 12;
     /**
      * Escape procession: "ESC P" or Device Control String (DCS)
      */
-    private static final int ESC_P = 13;
+    private static final int ESC_DCS = 13;
     /**
      * Escape processing: CSI >
      */
@@ -128,6 +124,10 @@ public final class TerminalEmulator {
      * Escape processing: CSI !
      */
     private static final int ESC_CSI_EXCLAMATION = 19;
+    /**
+     * Escape processing: "ESC _" or Application Program Command (APC).
+     */
+    private static final int ESC_APC = 20;
 
     /**
      * The number of parameter arguments. This name comes from the ANSI standard for terminal escape codes.
@@ -276,7 +276,7 @@ public final class TerminalEmulator {
     /**
      * Holds OSC and device control arguments, which can be strings.
      */
-    private final StringBuilder mOSCOrDeviceControlArgs = new StringBuilder();
+    private final StringBuilder mApcOrOscOrDcsArgs = new StringBuilder();
 
     /**
      * True if the current escape sequence should continue, false if the current escape sequence should be terminated.
@@ -688,14 +688,19 @@ public final class TerminalEmulator {
                 }
                 break;
             case 27: // ESC
-                // Starts an escape sequence unless we're parsing a string
-                if (mEscapeState == ESC_P) {
-                    // XXX: Ignore escape when reading device control sequence, since it may be part of string terminator.
-                    return;
-                } else if (mEscapeState != ESC_OSC) {
-                    startEscapeSequence();
-                } else {
-                    doOsc(b);
+                switch (mEscapeState) {
+                    case ESC_APC:
+                        doApc(b);
+                        break;
+                    case ESC_DCS:
+                        doDeviceControl(b);
+                        break;
+                    case ESC_OSC:
+                        doOsc(b);
+                        break;
+                    default:
+                        startEscapeSequence();
+                        break;
                 }
                 break;
             default:
@@ -893,11 +898,11 @@ public final class TerminalEmulator {
                     case ESC_OSC:
                         doOsc(b);
                         break;
-                    case ESC_OSC_ESC:
-                        doOscEsc(b);
-                        break;
-                    case ESC_P:
+                    case ESC_DCS:
                         doDeviceControl(b);
+                        break;
+                    case ESC_APC:
+                        doApc(b);
                         break;
                     case ESC_CSI_QUESTIONMARK_ARG_DOLLAR:
                         if (b == 'p') {
@@ -968,17 +973,13 @@ public final class TerminalEmulator {
     }
 
     /**
-     * When in {@link #ESC_P} ("device control") sequence.
+     * When in {@link #ESC_DCS} ("device control") sequence.
      */
     private void doDeviceControl(int b) {
-        switch (b) {
-            case (byte) '\\': // End of ESC \ string Terminator
-            {
-                String dcs = mOSCOrDeviceControlArgs.toString();
-                // DCS $ q P t ST. Request Status String (DECRQSS)
-                if (dcs.startsWith("$q")) {
-                    if (dcs.equals("$q\"p")) {
-                        // DECSCL, conformance level, http://www.vt100.net/docs/vt510-rm/DECSCL:
+        if (appendToApcOrOscOrDcsArgsAndCheckIfEndsWithStringTerminator(b)) {
+                String dcs = mApcOrOscOrDcsArgs.toString();
+                if (dcs.startsWith("$q")) { // DCS $ q P t ST. Request Status String (DECRQSS)
+                    if (dcs.equals("$q\"p")) { // DECSCL, conformance level, http://www.vt100.net/docs/vt510-rm/DECSCL:
                         String csiString = "64;1\"p";
                         mSession.write("\033P1$r" + csiString + "\033\\");
                     } else {
@@ -1079,16 +1080,32 @@ public final class TerminalEmulator {
                 }
                 finishSequence();
             }
-            break;
-            default:
-                if (mOSCOrDeviceControlArgs.length() > MAX_OSC_STRING_LENGTH) {
-                    // Too long.
-                    mOSCOrDeviceControlArgs.setLength(0);
-                    finishSequence();
-                } else {
-                    mOSCOrDeviceControlArgs.appendCodePoint(b);
-                    continueSequence(mEscapeState);
-                }
+    }
+
+    private boolean appendToApcOrOscOrDcsArgsAndCheckIfEndsWithStringTerminator(int b) {
+        if (b == '\\' && mApcOrOscOrDcsArgs.length() > 0 && mApcOrOscOrDcsArgs.charAt(mApcOrOscOrDcsArgs.length() - 1) == 27) {
+            mApcOrOscOrDcsArgs.setLength(mApcOrOscOrDcsArgs.length() - 1);
+            return true;
+        }
+
+        if (mApcOrOscOrDcsArgs.length() > MAX_OSC_STRING_LENGTH) {
+            logError("Too long apc/osc/dcs args");
+            mApcOrOscOrDcsArgs.setLength(0);
+            finishSequence();
+        } else {
+            mApcOrOscOrDcsArgs.appendCodePoint(b);
+            continueSequence(mEscapeState);
+        }
+
+        return false;
+    }
+
+    /**
+     * When in {@link #ESC_APC} (APC, Application Program Command) sequence.
+     */
+    private void doApc(int b) {
+        if (appendToApcOrOscOrDcsArgsAndCheckIfEndsWithStringTerminator(b)) {
+            finishSequence();
         }
     }
 
@@ -1475,8 +1492,8 @@ public final class TerminalEmulator {
             case '0': // SS3, ignore.
                 break;
             case 'P': // Device control string
-                mOSCOrDeviceControlArgs.setLength(0);
-                continueSequence(ESC_P);
+                mApcOrOscOrDcsArgs.setLength(0);
+                continueSequence(ESC_DCS);
                 break;
             case '[':
                 continueSequence(ESC_CSI);
@@ -1485,11 +1502,15 @@ public final class TerminalEmulator {
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, true);
                 break;
             case ']': // OSC
-                mOSCOrDeviceControlArgs.setLength(0);
+                mApcOrOscOrDcsArgs.setLength(0);
                 continueSequence(ESC_OSC);
                 break;
             case '>': // DECKPNM
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, false);
+                break;
+            case '_': // APC - Application Program Command.
+                mApcOrOscOrDcsArgs.setLength(0);
+                continueSequence(ESC_APC);
                 break;
             default:
                 unknownSequence(b);
@@ -1970,26 +1991,8 @@ public final class TerminalEmulator {
             case 7: // Bell.
                 doOscSetTextParameters("\007");
                 break;
-            case 27: // Escape.
-                continueSequence(ESC_OSC_ESC);
-                break;
             default:
                 collectOSCArgs(b);
-                break;
-        }
-    }
-
-    private void doOscEsc(int b) {
-        switch (b) {
-            case '\\':
-                doOscSetTextParameters("\033\\");
-                break;
-            default:
-                // The ESC character was not followed by a \, so insert the ESC and
-                // the current character in arg buffer.
-                collectOSCArgs(27);
-                collectOSCArgs(b);
-                continueSequence(ESC_OSC);
                 break;
         }
     }
@@ -2001,10 +2004,10 @@ public final class TerminalEmulator {
         int value = -1;
         String textParameter = "";
         // Extract initial $value from initial "$value;..." string.
-        for (int mOSCArgTokenizerIndex = 0; mOSCArgTokenizerIndex < mOSCOrDeviceControlArgs.length(); mOSCArgTokenizerIndex++) {
-            char b = mOSCOrDeviceControlArgs.charAt(mOSCArgTokenizerIndex);
+        for (int mOSCArgTokenizerIndex = 0; mOSCArgTokenizerIndex < mApcOrOscOrDcsArgs.length(); mOSCArgTokenizerIndex++) {
+            char b = mApcOrOscOrDcsArgs.charAt(mOSCArgTokenizerIndex);
             if (b == ';') {
-                textParameter = mOSCOrDeviceControlArgs.substring(mOSCArgTokenizerIndex + 1);
+                textParameter = mApcOrOscOrDcsArgs.substring(mOSCArgTokenizerIndex + 1);
                 break;
             } else if (b >= '0' && b <= '9') {
                 value = ((value < 0) ? 0 : value * 10) + (b - '0');
@@ -2260,11 +2263,8 @@ public final class TerminalEmulator {
     }
 
     private void collectOSCArgs(int b) {
-        if (mOSCOrDeviceControlArgs.length() < MAX_OSC_STRING_LENGTH) {
-            mOSCOrDeviceControlArgs.appendCodePoint(b);
-            continueSequence(mEscapeState);
-        } else {
-            unknownSequence(b);
+        if (appendToApcOrOscOrDcsArgsAndCheckIfEndsWithStringTerminator(b)) {
+            doOscSetTextParameters("\033\\");
         }
     }
 
