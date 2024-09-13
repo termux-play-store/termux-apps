@@ -33,6 +33,7 @@
     <!-- See https://developer.android.com/guide/components/foreground-services -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="com.termux.permission.TERMUX_INTERNAL"/>
 
@@ -188,6 +189,14 @@
                 app is in the background. If the system were to interrupt or defer the Termux app while it is in the background the user
                 experience would be negatively affected since the above described use case would be broken." />
         </service>
+
+        <receiver
+            android:name=".app.TermuxBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <!-- This (or rather, value 2.1 or higher) is needed to make the Samsung Galaxy S8 mark the
         app with "This app is optimized to run in full screen." -->
