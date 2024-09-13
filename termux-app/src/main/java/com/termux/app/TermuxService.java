@@ -49,7 +49,7 @@ public final class TermuxService extends Service {
 
     public static final String ACTION_STOP_SERVICE = "com.termux.service.action.service_stop";
     public static final String ACTION_SERVICE_EXECUTE = "com.termux.service.action.service_execute";
-    public static final String ACTION_ON_BOOT = "com.termux.app.ACTION_ON_BOOT";
+    public static final String ACTION_BOOT_COMPLETED = "com.termux.app.ACTION_BOOT_COMPLETED";
     public static final String ACTION_WAKE_LOCK = "com.termux.service_wake_lock";
     public static final String ACTION_WAKE_UNLOCK = "com.termux.service_wake_unlock";
 
@@ -57,8 +57,8 @@ public final class TermuxService extends Service {
     public static final String TERMUX_EXECUTE_WORKDIR = "com.termux.execute.workdir";
     public static final String TERMUX_EXECUTE_EXTRA_BACKGROUND = "com.termux.execute.background";
 
-    public static final String NOTIFICATION_CHANNEL_LOW_ID = "com.termu.service.notification_channel_low";
-    public static final String NOTIFICATION_CHANNEL_HIGH_ID = "com.termu.service.notification_channel_high";
+    public static final String NOTIFICATION_CHANNEL_LOW_ID = "com.termux.service.notification_channel_low";
+    public static final String NOTIFICATION_CHANNEL_HIGH_ID = "com.termux.service.notification_channel_high";
 
 
     /**
@@ -137,7 +137,7 @@ public final class TermuxService extends Service {
                         Log.d(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
                         actionServiceExecute(intent);
                         break;
-                    case ACTION_ON_BOOT:
+                    case ACTION_BOOT_COMPLETED:
                         runOnBoot();
                         break;
                     default:
@@ -551,17 +551,17 @@ public final class TermuxService extends Service {
             var bootScriptsPath = TermuxConstants.HOME_PATH + scriptDirSuffix;
             var bootScriptsDir = new File(bootScriptsPath);
             var files = bootScriptsDir.listFiles();
-            Log.e(TermuxConstants.LOG_TAG, "Boot  in " + bootScriptsPath + ": " + (files == null ? "[]" : Arrays.toString(files)));
+            Log.e(TermuxConstants.LOG_TAG, "Boot in " + bootScriptsPath + ": " + (files == null ? "[]" : Arrays.toString(files)));
             if (files == null) continue;
             Arrays.sort(files, Comparator.comparing(File::getName));
             for (var scriptFile : files) {
                 if (!scriptFile.canRead() && !scriptFile.setReadable(true)) {
                     Log.e(TermuxConstants.LOG_TAG, "Cannot set file readable: " + scriptFile.getAbsolutePath());
-                }
-                if (!scriptFile.canExecute() && !scriptFile.setExecutable(true)) {
+                } else if (!scriptFile.canExecute() && !scriptFile.setExecutable(true)) {
                     Log.e(TermuxConstants.LOG_TAG, "Cannot set file executable: " + scriptFile.getAbsolutePath());
+                } else {
+                    executeBackgroundTask(scriptFile, new String[0], null);
                 }
-                executeBackgroundTask(scriptFile, new String[0], null);
             }
         }
     }
