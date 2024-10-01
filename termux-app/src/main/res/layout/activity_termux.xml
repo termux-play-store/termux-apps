@@ -23,7 +23,6 @@
                 android:focusableInTouchMode="true"
                 android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
                 android:scrollbars="vertical"
-                android:importantForAutofill="no"
                 tools:ignore="UnusedAttribute" />
 
             <LinearLayout

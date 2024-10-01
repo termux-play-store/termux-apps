@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityManager;
+import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
@@ -104,6 +105,9 @@ public final class TerminalView extends View {
     boolean mCtrlHeld;
     boolean mShiftHeld;
     boolean mAltHeld;
+
+    /** The current AutoFill hint returned by {@link #getAutofillHints()} - null if no autofill desired. */
+    private String mAutoFillHint;
 
     private final boolean mAccessibilityEnabled;
 
@@ -1020,6 +1024,13 @@ public final class TerminalView extends View {
         this.mTopRow = mTopRow;
     }
 
+    public void requestAutoFill(String autoFillHint) {
+        var autofillManager = getContext().getSystemService(AutofillManager.class);
+        if (autofillManager != null && autofillManager.isEnabled()) {
+            mAutoFillHint = autoFillHint;
+            autofillManager.requestAutofill(this);
+        }
+    }
 
     /**
      * Define functions required for AutoFill API
@@ -1029,11 +1040,27 @@ public final class TerminalView extends View {
         if (value.isText()) {
             mTermSession.write(value.getTextValue() + "\n");
         }
+        mAutoFillHint = null;
+        var autofillManager = getContext().getSystemService(AutofillManager.class);
+        if (autofillManager != null) {
+            autofillManager.cancel();
+        }
     }
 
     @Override
     public int getAutofillType() {
-        return AUTOFILL_TYPE_TEXT;
+        return (mAutoFillHint == null ? AUTOFILL_TYPE_NONE : AUTOFILL_TYPE_TEXT);
+    }
+
+    @Override
+    public int getImportantForAutofill() {
+        return (mAutoFillHint == null ? IMPORTANT_FOR_AUTOFILL_NO : IMPORTANT_FOR_AUTOFILL_YES);
+    }
+
+    @Nullable
+    @Override
+    public String[] getAutofillHints() {
+        return mAutoFillHint == null ? null : new String[]{mAutoFillHint};
     }
 
     @Override
