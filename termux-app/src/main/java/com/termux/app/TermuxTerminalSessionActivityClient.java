@@ -225,9 +225,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         } else {
             // Once we have a separate launcher icon for the failsafe session, it
             // should be safe to auto-close session on exit code '0' or '130'.
-            // But keep short-lived sessions around for debugging and understandability.
-            var isLongLived = (finishedSession.mProcessExitTimeMillis - finishedSession.mProcessSpawnedTimeMillis) > 3_000;
-            if ((finishedSession.getExitStatus() == 0 || finishedSession.getExitStatus() == 130) && isLongLived) {
+            if ((finishedSession.getExitStatus() == 0 || finishedSession.getExitStatus() == 130)) {
                 removeFinishedSession(finishedSession);
             }
         }
