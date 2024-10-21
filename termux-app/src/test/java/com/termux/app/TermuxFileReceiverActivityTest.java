@@ -1,14 +1,18 @@
 package com.termux.app;
 
+import android.os.Build;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(sdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class TermuxFileReceiverActivityTest {
 
     @Test
