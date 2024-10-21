@@ -17,7 +17,7 @@ android {
     this.ndkVersion = ndkVersion
 
     dependencies {
-        implementation("androidx.annotation:annotation:1.8.2")
+        implementation("androidx.annotation:annotation:1.9.0")
         implementation("androidx.core:core:1.13.1")
         implementation("androidx.drawerlayout:drawerlayout:1.2.0")
         implementation("androidx.viewpager:viewpager:1.0.0")
@@ -103,7 +103,7 @@ android {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.12.1")
+    testImplementation("org.robolectric:robolectric:4.13")
 }
 
 task("versionName") {
