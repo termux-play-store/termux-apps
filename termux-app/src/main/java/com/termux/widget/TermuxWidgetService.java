@@ -21,7 +21,7 @@ public final class TermuxWidgetService extends RemoteViewsService {
 
     public static class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
-        private final List<ShortcutFile> shortcutFiles = new ArrayList<>();
+        private final List<TermuxWidgetShortcutFile> shortcutFiles = new ArrayList<>();
         private final Context mContext;
         private final int mAppWidgetId;
 
@@ -84,11 +84,9 @@ public final class TermuxWidgetService extends RemoteViewsService {
             // locking up the widget.
             shortcutFiles.clear();
 
-            TermuxPathLister.listPaths(mContext, TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH, path -> {
-                shortcutFiles.add(new ShortcutFile(new File(path)));
-            });
+            TermuxWidgetPathLister.listPaths(path -> shortcutFiles.add(new TermuxWidgetShortcutFile(new File(path))));
 
-            ShortcutFile.sort(shortcutFiles);
+            TermuxWidgetShortcutFile.sort(shortcutFiles);
         }
     }
 

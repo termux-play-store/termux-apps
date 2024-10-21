@@ -6,9 +6,12 @@ import android.content.Context;
 import android.content.pm.ShortcutManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowInsets;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.termux.R;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,7 +20,7 @@ import java.util.List;
 public class TermuxCreateShortcutActivity extends Activity {
 
     private ListView mListView;
-    private final List<ShortcutFile> mAllFiles = new ArrayList<>();
+    private final List<TermuxWidgetShortcutFile> mAllFiles = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +28,13 @@ public class TermuxCreateShortcutActivity extends Activity {
         setContentView(R.layout.shortcuts_listview);
         mListView = findViewById(R.id.list);
 
-        TermuxPathLister.listPaths(this, TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH, path -> mAllFiles.add(new ShortcutFile(new File(path))));
+        mListView.setOnApplyWindowInsetsListener((v, insets) -> {
+            var bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            return WindowInsets.CONSUMED;
+        });
+
+        TermuxWidgetPathLister.listPaths(path -> mAllFiles.add(new TermuxWidgetShortcutFile(new File(path))));
     }
 
     @Override
@@ -43,7 +52,7 @@ public class TermuxCreateShortcutActivity extends Activity {
     }
 
     private void updateListview() {
-        ShortcutFile.sort(mAllFiles);
+        TermuxWidgetShortcutFile.sort(mAllFiles);
 
         if (mAllFiles.isEmpty()) {
             new AlertDialog.Builder(this)
@@ -61,7 +70,7 @@ public class TermuxCreateShortcutActivity extends Activity {
         mListView.setAdapter(adapter);
     }
 
-    private void createShortcut(Context context, ShortcutFile shortcutFile) {
+    private void createShortcut(Context context, TermuxWidgetShortcutFile shortcutFile) {
         var shortcutManager = context.getSystemService(ShortcutManager.class);
 
         if (shortcutManager.isRequestPinShortcutSupported()) {
