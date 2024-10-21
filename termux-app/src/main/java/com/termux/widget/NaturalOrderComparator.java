@@ -28,7 +28,7 @@ package com.termux.widget;
  - Make the comparison case insensitive.
  - Remove the main() and associated methods.
  */
-public class NaturalOrderComparator {
+final class NaturalOrderComparator {
 
     private static int compareRight(String a, String b) {
         int bias = 0, ia = 0, ib = 0;

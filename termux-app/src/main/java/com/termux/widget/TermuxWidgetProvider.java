@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.termux.R;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,7 +103,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
                     return;
                 }
 
-                var shortcut = new ShortcutFile(new File(clickedFilePath));
+                var shortcut = new TermuxWidgetShortcutFile(new File(clickedFilePath));
 
                 var executionIntent = shortcut.getExecutionIntent(false);
                 if (shortcut.mIsTask) {

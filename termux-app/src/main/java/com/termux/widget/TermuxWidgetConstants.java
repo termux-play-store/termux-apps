@@ -1,6 +1,6 @@
 package com.termux.widget;
 
-import android.annotation.SuppressLint;
+import com.termux.app.TermuxConstants;
 
 public class TermuxWidgetConstants {
 
@@ -12,11 +12,10 @@ public class TermuxWidgetConstants {
 
     public static final String EXTRA_FILE_CLICKED = "com.termux.widget.EXTRA_FILE_CLICKED";
 
-    public static final String SHORTCUTS_DIR_NAME = ".shortcuts";
-
     public static final String TASKS_DIR_NAME = "tasks";
 
-    @SuppressLint("SdCardPath")
-    public static final String TERMUX_SHORTCUT_SCRIPTS_DIR_PATH = "/data/data/com.termux/files/home/" + SHORTCUTS_DIR_NAME;
+    public static final String TERMUX_SHORTCUT_SCRIPTS_DIR_PATH = TermuxConstants.HOME_PATH + "/.config/termux/shortcuts";
+
+    public static final String TERMUX_SHORTCUT_SCRIPTS_DIR_PATH_LEGACY = TermuxConstants.HOME_PATH + "/.shortcuts";
 
 }

@@ -23,7 +23,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="2.0"
-                android:text="@string/title_widget"
+                android:text="@string/application_name"
                 android:textColor="@android:color/primary_text_dark"
                 android:textSize="18sp" />
         </LinearLayout>

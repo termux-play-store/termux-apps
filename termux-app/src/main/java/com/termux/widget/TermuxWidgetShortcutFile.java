@@ -9,15 +9,17 @@ import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
 
+import com.termux.R;
+
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
 
-public final class ShortcutFile {
+final class TermuxWidgetShortcutFile {
 
-    public static void sort(List<ShortcutFile> shortcutFiles) {
+    public static void sort(List<TermuxWidgetShortcutFile> shortcutFiles) {
         shortcutFiles.sort(Comparator
-            .comparingInt((ShortcutFile a) -> (a.mDisplaysDirectory ? 1 : -1))
+            .comparingInt((TermuxWidgetShortcutFile a) -> (a.mDisplaysDirectory ? 1 : -1))
             .thenComparing((a, b) -> NaturalOrderComparator.compare(a.mLabel, b.mLabel))
         );
     }
@@ -27,10 +29,12 @@ public final class ShortcutFile {
     public final boolean mDisplaysDirectory;
     public final boolean mIsTask;
 
-    public ShortcutFile(@NonNull File file) {
+    public TermuxWidgetShortcutFile(@NonNull File file) {
         mPath = file.getAbsolutePath();
         var parentDirName = file.getParentFile().getName();
-        mDisplaysDirectory = !parentDirName.equals(TermuxWidgetConstants.SHORTCUTS_DIR_NAME);
+        var parentAbsolutePath = file.getParentFile().getAbsolutePath();
+        mDisplaysDirectory = !(TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH.equals(parentAbsolutePath)
+            || TermuxWidgetConstants.TERMUX_SHORTCUT_SCRIPTS_DIR_PATH_LEGACY.equals(parentAbsolutePath));
         mIsTask = parentDirName.equals(TermuxWidgetConstants.TASKS_DIR_NAME);
         mLabel = mDisplaysDirectory ? (parentDirName + "/" + file.getName()) : file.getName();
     }
@@ -73,12 +77,12 @@ public final class ShortcutFile {
     public RemoteViews getListWidgetView(Context context) {
         // Position will always range from 0 to getCount() - 1.
         // Construct remote views item based on the item xml file and set text based on position.
-        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_item);
+        var remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_item);
         remoteViews.setTextViewText(R.id.widget_item, getLabel());
 
         // Next, we set a fill-intent which will be used to fill-in the pending intent template
         // which is set on the collection view in TermuxAppWidgetProvider.
-        Intent fillInIntent = new Intent()
+        var fillInIntent = new Intent()
             .putExtra(TermuxWidgetConstants.EXTRA_FILE_CLICKED, getPath());
 
         remoteViews.setOnClickFillInIntent(R.id.widget_item_layout, fillInIntent);

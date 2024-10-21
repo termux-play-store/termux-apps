@@ -126,6 +126,35 @@
             </intent-filter>
         </activity>
 
+
+        <!-- Widgets -->
+        <receiver
+            android:name=".widget.TermuxWidgetProvider"
+            android:exported="false"
+            android:label="@string/title_shortcut_widget_name" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/termux_appwidget_info" />
+        </receiver>
+
+        <activity
+            android:exported="true"
+            android:name=".widget.TermuxCreateShortcutActivity"
+            android:label="@string/title_single_shortcut_name">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <service
+            android:name=".widget.TermuxWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+
         <activity android:name=".app.api.DialogAPI$DialogActivity"
             android:theme="@style/DialogTheme"
             android:noHistory="true"
