@@ -546,12 +546,11 @@ public final class TermuxService extends Service {
     }
 
     private void runOnBoot() {
-        Log.i(TermuxConstants.LOG_TAG, "Running on boot check");
         for (var scriptDirSuffix : new String[]{"/.config/termux/boot", "/.termux/boot"}) {
             var bootScriptsPath = TermuxConstants.HOME_PATH + scriptDirSuffix;
             var bootScriptsDir = new File(bootScriptsPath);
             var files = bootScriptsDir.listFiles();
-            Log.e(TermuxConstants.LOG_TAG, "Boot in " + bootScriptsPath + ": " + (files == null ? "[]" : Arrays.toString(files)));
+            Log.i(TermuxConstants.LOG_TAG, "Boot scripts in " + bootScriptsPath + ": " + Arrays.toString(files));
             if (files == null) continue;
             Arrays.sort(files, Comparator.comparing(File::getName));
             for (var scriptFile : files) {
