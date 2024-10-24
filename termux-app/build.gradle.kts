@@ -164,9 +164,16 @@ tasks {
 
 task("downloadPrebuilt") {
     doLast {
-        val bootstrapVersion = "7"
-        downloadFile("src/main/cpp/bootstrap-aarch64.zip", "https://bootstrap.termux.net/bootstrap-aarch64-v$bootstrapVersion.zip", "da651a534d5994ac1421302259dde6f494fb9df28063a19c4374c636f1a6d1a1")
-        downloadFile("src/main/cpp/bootstrap-x86_64.zip", "https://bootstrap.termux.net/bootstrap-x86_64-v$bootstrapVersion.zip", "af897f53ddde18bc243c37540c216f9dcd9c983471e8268e0984f7840755d617")
+        val bootstrapVersion = "2024.10.24-r1"
+        val arches = mapOf(
+            "aarch64" to "009d891efd6a080452e5d0e04c6416221bc87dffd55976f672ada9d544b9d73c",
+            "x86_64" to "03ad230e63856ca620028536d09ad1eb8aa4f7910d1b4674461f9d1023f45501"
+        )
+        arches.forEach { (arch, checksum) ->
+            val downloadTo = "src/main/cpp/bootstrap-${arch}.zip"
+            val url = "https://github.com/termux-play-store/termux-packages/releases/download/bootstrap-${bootstrapVersion}/bootstrap-${arch}.zip"
+            downloadFile(downloadTo, url, checksum)
+        }
 
         val prootVersion = "5.1.107-65"
         downloadFile("src/main/jniLibs/arm64-v8a/libproot-loader.so", "https://bootstrap.termux.net/libproot-loader-aarch64-$prootVersion.so", "23cbee2320ed6f55ec4c47d50573a3ee59163f84c6e1bfaf7fb67049f71a2b59")
