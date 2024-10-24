@@ -18,6 +18,13 @@ public class TermuxWidgetPathLister {
         }) {
             var parentDir = new File(parentPath);
             listPathsInternal(parentDir, visited, onFile);
+
+            if (!parentDir.exists()) {
+                // Try to create an empty directory where the user should place files.
+                if (!parentDir.mkdirs()) {
+                    Log.w(TermuxWidgetConstants.LOG_TAG, "Unable to create directory: " + parentPath);
+                }
+            }
         }
     }
 

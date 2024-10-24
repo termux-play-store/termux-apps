@@ -67,8 +67,8 @@
     <string name="action_file_received_open_directory">Open directory</string>
 
     <!-- Widgets -->
-    <string name="title_shortcut_widget_name">Termux widget</string>
-    <string name="title_single_shortcut_name">Termux shortcut</string>
+    <string name="title_shortcut_widget_name">Widget</string>
+    <string name="title_single_shortcut_name">Shortcut</string>
     <string name="msg_no_shortcut_scripts">No files in $HOME/.shortcuts/</string>
     <string name="action_refresh">Refresh</string>
     <string name="msg_pinned_shortcuts_not_supported">The current launcher does not support pinned shortcuts.</string>
