@@ -28,8 +28,6 @@ import com.termux.terminal.TerminalSessionClient;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -49,7 +47,6 @@ public final class TermuxService extends Service {
 
     public static final String ACTION_STOP_SERVICE = "com.termux.service.action.service_stop";
     public static final String ACTION_SERVICE_EXECUTE = "com.termux.service.action.service_execute";
-    public static final String ACTION_BOOT_COMPLETED = "com.termux.app.ACTION_BOOT_COMPLETED";
     public static final String ACTION_WAKE_LOCK = "com.termux.service_wake_lock";
     public static final String ACTION_WAKE_UNLOCK = "com.termux.service_wake_unlock";
 
@@ -136,9 +133,6 @@ public final class TermuxService extends Service {
                     case ACTION_SERVICE_EXECUTE:
                         Log.d(LOG_TAG, "ACTION_SERVICE_EXECUTE intent received");
                         actionServiceExecute(intent);
-                        break;
-                    case ACTION_BOOT_COMPLETED:
-                        runOnBoot();
                         break;
                     default:
                         Log.e(LOG_TAG, "Invalid action: \"" + intent.getAction() + "\"");
@@ -543,26 +537,6 @@ public final class TermuxService extends Service {
 
     public void unsetTermuxTerminalSessionClient() {
         this.mTerminalSessionClient = null;
-    }
-
-    private void runOnBoot() {
-        for (var scriptDirSuffix : new String[]{"/.config/termux/boot", "/.termux/boot"}) {
-            var bootScriptsPath = TermuxConstants.HOME_PATH + scriptDirSuffix;
-            var bootScriptsDir = new File(bootScriptsPath);
-            var files = bootScriptsDir.listFiles();
-            Log.i(TermuxConstants.LOG_TAG, "Boot scripts in " + bootScriptsPath + ": " + Arrays.toString(files));
-            if (files == null) continue;
-            Arrays.sort(files, Comparator.comparing(File::getName));
-            for (var scriptFile : files) {
-                if (!scriptFile.canRead() && !scriptFile.setReadable(true)) {
-                    Log.e(TermuxConstants.LOG_TAG, "Cannot set file readable: " + scriptFile.getAbsolutePath());
-                } else if (!scriptFile.canExecute() && !scriptFile.setExecutable(true)) {
-                    Log.e(TermuxConstants.LOG_TAG, "Cannot set file executable: " + scriptFile.getAbsolutePath());
-                } else {
-                    executeBackgroundTask(scriptFile, new String[0], null);
-                }
-            }
-        }
     }
 
 }
