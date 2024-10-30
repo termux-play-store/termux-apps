@@ -164,10 +164,10 @@ tasks {
 
 task("downloadPrebuilt") {
     doLast {
-        val bootstrapVersion = "2024.10.24-r1"
+        val bootstrapVersion = "2024.10.30-r1"
         val arches = mapOf(
-            "aarch64" to "009d891efd6a080452e5d0e04c6416221bc87dffd55976f672ada9d544b9d73c",
-            "x86_64" to "03ad230e63856ca620028536d09ad1eb8aa4f7910d1b4674461f9d1023f45501"
+            "aarch64" to "49f4f6a92037061d6a4c67332bbe46ca217c7761ce1170ab2be3ef500ff4afc3",
+            "x86_64" to "7492fbbc9d1f6fc9e8a853698d78d4a3f2d168e1ea0a6d49bd52c4fdae9de4e2"
         )
         arches.forEach { (arch, checksum) ->
             val downloadTo = "src/main/cpp/bootstrap-${arch}.zip"
