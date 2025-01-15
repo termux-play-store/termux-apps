@@ -51,7 +51,7 @@ public class TermuxApiService extends Service {
      * Handler of incoming messages from clients.
      */
     static class IncomingHandler extends Handler {
-        private Context applicationContext;
+        private final Context applicationContext;
 
         IncomingHandler(TermuxApiService context) {
             applicationContext = context.getApplicationContext();

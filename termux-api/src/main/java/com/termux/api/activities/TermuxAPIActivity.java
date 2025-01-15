@@ -2,7 +2,6 @@ package com.termux.api.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,7 +10,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.termux.api.util.ViewUtils;
 import com.termux.api.R;
 
 public class TermuxAPIActivity extends AppCompatActivity {
@@ -76,24 +74,21 @@ public class TermuxAPIActivity extends AppCompatActivity {
     }
 
     private void showInfo() {
-        new Thread() {
-            @Override
-            public void run() {
-                /*
-                String title = "About";
+        new Thread(() -> {
+            /*
+            String title = "About";
 
-                StringBuilder aboutString = new StringBuilder();
-                aboutString.append(TermuxUtils.getAppInfoMarkdownString(TermuxAPIActivity.this, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGE));
-                aboutString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(TermuxAPIActivity.this));
-                aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(TermuxAPIActivity.this));
+            StringBuilder aboutString = new StringBuilder();
+            aboutString.append(TermuxUtils.getAppInfoMarkdownString(TermuxAPIActivity.this, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGE));
+            aboutString.append("\n\n").append(AndroidUtils.getDeviceInfoMarkdownString(TermuxAPIActivity.this));
+            aboutString.append("\n\n").append(TermuxUtils.getImportantLinksMarkdownString(TermuxAPIActivity.this));
 
-                ReportInfo reportInfo = new ReportInfo(title, TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title);
-                reportInfo.setReportString(aboutString.toString());
-                reportInfo.setReportSaveFileLabelAndPath(title, Environment.getExternalStorageDirectory() + "/" + FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + title + ".log", true, true));
-                ReportActivity.startReportActivity(TermuxAPIActivity.this, reportInfo);
-                 */
-            }
-        }.start();
+            ReportInfo reportInfo = new ReportInfo(title, TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title);
+            reportInfo.setReportString(aboutString.toString());
+            reportInfo.setReportSaveFileLabelAndPath(title, Environment.getExternalStorageDirectory() + "/" + FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + title + ".log", true, true));
+            ReportActivity.startReportActivity(TermuxAPIActivity.this, reportInfo);
+             */
+        }).start();
     }
 
     private void checkIfBatteryOptimizationNotDisabled() {

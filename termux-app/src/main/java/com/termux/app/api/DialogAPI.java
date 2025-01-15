@@ -162,10 +162,10 @@ public class DialogAPI {
 
                     out.name("code").value(result.code);
                     out.name("text").value(result.text);
-                    if (result.index > -1) {
-                        out.name("index").value(result.index);
+                    if (InputResult.index > -1) {
+                        out.name("index").value(InputResult.index);
                     }
-                    if (result.values.size() > 0) {
+                    if (!result.values.isEmpty()) {
                         out.name("values");
                         out.beginArray();
                         for (Value value : result.values) {
@@ -176,7 +176,7 @@ public class DialogAPI {
                         }
                         out.endArray();
                     }
-                    if (!result.error.equals("")) {
+                    if (!result.error.isEmpty()) {
                         out.name("error").value(result.error);
                     }
 
@@ -669,7 +669,7 @@ public class DialogAPI {
                     textView.setOnClickListener(view -> {
                         InputResult result = new InputResult();
                         result.text = values[j];
-                        result.index = j;
+                        InputResult.index = j;
                         dismissDialog(dialog);
                         resultListener.onResult(result);
                     });
@@ -909,19 +909,19 @@ public class DialogAPI {
          */
         abstract static class InputDialog<T extends View> implements InputMethod {
             // result that belongs to us
-            InputResult inputResult = new InputResult();
+            final InputResult inputResult = new InputResult();
 
             // listener for our input result
             InputResultListener resultListener;
 
             // view that will be placed in our dialog
-            T widgetView;
+            final T widgetView;
 
             // dialog that holds everything
             Dialog dialog;
 
             // our activity context
-            AppCompatActivity activity;
+            final AppCompatActivity activity;
 
 
             // method to be implemented that handles creating view that is placed in our dialog

@@ -11,7 +11,6 @@ import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Looper;
 import android.util.JsonWriter;
-import android.util.Log;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
@@ -23,7 +22,7 @@ import java.util.Iterator;
 
 public class UsbAPI {
 
-    private static SparseArray<UsbDeviceConnection> openDevices = new SparseArray<>();
+    private static final SparseArray<UsbDeviceConnection> openDevices = new SparseArray<>();
 
     private static final String LOG_TAG = "UsbAPI";
 

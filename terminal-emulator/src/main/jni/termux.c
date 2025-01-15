@@ -198,16 +198,6 @@ JNIEXPORT void JNICALL Java_com_termux_terminal_JNI_setPtyWindowSize(JNIEnv* TER
     ioctl(fd, TIOCSWINSZ, &sz);
 }
 
-JNIEXPORT void JNICALL Java_com_termux_terminal_JNI_setPtyUTF8Mode(JNIEnv* TERMUX_UNUSED(env), jclass TERMUX_UNUSED(clazz), jint fd)
-{
-    struct termios tios;
-    tcgetattr(fd, &tios);
-    if ((tios.c_iflag & IUTF8) == 0) {
-        tios.c_iflag |= IUTF8;
-        tcsetattr(fd, TCSANOW, &tios);
-    }
-}
-
 JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_waitFor(JNIEnv* TERMUX_UNUSED(env), jclass TERMUX_UNUSED(clazz), jint pid)
 {
     int status;

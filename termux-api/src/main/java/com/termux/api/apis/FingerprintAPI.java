@@ -251,6 +251,6 @@ public class FingerprintAPI {
     static class FingerprintResult {
         public String authResult = AUTH_RESULT_UNKNOWN;
         public int failedAttempts = 0;
-        public List<String> errors = new ArrayList<>();
+        public final List<String> errors = new ArrayList<>();
     }
 }

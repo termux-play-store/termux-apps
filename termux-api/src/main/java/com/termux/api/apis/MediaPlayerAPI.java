@@ -12,7 +12,6 @@ import com.termux.api.util.ResultReturner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 /**
  * API that enables playback of standard audio formats such as:
@@ -176,7 +175,7 @@ public class MediaPlayerAPI {
          * -----
          */
 
-        static MediaCommandHandler infoHandler = new MediaCommandHandler() {
+        static final MediaCommandHandler infoHandler = new MediaCommandHandler() {
             @Override
             public MediaCommandResult handle(MediaPlayer player, Context context, Intent intent) {
                 MediaCommandResult result = new MediaCommandResult();
@@ -191,7 +190,7 @@ public class MediaPlayerAPI {
             }
         };
 
-        static MediaCommandHandler playHandler = new MediaCommandHandler() {
+        static final MediaCommandHandler playHandler = new MediaCommandHandler() {
             @Override
             public MediaCommandResult handle(MediaPlayer player, Context context, Intent intent) {
                 MediaCommandResult result = new MediaCommandResult();
@@ -226,7 +225,7 @@ public class MediaPlayerAPI {
             }
         };
 
-        static MediaCommandHandler pauseHandler = new MediaCommandHandler() {
+        static final MediaCommandHandler pauseHandler = new MediaCommandHandler() {
             @Override
             public MediaCommandResult handle(MediaPlayer player, Context context, Intent intent) {
                 MediaCommandResult result = new MediaCommandResult();
@@ -254,7 +253,7 @@ public class MediaPlayerAPI {
             return getTimeString(position) + " / " + getTimeString(duration);
         }
 
-        static MediaCommandHandler resumeHandler = new MediaCommandHandler() {
+        static final MediaCommandHandler resumeHandler = new MediaCommandHandler() {
             @Override
             public MediaCommandResult handle(MediaPlayer player, Context context, Intent intent) {
                 MediaCommandResult result = new MediaCommandResult();
@@ -274,7 +273,7 @@ public class MediaPlayerAPI {
             }
         };
 
-        static MediaCommandHandler stopHandler = new MediaCommandHandler() {
+        static final MediaCommandHandler stopHandler = new MediaCommandHandler() {
             @Override
             public MediaCommandResult handle(MediaPlayer player, Context context, Intent intent) {
                 MediaCommandResult result = new MediaCommandResult();

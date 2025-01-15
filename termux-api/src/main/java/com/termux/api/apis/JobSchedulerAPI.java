@@ -26,7 +26,7 @@ public class JobSchedulerAPI {
     @SuppressLint("ObsoleteSdkInt")
     private static String formatJobInfo(JobInfo jobInfo) {
         final String path = jobInfo.getExtras().getString(JobSchedulerService.SCRIPT_FILE_PATH);
-        List<String> description = new ArrayList<String>();
+        List<String> description = new ArrayList<>();
         if (jobInfo.isPeriodic()) {
             description.add(String.format(Locale.ENGLISH, "(periodic: %dms)", jobInfo.getIntervalMillis()));
         }
@@ -92,8 +92,8 @@ public class JobSchedulerAPI {
                 case "not_roaming":
                     networkTypeCode = JobInfo.NETWORK_TYPE_NOT_ROAMING;
                     break;
-                default:
                 case "none":
+                default:
                     networkTypeCode = JobInfo.NETWORK_TYPE_NONE;
                     break;
             }

@@ -75,7 +75,7 @@ public class NotificationAPI {
             String channelId = intent.getStringExtra("id");
             String channelName = intent.getStringExtra("name");
 
-            if (channelId == null || channelId.equals("")) {
+            if (channelId == null || channelId.isEmpty()) {
                 ResultReturner.returnData(context, intent, out -> out.println("Channel id not specified."));
                 return;
             }
@@ -86,7 +86,7 @@ public class NotificationAPI {
                 return;
             }
 
-            if (channelName == null || channelName.equals("")) {
+            if (channelName == null || channelName.isEmpty()) {
                 ResultReturner.returnData(context, intent, out -> out.println("Cannot create a channel without a name."));
             }
 

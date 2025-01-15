@@ -43,7 +43,7 @@ public class TelephonyAPI {
         if (value != null) {
                 out.name(name);
                 out.beginArray();
-                for (int i = 0; i < value.length; i++) out.value(value[i]);
+                for (int j : value) out.value(j);
                 out.endArray();
 
         }

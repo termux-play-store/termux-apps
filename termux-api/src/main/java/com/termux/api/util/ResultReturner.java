@@ -6,13 +6,11 @@ import android.content.BroadcastReceiver;
 import android.content.BroadcastReceiver.PendingResult;
 import android.content.Context;
 import android.content.Intent;
-import android.net.LocalSocket;
 import android.os.ParcelFileDescriptor;
 import android.util.JsonWriter;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;

@@ -55,7 +55,7 @@ public final class TerminalSession extends TerminalOutput {
     private final byte[] mUtf8InputBuffer = new byte[5];
 
     /** Callback which gets notified when a session finishes or changes title. */
-    TerminalSessionClient mClient;
+    final TerminalSessionClient mClient;
 
     /** The pid of the shell process. 0 if not started and -1 if finished running. */
     int mShellPid;

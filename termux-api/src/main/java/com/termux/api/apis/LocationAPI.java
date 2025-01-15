@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -117,17 +116,14 @@ public class LocationAPI {
                             }
                         }, null);
                         final Looper looper = Looper.myLooper();
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                try {
-                                    Thread.sleep(30 * 1000);
-                                } catch (InterruptedException e) {
-                                    Log.e(LOG_TAG, "INTER", e);
-                                }
-                                looper.quit();
+                        new Thread(() -> {
+                            try {
+                                Thread.sleep(30 * 1000);
+                            } catch (InterruptedException e) {
+                                Log.e(LOG_TAG, "INTER", e);
                             }
-                        }.start();
+                            looper.quit();
+                        }).start();
                         Looper.loop();
                         break;
                     default:

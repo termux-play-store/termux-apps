@@ -179,7 +179,7 @@ public class MicRecorderAPI {
          * -----
          */
 
-        static RecorderCommandHandler infoHandler = new RecorderCommandHandler() {
+        static final RecorderCommandHandler infoHandler = new RecorderCommandHandler() {
             @Override
             public RecorderCommandResult handle(Context context, Intent intent) {
                 RecorderCommandResult result = new RecorderCommandResult();
@@ -190,7 +190,7 @@ public class MicRecorderAPI {
             }
         };
 
-        static RecorderCommandHandler recordHandler = new RecorderCommandHandler() {
+        static final RecorderCommandHandler recordHandler = new RecorderCommandHandler() {
             @Override
             public RecorderCommandResult handle(Context context, Intent intent) {
                 RecorderCommandResult result = new RecorderCommandResult();
@@ -279,7 +279,7 @@ public class MicRecorderAPI {
             }
         };
 
-        static RecorderCommandHandler quitHandler = new RecorderCommandHandler() {
+        static final RecorderCommandHandler quitHandler = new RecorderCommandHandler() {
             @Override
             public RecorderCommandResult handle(Context context, Intent intent) {
                 RecorderCommandResult result = new RecorderCommandResult();

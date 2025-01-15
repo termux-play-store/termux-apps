@@ -20,8 +20,8 @@ import org.json.JSONObject;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Collections;
 import java.util.concurrent.Semaphore;
 
 
@@ -120,7 +120,7 @@ public class SensorAPI {
          * Sensor event listener for reading sensor value updates and storing them
          * in the sensorReadout JSON object
          */
-        protected static SensorEventListener sensorEventListener = new SensorEventListener() {
+        protected static final SensorEventListener sensorEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 JSONArray sensorValuesArray = new JSONArray();
@@ -185,7 +185,7 @@ public class SensorAPI {
         /**
          * Handler for returning a list of all available sensors
          */
-        static SensorCommandHandler listHandler = (sensorManager, context, intent) -> {
+        static final SensorCommandHandler listHandler = (sensorManager, context, intent) -> {
             SensorCommandResult result = new SensorCommandResult();
             JSONArray sensorArray = new JSONArray();
             List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -207,7 +207,7 @@ public class SensorAPI {
         /**
          * Handler for managing cleaning up sensor resources
          */
-        static SensorCommandHandler cleanupHandler = new SensorCommandHandler() {
+        static final SensorCommandHandler cleanupHandler = new SensorCommandHandler() {
             @Override
             public SensorCommandResult handle(SensorManager sensorManager, Context context, Intent intent) {
                 SensorCommandResult result = new SensorCommandResult();
@@ -228,7 +228,7 @@ public class SensorAPI {
         /**
          * Handler for managing listening to sensors
          */
-        static SensorCommandHandler sensorHandler = new SensorCommandHandler() {
+        static final SensorCommandHandler sensorHandler = new SensorCommandHandler() {
             @Override
             public SensorCommandResult handle(SensorManager sensorManager, Context context, Intent intent) {
                 SensorCommandResult result = new SensorCommandResult();
@@ -267,7 +267,7 @@ public class SensorAPI {
          */
         protected static List<Sensor> getSensorsToListenTo(SensorManager sensorManager, String[] requestedSensors, Intent intent) {
             List<Sensor> availableSensors = new ArrayList<>(sensorManager.getSensorList(Sensor.TYPE_ALL));
-            Collections.sort(availableSensors, (s1, s2) -> s1.getName().compareTo(s2.getName()));
+            availableSensors.sort(Comparator.comparing(Sensor::getName));
             List<Sensor> sensorsToListenTo = new ArrayList<>();
 
             boolean listenToAll = intent.getBooleanExtra("all", false);
@@ -342,7 +342,7 @@ public class SensorAPI {
 
             static final int DEFAULT_LIMIT = Integer.MAX_VALUE;
 
-            protected String outputSocketAddress;
+            protected final String outputSocketAddress;
             protected boolean isRunning;
             protected int delay;
             protected int counter;

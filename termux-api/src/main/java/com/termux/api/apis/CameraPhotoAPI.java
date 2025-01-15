@@ -132,26 +132,23 @@ public class CameraPhotoAPI {
         Size largest = Collections.max(sizes, bySize);
 
         final ImageReader mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.JPEG, 2);
-        mImageReader.setOnImageAvailableListener(reader -> new Thread() {
-            @Override
-            public void run() {
-                try (final Image mImage = reader.acquireNextImage()) {
-                    ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
-                    byte[] bytes = new byte[buffer.remaining()];
-                    buffer.get(bytes);
-                    try (FileOutputStream output = new FileOutputStream(outputFile)) {
-                        output.write(bytes);
-                    } catch (Exception e) {
-                        stdout.println("Error writing image: " + e.getMessage());
-                        Log.e(LOG_TAG, "Error writing image", e);
-                    }
-                } finally {
-                    mImageReader.close();
-                    releaseSurfaces(outputSurfaces);
-                    closeCamera(camera, looper);
+        mImageReader.setOnImageAvailableListener(reader -> new Thread(() -> {
+            try (final Image mImage = reader.acquireNextImage()) {
+                ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+                try (FileOutputStream output = new FileOutputStream(outputFile)) {
+                    output.write(bytes);
+                } catch (Exception e) {
+                    stdout.println("Error writing image: " + e.getMessage());
+                    Log.e(LOG_TAG, "Error writing image", e);
                 }
+            } finally {
+                mImageReader.close();
+                releaseSurfaces(outputSurfaces);
+                closeCamera(camera, looper);
             }
-        }.start(), null);
+        }).start(), null);
         final Surface imageReaderSurface = mImageReader.getSurface();
         outputSurfaces.add(imageReaderSurface);
 

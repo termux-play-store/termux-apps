@@ -151,38 +151,34 @@ public class TermuxFileReceiverActivity extends AppCompatActivity {
             R.string.hint_file_name,
             attachmentFileName,
             R.string.action_file_received_edit,
-            text -> {
-                saveStreamWithName(in, text, outFile -> {
-                    var editorProgramFile = new File(EDITOR_PROGRAM);
-                    if (!editorProgramFile.isFile()) {
-                        showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
-                            + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
-                        return;
-                    }
+            text -> saveStreamWithName(in, text, outFile -> {
+                var editorProgramFile = new File(EDITOR_PROGRAM);
+                if (!editorProgramFile.isFile()) {
+                    showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
+                        + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
+                    return;
+                }
 
-                    // Do this for the user if necessary:
-                    //noinspection ResultOfMethodCallIgnored
-                    editorProgramFile.setExecutable(true);
+                // Do this for the user if necessary:
+                //noinspection ResultOfMethodCallIgnored
+                editorProgramFile.setExecutable(true);
 
-                    var scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
+                var scriptUri = new Uri.Builder().scheme("file").path(EDITOR_PROGRAM).build();
 
-                    var executeIntent = new Intent(Intent.ACTION_RUN, scriptUri)
-                        .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY)
-                        .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
-                    startActivity(executeIntent);
-                    finish();
-                });
-            },
+                var executeIntent = new Intent(Intent.ACTION_RUN, scriptUri)
+                    .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY)
+                    .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
+                startActivity(executeIntent);
+                finish();
+            }),
             R.string.action_file_received_open_directory,
-            text -> {
-                saveStreamWithName(in, text, file -> {
-                    var executeIntent = new Intent(Intent.ACTION_RUN)
-                        .putExtra(TermuxService.TERMUX_EXECUTE_WORKDIR, TERMUX_RECEIVE_DIR)
-                        .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY);
-                    startActivity(executeIntent);
-                    finish();
-                });
-            },
+            text -> saveStreamWithName(in, text, file -> {
+                var executeIntent = new Intent(Intent.ACTION_RUN)
+                    .putExtra(TermuxService.TERMUX_EXECUTE_WORKDIR, TERMUX_RECEIVE_DIR)
+                    .setClassName(TermuxFileReceiverActivity.this, TermuxConstants.TERMUX_INTERNAL_ACTIVITY);
+                startActivity(executeIntent);
+                finish();
+            }),
             R.string.cancel,
             text -> finish(),
             dismissedDialog -> {

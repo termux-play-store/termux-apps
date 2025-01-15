@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class TermuxTerminalExtraKeys {
-    public static Map<String, Integer> PRIMARY_KEY_CODES_FOR_STRINGS = new HashMap<>() {{
+    public static final Map<String, Integer> PRIMARY_KEY_CODES_FOR_STRINGS = new HashMap<>() {{
         put("SPACE", KeyEvent.KEYCODE_SPACE);
         put("ESC", KeyEvent.KEYCODE_ESCAPE);
         put("TAB", KeyEvent.KEYCODE_TAB);
@@ -140,9 +140,7 @@ public final class TermuxTerminalExtraKeys {
                 mActivity.getTerminalView().onKeyDown(keyCode, keyEvent);
             } else {
                 // not a control char
-                key.codePoints().forEach(codePoint -> {
-                    mActivity.getTerminalView().inputCodePoint(KeyCharacterMap.VIRTUAL_KEYBOARD, codePoint, ctrlDown, altDown);
-                });
+                key.codePoints().forEach(codePoint -> mActivity.getTerminalView().inputCodePoint(KeyCharacterMap.VIRTUAL_KEYBOARD, codePoint, ctrlDown, altDown));
             }
         }
     }

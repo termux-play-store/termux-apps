@@ -1,7 +1,5 @@
 package com.termux.terminal;
 
-import java.io.UnsupportedEncodingException;
-
 public class UnicodeInputTest extends TerminalTestCase {
 
 	public void testIllFormedUtf8SuccessorByteNotConsumed() {

@@ -83,19 +83,19 @@ public final class ExtraKeysView extends GridLayout {
         "PGUP", "PGDN"
     );
 
-    private int mButtonTextColor = Color.WHITE;
+    private final int mButtonTextColor = Color.WHITE;
     /**
      * The text color for the extra keys button when its active.
      */
-    int mButtonActiveTextColor = 0xFF80DEEA;
+    final int mButtonActiveTextColor = 0xFF80DEEA;
     /**
      * The background color for the extra keys button.
      */
-    private int mButtonBackgroundColor = 0x00000000;
+    private final int mButtonBackgroundColor = 0x00000000;
     /**
      * The background color for the extra keys button when its active.
      */
-    private int mButtonActiveBackgroundColor = 0xFF7F7F7F;
+    private final int mButtonActiveBackgroundColor = 0xFF7F7F7F;
 
     /**
      * Defines whether text for the extra keys button should be all capitalized automatically.
