@@ -103,7 +103,10 @@ public final class TermuxTerminalViewClient implements TerminalViewClient {
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
+        if (e.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+            onToggleSoftKeyboardRequest();
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_ENTER && !currentSession.isRunning()) {
             mTermuxTerminalSessionActivityClient.removeFinishedSession(currentSession);
             return true;
         } else if (e.isCtrlPressed() && e.isAltPressed()) {

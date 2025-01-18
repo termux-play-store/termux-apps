@@ -243,6 +243,18 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             TermuxFullscreen.updatePadding(this, insets);
             return insets;
         });
+
+        getDrawer().addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+                findViewById(R.id.terminal_sessions_list).requestFocus();
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                mTerminalView.requestFocus();
+            }
+        });
     }
 
     @Override
