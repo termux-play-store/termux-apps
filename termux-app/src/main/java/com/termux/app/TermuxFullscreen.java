@@ -27,7 +27,8 @@ public class TermuxFullscreen {
             rootView.getLocationInWindow(location);
 
             int topMargin = location[1] - windowBounds.top;
-            int bottomMargin = windowBounds.bottom - rootView.getBottom();
+            // Do not go below 0, see https://github.com/termux-play-store/termux-apps/issues/62:
+            int bottomMargin = Math.max(0, windowBounds.bottom - rootView.getBottom());
 
             int imeHeight = insets.getInsets(WindowInsets.Type.ime()).bottom;
             var topPadding = TermuxFullscreen.calculatePadding(radiusTopLeft, radiusTopRight, topMargin);
