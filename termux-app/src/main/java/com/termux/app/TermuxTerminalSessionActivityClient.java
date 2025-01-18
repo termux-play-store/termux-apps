@@ -468,6 +468,9 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
         // TODO: Can this be null? if (termuxSessionsListView == null) return;
 
         termuxSessionsListView.setItemChecked(indexOfSession, true);
+        termuxSessionsListView.setSelection(indexOfSession);
+        termuxSessionListNotifyUpdated();
+
         // Delay is necessary otherwise sometimes scroll to newly added session does not happen
         termuxSessionsListView.postDelayed(() -> termuxSessionsListView.smoothScrollToPosition(indexOfSession), 1000);
     }
