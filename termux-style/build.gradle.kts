@@ -7,7 +7,7 @@ android {
     namespace = "com.termux.styling"
 
     defaultConfig {
-        versionCode = 33
+        versionCode = 34
         versionName = "0.$versionCode"
 
         val minSdkVersion: String by project
