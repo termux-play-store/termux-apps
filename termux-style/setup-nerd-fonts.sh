@@ -5,7 +5,7 @@ getNerdFont() {
 	local font_name="${1}"
 	local font_file="${2}"
 
-	local tag="v3.2.1"
+	local tag="v3.3.0"
 	local font_pack="${font_name}"
 	case "${font_pack}" in
 		("Go-Mono")
