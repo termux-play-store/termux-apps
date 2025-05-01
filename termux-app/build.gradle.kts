@@ -106,7 +106,7 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.13")
 }
 
-task("versionName") {
+tasks.register("versionName") {
     doLast {
         print(android.defaultConfig.versionName)
     }
@@ -162,7 +162,7 @@ tasks {
     }
 }
 
-task("downloadPrebuilt") {
+tasks.register("downloadPrebuilt") {
     doLast {
         val bootstrapVersion = "2025.01.18-r1"
         val arches = mapOf(
