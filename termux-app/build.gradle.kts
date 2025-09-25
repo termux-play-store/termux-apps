@@ -18,7 +18,7 @@ android {
 
     dependencies {
         implementation("androidx.annotation:annotation:1.9.1")
-        implementation("androidx.core:core:1.16.0")
+        implementation("androidx.core:core:1.17.0")
         implementation("androidx.drawerlayout:drawerlayout:1.2.0")
         implementation("androidx.viewpager:viewpager:1.1.0")
         implementation("com.google.android.material:material:1.12.0")
@@ -103,7 +103,7 @@ android {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("org.robolectric:robolectric:4.16")
 }
 
 tasks.register("versionName") {
