@@ -155,8 +155,9 @@ fun downloadFile(localUrl: String, remoteUrl: String, expectedChecksum: String) 
 tasks {
     getByName<Delete>("clean") {
         doLast {
-            val tree = fileTree(File(projectDir, "src/main/cpp"))
+            val tree = fileTree(File(projectDir, "src/main"))
             tree.include("bootstrap-*.zip")
+            tree.include("libproot-*.so")
             tree.forEach { it.delete() }
         }
     }
@@ -164,11 +165,11 @@ tasks {
 
 tasks.register("downloadPrebuilt") {
     doLast {
-        val bootstrapVersion = "2025.01.18-r1"
+        val bootstrapVersion = "2025.09.21-r1"
         val arches = mapOf(
-            "aarch64" to "ce08316c5ab0610551c6b4a2c0d256073c0f47ec5d72a94f3895e3bd911f7aff",
-            "arm" to "ee54ef84c34da2084d388ee4132de357f8d514467339b69d56d78bbab0d0eb04",
-            "x86_64" to "dfc6d9d7e5b8dee126ab95a8fc528b53e4044588c3f5eacf428fe1e0aa0bf4e3"
+            "aarch64" to "2baed1040bee511e2341ec4601677381ec7a9e8e6ce3f47d3f29597264cbf322",
+            "arm" to "b37dd2a4b778248fdeee344b11a69396782574e5ada987b194bd7824ce7041d7",
+            "x86_64" to "95be72d2ce377dbb73d6e9eabe334288c877c805924f3622fac8ef236a706b4e"
         )
         arches.forEach { (arch, checksum) ->
             val downloadTo = "src/main/cpp/bootstrap-${arch}.zip"
@@ -176,15 +177,15 @@ tasks.register("downloadPrebuilt") {
             downloadFile(downloadTo, url, checksum)
         }
 
-        val prootTag = "proot-2025.01.15-r2"
-        val prootVersion = "5.1.107-66"
+        val prootTag = "proot-2025.09.23-r1"
+        val prootVersion = "5.1.107-67"
         var prootUrl = "https://github.com/termux-play-store/termux-packages/releases/download/${prootTag}/libproot-loader-ARCH-${prootVersion}.so"
-        downloadFile("src/main/jniLibs/armeabi-v7a/libproot-loader.so", prootUrl.replace("ARCH", "arm"), "eb1d64e9ef875039534ce7a8eeffa61bbc4c0ae5722cb48c9112816b43646a3e")
-        downloadFile("src/main/jniLibs/arm64-v8a/libproot-loader.so", prootUrl.replace("ARCH", "aarch64"), "8814b72f760cd26afe5350a1468cabb6622b4871064947733fcd9cd06f1c8cb8")
-        downloadFile("src/main/jniLibs/x86_64/libproot-loader.so", prootUrl.replace("ARCH", "x86_64"), "1a52cc9cc5fdecbf4235659ffeac8c51e4fefd7c75cc205f52d4884a3a0a0ba1")
+        downloadFile("src/main/jniLibs/armeabi-v7a/libproot-loader.so", prootUrl.replace("ARCH", "arm"), "56e710e7076f708e574f29be67d6b2238da5aba24b5a55c765caab1bf8c91adc")
+        downloadFile("src/main/jniLibs/arm64-v8a/libproot-loader.so", prootUrl.replace("ARCH", "aarch64"), "614591192bb34c98cc6cef528fb74ecfc1c97d0fabf4e352df1f16873c71d447")
+        downloadFile("src/main/jniLibs/x86_64/libproot-loader.so", prootUrl.replace("ARCH", "x86_64"), "4a324117c6a16fe996af18ea388191379f5517309e963c80186fd3563a78410a")
         prootUrl = "https://github.com/termux-play-store/termux-packages/releases/download/${prootTag}/libproot-loader32-ARCH-${prootVersion}.so"
-        downloadFile("src/main/jniLibs/arm64-v8a/libproot-loader32.so", prootUrl.replace("ARCH", "aarch64"), "ff56a5e3a37104f6778420d912e3edf31395c15d1528d28f0eb7d13a64481b99")
-        downloadFile("src/main/jniLibs/x86_64/libproot-loader32.so", prootUrl.replace("ARCH", "x86_64"), "5460a597e473f57f0d33405891e35ca24709173ca0a38805d395e3544ab8b1b4")
+        downloadFile("src/main/jniLibs/arm64-v8a/libproot-loader32.so", prootUrl.replace("ARCH", "aarch64"), "b33b75993d3f2cf8be4573e22a265a092494e49d84e750aecefaa51d42663ae7")
+        downloadFile("src/main/jniLibs/x86_64/libproot-loader32.so", prootUrl.replace("ARCH", "x86_64"), "f53cba16fe5a5e2a825130ef32af8af774a5e87d2573e6af93e23a8c93e583d4")
     }
 }
 
