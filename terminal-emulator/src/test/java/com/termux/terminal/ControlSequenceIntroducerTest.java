@@ -128,4 +128,10 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
         assertEquals(TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE, mTerminal.mEffect);
     }
 
+    public void testCsiUnknown() {
+        withTerminalSized(3, 3).enterString("1\033[=5u2").assertLinesAre("12 ", "   ", "   ");
+        withTerminalSized(3, 3).enterString("1\033[>1u2").assertLinesAre("12 ", "   ", "   ");
+        withTerminalSized(3, 3).enterString("1\033[<1u2").assertLinesAre("12 ", "   ", "   ");
+    }
+
 }

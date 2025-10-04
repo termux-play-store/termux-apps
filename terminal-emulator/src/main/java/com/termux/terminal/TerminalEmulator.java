@@ -1789,6 +1789,10 @@ public final class TerminalEmulator {
             case '>': // "Esc [ >" --
                 continueSequence(ESC_CSI_BIGGERTHAN);
                 break;
+            case '<': // "Esc [ <" -- start of a private parameter byte
+            case '=': // "Esc [ =" -- start of a private parameter byte
+                continueSequence(ESC_CSI_UNSUPPORTED_PARAMETER_BYTE);
+                break;
             case '`': // Horizontal position absolute (HPA - http://www.vt100.net/docs/vt510-rm/HPA).
                 setCursorColRespectingOriginMode(getArg0(1) - 1);
                 break;
