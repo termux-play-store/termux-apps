@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        javaVersion: [17, 21, 24]
+        javaVersion: [17, 21, 25]
     steps:
     - name: Clone repository
       uses: actions/checkout@v5
