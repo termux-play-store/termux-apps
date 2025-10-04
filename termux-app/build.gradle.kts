@@ -28,8 +28,8 @@ android {
     }
 
     defaultConfig {
-        versionCode = 137
-        versionName = "googleplay.2025.01.18"
+        versionCode = 138
+        versionName = "googleplay.2025.10.05"
 
         val minSdkVersion: String by project
         val targetSdkVersion: String by project
