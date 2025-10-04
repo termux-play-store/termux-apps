@@ -85,12 +85,6 @@
             android:permission="com.termux.permission.TERMUX_INTERNAL" />
 
         <activity
-            android:name=".app.TermuxHelpActivity"
-            android:exported="false"
-            android:parentActivityName=".app.TermuxActivity"
-            android:resizeableActivity="true" />
-
-        <activity
             android:name=".app.TermuxFileReceiverActivity"
             android:excludeFromRecents="true"
             android:exported="true"
