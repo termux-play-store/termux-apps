@@ -21,7 +21,8 @@ android {
         implementation("androidx.core:core:1.17.0")
         implementation("androidx.drawerlayout:drawerlayout:1.2.0")
         implementation("androidx.viewpager:viewpager:1.1.0")
-        implementation("com.google.android.material:material:1.12.0")
+        implementation("androidx.documentfile:documentfile:1.1.0")
+        implementation("com.google.android.material:material:1.13.0")
 
         implementation(project(":terminal-view"))
     }
@@ -165,11 +166,11 @@ tasks {
 
 tasks.register("downloadPrebuilt") {
     doLast {
-        val bootstrapVersion = "2025.09.21-r1"
+        val bootstrapVersion = "2025.10.04-r1"
         val arches = mapOf(
-            "aarch64" to "2baed1040bee511e2341ec4601677381ec7a9e8e6ce3f47d3f29597264cbf322",
-            "arm" to "b37dd2a4b778248fdeee344b11a69396782574e5ada987b194bd7824ce7041d7",
-            "x86_64" to "95be72d2ce377dbb73d6e9eabe334288c877c805924f3622fac8ef236a706b4e"
+            "aarch64" to "0697cf1b0ef2773485363100adfd81c6b6f8255a5cfb668f4c6b8aaa7880f8a9",
+            "arm" to "b8e695cf35fbb4da488d96a4763707c21a6362ca61c8d3032b87df4f0c941d44",
+            "x86_64" to "273e6525056e697b3e2d4faa2b13a63b9ca6eadd06a62aad966d1b48b2a2e5b5"
         )
         arches.forEach { (arch, checksum) ->
             val downloadTo = "src/main/cpp/bootstrap-${arch}.zip"
@@ -177,7 +178,7 @@ tasks.register("downloadPrebuilt") {
             downloadFile(downloadTo, url, checksum)
         }
 
-        val prootTag = "proot-2025.09.23-r1"
+        val prootTag = "proot-2025.10.04-r1"
         val prootVersion = "5.1.107-67"
         var prootUrl = "https://github.com/termux-play-store/termux-packages/releases/download/${prootTag}/libproot-loader-ARCH-${prootVersion}.so"
         downloadFile("src/main/jniLibs/armeabi-v7a/libproot-loader.so", prootUrl.replace("ARCH", "arm"), "56e710e7076f708e574f29be67d6b2238da5aba24b5a55c765caab1bf8c91adc")
