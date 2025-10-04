@@ -20,6 +20,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -42,6 +44,7 @@ import androidx.core.widget.NestedScrollView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.termux.R;
+import com.termux.app.TermuxConstants;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -628,17 +631,8 @@ public class DialogAPI {
                 // create custom BottomSheetDialog that has friendlier dismissal behavior
                 return new BottomSheetDialog(requireActivity(), getTheme()) {
                     @Override
-                    public void onBackPressed() {
-                        super.onBackPressed();
-                        // make it so that user only has to hit back key one time to get rid of bottom sheet
-                        requireActivity().onBackPressed();
-                        postCanceledResult();
-                    }
-
-                    @Override
                     public void cancel() {
                         super.cancel();
-
                         if (isCurrentAppTermux()) {
                             showKeyboard();
                         }
@@ -689,11 +683,18 @@ public class DialogAPI {
              */
 
             protected void hideKeyboard() {
-                //KeyboardUtils.setSoftKeyboardAlwaysHiddenFlags(getActivity());
+                var activity = getActivity();
+                if (activity != null && activity.getWindow() != null) {
+                    activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                }
             }
 
             protected void showKeyboard() {
-                //KeyboardUtils.showSoftKeyboard(getActivity(), getView());
+                var activity = getActivity();
+                var view = getView();
+                if (activity != null && view != null) {
+                    activity.getSystemService(InputMethodManager.class).showSoftInput(view, 0);
+                }
             }
 
             /**
@@ -705,9 +706,9 @@ public class DialogAPI {
                 for (final ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
                     if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
                         for (final String activeProcess : processInfo.pkgList) {
-                            //if (activeProcess.equals(TermuxConstants.TERMUX_PACKAGE_NAME)) {
-                            //return true;
-                            //}
+                            if (activeProcess.equals(TermuxConstants.PACKAGE_NAME)) {
+                                return true;
+                            }
                         }
                     }
                 }
