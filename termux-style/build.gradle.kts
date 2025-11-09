@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -36,7 +38,7 @@ android {
          getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.txt")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.txt")
         }
 
         getByName("debug") {
@@ -49,13 +51,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
-        allWarningsAsErrors = true
-    }
-
     lint {
         warningsAsErrors = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        allWarningsAsErrors = true
+        jvmTarget = JvmTarget.JVM_11
     }
 }
 
