@@ -40,7 +40,7 @@ jobs:
         DIRNAME=upload/termux-debug-apks-"$GITHUB_SHA"
         mkdir -p "$DIRNAME"
         shopt -s globstar; for file in termux-*/**/*.apk; do FILENAME="$(basename "$file")"; cp "$file" "$DIRNAME"/"${FILENAME/.apk/-$GITHUB_SHA.apk}"; done
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       if: matrix.javaVersion == '21'
       with:
         name: termux-debug-apks-${{ github.sha }}
