@@ -157,8 +157,8 @@ tasks {
     getByName<Delete>("clean") {
         doLast {
             val tree = fileTree(File(projectDir, "src/main"))
-            tree.include("bootstrap-*.zip")
-            tree.include("libproot-*.so")
+            tree.include("**/bootstrap-*.zip")
+            tree.include("**/libproot-*.so")
             tree.forEach { it.delete() }
         }
     }
@@ -166,11 +166,11 @@ tasks {
 
 tasks.register("downloadPrebuilt") {
     doLast {
-        val bootstrapVersion = "2025.10.04-r1"
+        val bootstrapVersion = "2025.12.27-r1"
         val arches = mapOf(
-            "aarch64" to "0697cf1b0ef2773485363100adfd81c6b6f8255a5cfb668f4c6b8aaa7880f8a9",
-            "arm" to "b8e695cf35fbb4da488d96a4763707c21a6362ca61c8d3032b87df4f0c941d44",
-            "x86_64" to "273e6525056e697b3e2d4faa2b13a63b9ca6eadd06a62aad966d1b48b2a2e5b5"
+            "aarch64" to "10f1d7caf101cf10c2acd72015c3064f6ba272550a7acc9d1e5aafd6a9e7d733",
+            "arm" to "f2715a0b2c8e1f62b527822abde5091d5f208add3fb0f4276874bd5f7921ceb7",
+            "x86_64" to "875b6f4ee4a112f047d387dabe2720abfcc7ef594715b6d898d8b6ee551a521e"
         )
         arches.forEach { (arch, checksum) ->
             val downloadTo = "src/main/cpp/bootstrap-${arch}.zip"

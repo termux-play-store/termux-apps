@@ -59,7 +59,7 @@ dependencies {
     androidTestImplementation("androidx.test:rules:1.5.0")
 }
 
-task("versionName") {
+tasks.register("versionName") {
     doLast {
         print(android.defaultConfig.versionName)
     }

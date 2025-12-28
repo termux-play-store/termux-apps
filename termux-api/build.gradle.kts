@@ -50,7 +50,7 @@ dependencies {
     implementation("androidx.media:media:1.7.1")
 }
 
-task("versionName") {
+tasks.register("versionName") {
     doLast {
         print(android.defaultConfig.versionName)
     }
