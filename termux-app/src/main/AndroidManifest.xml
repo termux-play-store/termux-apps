@@ -31,14 +31,14 @@
     <!-- Used by DialogAPI -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- See https://developer.android.com/guide/components/foreground-services -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:ignore="ForegroundServicesPolicy" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="com.termux.permission.TERMUX_INTERNAL"/>
 
     <!-- See https://developer.android.com/training/data-storage/manage-all-files -->
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="AllFilesAccessPolicy,ScopedStorage" />
 
     <queries>
         <!-- See https://developer.android.com/training/package-visibility
