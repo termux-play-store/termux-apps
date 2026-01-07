@@ -14,10 +14,6 @@ import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 
-import com.termux.view.R;
-import com.termux.view.TerminalView;
-import com.termux.view.TextSelectionCursorController;
-
 @SuppressLint("ViewConstructor")
 public class TextSelectionHandleView extends View {
     private final TerminalView terminalView;
