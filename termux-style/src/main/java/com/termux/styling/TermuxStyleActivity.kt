@@ -40,7 +40,7 @@ class TermuxStyleActivity : Activity() {
         init {
             var name = fileName.replace('-', ' ')
             val dotIndex = name.lastIndexOf('.')
-            if (dotIndex != -1) name = name.substring(0, dotIndex)
+            if (dotIndex != -1) name = name.take(dotIndex)
 
             this.displayName = capitalize(name)
         }
@@ -129,7 +129,7 @@ class TermuxStyleActivity : Activity() {
             val assetsFolder = if (colors) "colors" else "fonts"
             var fileName = mCurrentSelectable.fileName
             val dotIndex = fileName.lastIndexOf('.')
-            if (dotIndex != -1) fileName = fileName.substring(0, dotIndex)
+            if (dotIndex != -1) fileName = fileName.take(dotIndex)
             fileName += ".txt"
 
             assets.open("$assetsFolder/$fileName").use { `in` ->
