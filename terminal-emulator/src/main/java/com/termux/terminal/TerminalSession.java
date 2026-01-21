@@ -12,12 +12,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -143,7 +138,9 @@ public final class TerminalSession extends TerminalOutput {
                 final byte[] buffer = new byte[4096];
                 while (true) {
                     int bytesToWrite = mTerminalToProcessIOQueue.read(buffer, true);
-                    if (bytesToWrite == -1) return;
+                    if (bytesToWrite == -1) {
+                        return;
+                    }
                     JNI.write(mTerminalFileDescriptor, buffer, bytesToWrite);
                 }
             }
