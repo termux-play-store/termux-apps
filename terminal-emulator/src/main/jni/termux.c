@@ -217,19 +217,27 @@ JNIEXPORT void JNICALL Java_com_termux_terminal_JNI_close(JNIEnv* TERMUX_UNUSED(
     close(fileDescriptor);
 }
 
-JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_read(JNIEnv* TERMUX_UNUSED(env), jclass TERMUX_UNUSED(clazz), jint fileDescriptor, jbyteArray buffer)
+JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_read(JNIEnv* env, jclass TERMUX_UNUSED(clazz), jint fileDescriptor, jbyteArray buffer)
 {
     jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
-    jsize bufferLength = (*env)->GetArrayLength(env, buffer);
-    ssize_t readBytes = read(fileDescriptor, bufferPtr, bufferLength);
-    (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
-    return (jint) readBytes;
+    if (bufferPtr == NULL) {
+        return throw_runtime_exception(env, "JNI.read(): GetByteArrayElements failed");
+    } else {
+        jsize bufferLength = (*env)->GetArrayLength(env, buffer);
+        ssize_t readBytes = TEMP_FAILURE_RETRY(read(fileDescriptor, bufferPtr, bufferLength));
+        (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, 0);
+        return (jint) readBytes;
+    }
 }
 
-JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_write(JNIEnv* TERMUX_UNUSED(env), jclass TERMUX_UNUSED(clazz), jint fileDescriptor, jbyteArray buffer, jint length)
+JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_write(JNIEnv* env, jclass TERMUX_UNUSED(clazz), jint fileDescriptor, jbyteArray buffer, jint length)
 {
     jbyte* bufferPtr = (*env)->GetByteArrayElements(env, buffer, NULL);
-    ssize_t writtenBytes = write(fileDescriptor, bufferPtr, length);
-    (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
-    return (jint) writtenBytes;
+    if (bufferPtr == NULL) {
+        return throw_runtime_exception(env, "JNI.write(): GetByteArrayElements failed");
+    } else {
+        ssize_t writtenBytes = TEMP_FAILURE_RETRY(write(fileDescriptor, bufferPtr, length));
+        (*env)->ReleaseByteArrayElements(env, buffer, bufferPtr, JNI_ABORT);
+        return (jint) writtenBytes;
+    }
 }
