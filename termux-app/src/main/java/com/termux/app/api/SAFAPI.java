@@ -13,7 +13,6 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.documentfile.provider.DocumentFile;
 
 import com.termux.app.TermuxConstants;
 
@@ -125,16 +124,13 @@ public class SAFAPI {
     }
 
     private static void writeDocument(Context context, Intent intent) {
-        String uri = intent.getStringExtra("uri");
-        if (uri == null) {
+        var uriString = intent.getStringExtra("uri");
+        if (uriString == null) {
             Log.e(LOG_TAG, "uri extra null");
             return;
         }
-        DocumentFile f = DocumentFile.fromSingleUri(context, Uri.parse(uri));
-        if (f == null) {
-            return;
-        }
-        writeDocumentFile(context, intent, f);
+        var uri = Uri.parse(uriString);
+        writeDocumentFile(context, intent, uri);
     }
 
     private static void createDocument(Context context, Intent intent) {
@@ -164,16 +160,13 @@ public class SAFAPI {
     }
 
     private static void readDocument(Context context, Intent intent) {
-        String uri = intent.getStringExtra("uri");
-        if (uri == null) {
+        var uriString = intent.getStringExtra("uri");
+        if (uriString == null) {
             Log.e(LOG_TAG, "uri extra null");
             return;
         }
-        DocumentFile f = DocumentFile.fromSingleUri(context, Uri.parse(uri));
-        if (f == null) {
-            return;
-        }
-        returnDocumentFile(context, intent, f);
+        var uri = Uri.parse(uriString);
+        returnDocumentFile(context, intent, uri);
     }
 
     private static void listDirectory(Context context, Intent intent) {
@@ -274,22 +267,22 @@ public class SAFAPI {
         }
     }
 
-    private static void returnDocumentFile(Context context, Intent intent, DocumentFile f) {
+    private static void returnDocumentFile(Context context, Intent intent, Uri uri) {
         ResultReturner.returnData(intent, new ResultReturner.BinaryOutput() {
             @Override
             public void writeResult(OutputStream out) throws Exception {
-                try (InputStream in = context.getContentResolver().openInputStream(f.getUri())) {
+                try (InputStream in = context.getContentResolver().openInputStream(uri)) {
                     writeInputStreamToOutputStream(in, out);
                 }
             }
         });
     }
 
-    private static void writeDocumentFile(Context context, Intent intent, DocumentFile f) {
+    private static void writeDocumentFile(Context context, Intent intent, Uri uri) {
         ResultReturner.returnData(intent, new ResultReturner.WithInput() {
             @Override
             public void writeResult(PrintWriter unused) throws Exception {
-                try (OutputStream out = context.getContentResolver().openOutputStream(f.getUri(), "rwt")) {
+                try (OutputStream out = context.getContentResolver().openOutputStream(uri, "rwt")) {
                     writeInputStreamToOutputStream(in, out);
                 }
             }
