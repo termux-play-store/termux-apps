@@ -62,17 +62,15 @@ public final class TermuxProperties {
 
     public BellBehaviour getBellBehaviour() {
         var prop = properties.getProperty("bell-character", "vibrate").trim().toLowerCase(Locale.ROOT);
-        switch (prop) {
-            case "vibrate":
-                return BellBehaviour.VIBRATE;
-            case "beep":
-                return BellBehaviour.BEEP;
-            case "ignore":
-                return BellBehaviour.IGNORE;
-            default:
+        return switch (prop) {
+            case "vibrate" -> BellBehaviour.VIBRATE;
+            case "beep" -> BellBehaviour.BEEP;
+            case "ignore" -> BellBehaviour.IGNORE;
+            default -> {
                 Log.w(TermuxConstants.LOG_TAG, "Invalid 'bell-character' value: '" + prop + "'");
-                return BellBehaviour.VIBRATE;
-        }
+                yield BellBehaviour.VIBRATE;
+            }
+        };
     }
 
 }

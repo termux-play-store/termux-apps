@@ -111,14 +111,14 @@ public class VolumeAPI {
      * Get proper audio stream based on String type
      */
     protected static int getAudioStream(String type) {
-        switch (type == null ? "" : type) {
-            case "alarm":           return AudioManager.STREAM_ALARM;
-            case "call":            return AudioManager.STREAM_VOICE_CALL;
-            case "notification":    return AudioManager.STREAM_NOTIFICATION;
-            case "ring":            return AudioManager.STREAM_RING;
-            case "system":          return AudioManager.STREAM_SYSTEM;
-            case "music":           return AudioManager.STREAM_MUSIC;
-            default:                return STREAM_UNKNOWN;
-        }
+        return switch (type) {
+            case "alarm" -> AudioManager.STREAM_ALARM;
+            case "call" -> AudioManager.STREAM_VOICE_CALL;
+            case "notification" -> AudioManager.STREAM_NOTIFICATION;
+            case "ring" -> AudioManager.STREAM_RING;
+            case "system" -> AudioManager.STREAM_SYSTEM;
+            case "music" -> AudioManager.STREAM_MUSIC;
+            case null, default -> STREAM_UNKNOWN;
+        };
     }
 }

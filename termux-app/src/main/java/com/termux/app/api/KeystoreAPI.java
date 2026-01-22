@@ -103,14 +103,12 @@ public class KeystoreAPI {
         out.name("algorithm").value(algorithm);
         out.name("size").value(keyInfo.getKeySize());
 
-        if (detailed && publicKey instanceof RSAPublicKey) {
-            RSAPublicKey rsa = (RSAPublicKey) publicKey;
+        if (detailed && publicKey instanceof RSAPublicKey rsa) {
             // convert to hex
             out.name("modulus").value(rsa.getModulus().toString(16));
             out.name("exponent").value(rsa.getPublicExponent().toString(16));
         }
-        if (detailed && publicKey instanceof ECPublicKey) {
-            ECPublicKey ec = (ECPublicKey) publicKey;
+        if (detailed && publicKey instanceof ECPublicKey ec) {
             // convert to hex
             out.name("x").value(ec.getW().getAffineX().toString(16));
             out.name("y").value(ec.getW().getAffineY().toString(16));

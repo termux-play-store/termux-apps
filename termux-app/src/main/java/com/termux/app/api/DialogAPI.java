@@ -197,31 +197,19 @@ public class DialogAPI {
         static class InputMethodFactory {
 
             public static InputMethod get(final String type, final AppCompatActivity activity) {
-
-                switch (type == null ? "" : type) {
-                    case "confirm":
-                        return new ConfirmInputMethod(activity);
-                    case "checkbox":
-                        return new CheckBoxInputMethod(activity);
-                    case "counter":
-                        return new CounterInputMethod(activity);
-                    case "date":
-                        return new DateInputMethod(activity);
-                    case "radio":
-                        return new RadioInputMethod(activity);
-                    case "sheet":
-                        return new BottomSheetInputMethod();
-                    case "speech":
-                        return new SpeechInputMethod(activity);
-                    case "spinner":
-                        return new SpinnerInputMethod(activity);
-                    case "text":
-                        return new TextInputMethod(activity);
-                    case "time":
-                        return new TimeInputMethod(activity);
-                    default:
-                        return null;
-                }
+                return switch (type == null ? "" : type) {
+                    case "confirm" -> new ConfirmInputMethod(activity);
+                    case "checkbox" -> new CheckBoxInputMethod(activity);
+                    case "counter" -> new CounterInputMethod(activity);
+                    case "date" -> new DateInputMethod(activity);
+                    case "radio" -> new RadioInputMethod(activity);
+                    case "sheet" -> new BottomSheetInputMethod();
+                    case "speech" -> new SpeechInputMethod(activity);
+                    case "spinner" -> new SpinnerInputMethod(activity);
+                    case "text" -> new TextInputMethod(activity);
+                    case "time" -> new TimeInputMethod(activity);
+                    default -> null;
+                };
             }
         }
 
@@ -839,32 +827,15 @@ public class DialogAPI {
                      */
                     @Override
                     public void onError(int error) {
-                        String errorDescription;
-
-                        switch (error) {
-                            case SpeechRecognizer.ERROR_AUDIO:
-                                errorDescription = "ERROR_AUDIO";
-                                break;
-                            case SpeechRecognizer.ERROR_CLIENT:
-                                errorDescription = "ERROR_CLIENT";
-                                break;
-                            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                                errorDescription = "ERROR_INSUFFICIENT_PERMISSIONS";
-                                break;
-                            case SpeechRecognizer.ERROR_NETWORK:
-                                errorDescription = "ERROR_NETWORK";
-                                break;
-                            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                                errorDescription = "ERROR_NETWORK_TIMEOUT";
-                                break;
-                            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                                errorDescription = "ERROR_SPEECH_TIMEOUT";
-                                break;
-                            default:
-                                errorDescription = "ERROR_UNKNOWN";
-                                break;
-                        }
-                        inputResult.error = errorDescription;
+                        inputResult.error = switch (error) {
+                            case SpeechRecognizer.ERROR_AUDIO -> "ERROR_AUDIO";
+                            case SpeechRecognizer.ERROR_CLIENT -> "ERROR_CLIENT";
+                            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "ERROR_INSUFFICIENT_PERMISSIONS";
+                            case SpeechRecognizer.ERROR_NETWORK -> "ERROR_NETWORK";
+                            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "ERROR_NETWORK_TIMEOUT";
+                            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "ERROR_SPEECH_TIMEOUT";
+                            default -> "ERROR_UNKNOWN";
+                        };
                         listener.onResult(inputResult);
                     }
 

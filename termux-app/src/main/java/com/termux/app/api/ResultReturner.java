@@ -187,8 +187,7 @@ public abstract class ResultReturner {
                     if (resultWriter instanceof WithAncillaryFd) {
                         ((WithAncillaryFd) resultWriter).setOutputSocketForFds(outputSocket);
                     }
-                    if (resultWriter instanceof BinaryOutput) {
-                        BinaryOutput bout = (BinaryOutput) resultWriter;
+                    if (resultWriter instanceof BinaryOutput bout) {
                         bout.setOutput(outputSocket.getOutputStream());
                     }
                     if (resultWriter instanceof WithInput) {
