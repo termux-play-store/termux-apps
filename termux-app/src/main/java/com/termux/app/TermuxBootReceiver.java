@@ -38,7 +38,7 @@ public class TermuxBootReceiver extends BroadcastReceiver {
                         .setData(Uri.fromFile(scriptFile))
                         .setClass(context, TermuxService.class)
                         .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_BACKGROUND, true);
-                    // See https://developer.android.com/guide/components/foreground-services#background-start-restriction-exemptions
+                    // See https://developer.android.com/develop/background-work/services/fgs/restrictions-bg-start#background-start-restriction-exemptions
                     // - it is ok to start a foreground service from the background after the device reboots and receives
                     // the ACTION_BOOT_COMPLETED intent action in a broadcast receiver.
                     context.startForegroundService(executeIntent);

@@ -1,5 +1,6 @@
 package com.termux.app.api;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -145,6 +146,9 @@ public class TermuxApiHandler {
                 case "BatteryStatus":
                     BatteryStatusAPI.onReceive(context, intent);
                     break;
+                case "CameraInfo":
+                    CameraInfoAPI.onReceive(context, intent);
+                    break;
                 case "Clipboard":
                     ClipboardApi.onReceive(context, intent);
                     break;
@@ -154,11 +158,36 @@ public class TermuxApiHandler {
                 case "Download":
                     DownloadAPI.onReceive(context, intent);
                     break;
+                case "JobScheduler":
+                    JobSchedulerAPI.onReceive(context, intent);
+                    break;
                 case "Keystore":
                     KeystoreAPI.onReceive(intent);
                     break;
                 case "MediaScanner":
                     MediaScannerAPI.onReceive(context, intent);
+                    break;
+                case "MediaPlayer":
+                    MediaPlayerAPI.onReceive(context, intent);
+                    break;
+                case "MicRecorder":
+                    if (checkAndRequestPermission(context, intent, android.Manifest.permission.RECORD_AUDIO)) {
+                        MicRecorderAPI.onReceive(context, intent);
+                    }
+                    break;
+                case "Notification":
+                    NotificationAPI.onReceiveShowNotification(context, intent);
+                    break;
+                case "NotificationChannel":
+                    NotificationAPI.onReceiveChannel(context, intent);
+                    break;
+                case "NotificationRemove":
+                    NotificationAPI.onReceiveRemoveNotification(context, intent);
+                    break;
+                case "NotificationReply":
+                    if (checkAndRequestPermission(context, intent, Manifest.permission.POST_NOTIFICATIONS)) {
+                        NotificationAPI.onReceiveReplyToNotification(context, intent);
+                    }
                     break;
                 case "SAF":
                     SAFAPI.onReceive(context, intent);
@@ -166,8 +195,16 @@ public class TermuxApiHandler {
                 case "Share":
                     ShareAPI.onReceive(context, intent);
                     break;
+                case "SpeechToText":
+                    if (checkAndRequestPermission(context, intent, android.Manifest.permission.RECORD_AUDIO)) {
+                        SpeechToTextAPI.onReceive(context, intent);
+                    }
+                    break;
                 case "StorageGet":
                     StorageGetAPI.onReceive(context, intent);
+                    break;
+                case "TextToSpeech":
+                    TextToSpeechAPI.onReceive(context, intent);
                     break;
                 case "Toast":
                     ToastAPI.onReceive(context, intent);
@@ -221,8 +258,8 @@ public class TermuxApiHandler {
      *
      * @return if all permissions were already granted
      */
-    public static boolean checkAndRequestPermission(Activity activity, Intent intent, String... permissions) {
-        var permissionsToRequest = TermuxPermissionUtils.checkNonGrantedPermissions(activity, permissions);
+    public static boolean checkAndRequestPermission(Context context, Intent intent, String... permissions) {
+        var permissionsToRequest = TermuxPermissionUtils.checkNonGrantedPermissions(context, permissions);
 
         if (permissionsToRequest.isEmpty()) {
             return true;
@@ -238,7 +275,18 @@ public class TermuxApiHandler {
                 }
             });
 
-            activity.requestPermissions(permissionsToRequest.toArray(new String[0]), 0);
+            if (context instanceof Activity activity) {
+                activity.requestPermissions(permissionsToRequest.toArray(new String[0]), 0);
+            } else {
+                var startIntent = new Intent(context, TermuxApiPermissionActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putStringArrayListExtra(TermuxApiPermissionActivity.PERMISSIONS_EXTRA, permissionsToRequest);
+                try {
+                    context.startActivity(startIntent);
+                } catch (Exception e) {
+                    Log.e(TermuxConstants.LOG_TAG, "Unable to start permission activity", e);
+                }
+            }
             return false;
         }
     }

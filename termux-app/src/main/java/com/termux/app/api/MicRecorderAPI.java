@@ -1,4 +1,4 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.app.Service;
 import android.content.Context;
@@ -6,21 +6,16 @@ import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.IBinder;
-import android.util.ArrayMap;
 import android.util.Log;
-import android.util.SparseArray;
-import android.util.SparseIntArray;
-
-import com.termux.api.util.ResultReturner;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import static android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED;
 import static android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED;
@@ -30,19 +25,16 @@ import static android.media.MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACH
  */
 public class MicRecorderAPI {
 
-    /**
-     * Starts our MicRecorder service
-     */
     public static void onReceive(final Context context, final Intent intent) {
-        Intent recorderService = new Intent(context, MicRecorderService.class);
-        recorderService.setAction(intent.getAction());
-        recorderService.putExtras(intent.getExtras());
+        var recorderService = new Intent(context, MicRecorderService.class)
+            .setAction(intent.getAction());
+        var extras = intent.getExtras();
+        if (extras != null) {
+            recorderService.putExtras(extras);
+        }
         context.startService(recorderService);
     }
 
-    /**
-     * All recording functionality exists in this background service
-     */
     public static class MicRecorderService extends Service implements MediaRecorder.OnInfoListener, MediaRecorder.OnErrorListener {
         protected static final int MIN_RECORDING_LIMIT = 1000;
 
@@ -57,7 +49,6 @@ public class MicRecorderAPI {
         // file we're recording too
         protected static File file;
 
-
         private static final String LOG_TAG = "MicRecorderService";
 
         public void onCreate() {
@@ -65,39 +56,33 @@ public class MicRecorderAPI {
         }
 
         public int onStartCommand(Intent intent, int flags, int startId) {
-            // get command handler and display result
-            String command = intent.getAction();
-            Context context = getApplicationContext();
-            RecorderCommandHandler handler = getRecorderCommandHandler(command);
-            RecorderCommandResult result = handler.handle(context, intent);
-            postRecordCommandResult(context, intent, result);
-
+            var command = intent.getAction();
+            var context = getApplicationContext();
+            var handler = getRecorderCommandHandler(command);
+            var result = handler.handle(context, intent);
+            postRecordCommandResult(intent, result);
             return Service.START_NOT_STICKY;
         }
 
-        protected static RecorderCommandHandler getRecorderCommandHandler(final String command) {
-            switch (command == null ? "" : command) {
-                case "info":
-                    return infoHandler;
-                case "record":
-                    return recordHandler;
-                case "quit":
-                    return quitHandler;
-                default:
-                    return (context, intent) -> {
-                        RecorderCommandResult result = new RecorderCommandResult();
-                        result.error = "Unknown command: " + command;
-                        if (!isRecording)
-                            context.stopService(intent);
-                        return result;
-                    };
-            }
+        private static RecorderCommandHandler getRecorderCommandHandler(final String command) {
+            return switch (command) {
+                case "info" -> infoHandler;
+                case "record" -> recordHandler;
+                case "quit" -> quitHandler;
+                case null, default -> (context, intent) -> {
+                    RecorderCommandResult result = new RecorderCommandResult();
+                    result.error = "Unknown command: " + command;
+                    if (!isRecording) {
+                        context.stopService(intent);
+                    }
+                    return result;
+                };
+            };
         }
 
-        protected static void postRecordCommandResult(final Context context, final Intent intent,
-                                                      final RecorderCommandResult result) {
-
-            ResultReturner.returnData(context, intent, out -> {
+        private static void postRecordCommandResult(final Intent intent,
+                                                    final RecorderCommandResult result) {
+            ResultReturner.returnData(intent, out -> {
                 out.append(result.message).append("\n");
                 if (result.error != null) {
                     out.append(result.error).append("\n");
@@ -118,6 +103,7 @@ public class MicRecorderAPI {
 
         public void onDestroy() {
             cleanupMediaRecorder();
+            Log.e(LOG_TAG, "onDestroy");
         }
 
         /**
@@ -153,8 +139,8 @@ public class MicRecorderAPI {
         }
 
         protected static String getDefaultRecordingFilename() {
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-            Date date = new Date();
+            var dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.ENGLISH);
+            var date = new Date();
             return Environment.getExternalStorageDirectory().getAbsolutePath() + "/TermuxAudioRecording_" + dateFormat.format(date);
         }
 
@@ -163,8 +149,9 @@ public class MicRecorderAPI {
             JSONObject info = new JSONObject();
             try {
                 info.put("isRecording", isRecording);
-                if (isRecording)
+                if (isRecording) {
                     info.put("outputFile", file.getAbsolutePath());
+                }
                 result = info.toString(2);
             } catch (JSONException e) {
                 Log.e(LOG_TAG, "infoHandler json error", e);
@@ -172,20 +159,14 @@ public class MicRecorderAPI {
             return result;
         }
 
-
-        /**
-         * -----
-         * Recorder Command Handlers
-         * -----
-         */
-
         static final RecorderCommandHandler infoHandler = new RecorderCommandHandler() {
             @Override
             public RecorderCommandResult handle(Context context, Intent intent) {
                 RecorderCommandResult result = new RecorderCommandResult();
                 result.message = getRecordingInfoJSONString();
-                if (!isRecording)
+                if (!isRecording) {
                     context.stopService(intent);
+                }
                 return result;
             }
         };
@@ -200,72 +181,68 @@ public class MicRecorderAPI {
                 if (duration > 0 && duration < MIN_RECORDING_LIMIT)
                     duration = MIN_RECORDING_LIMIT;
 
-                String sencoder = intent.hasExtra("encoder") ? intent.getStringExtra("encoder") : "";
-                ArrayMap<String, Integer> encoder_map = new ArrayMap<>(3);
-                encoder_map.put("aac", MediaRecorder.AudioEncoder.AAC);
-                encoder_map.put("amr_nb", MediaRecorder.AudioEncoder.AMR_NB);
-                encoder_map.put("amr_wb", MediaRecorder.AudioEncoder.AMR_WB);
-
-                Integer encoder = encoder_map.get(sencoder.toLowerCase());
-                if (encoder == null)
-                    encoder = MediaRecorder.AudioEncoder.AAC;
+                var encoderString = intent.getStringExtra("encoder");
+                var encoder = switch (encoderString == null ? null : encoderString.toLowerCase()) {
+                    case "amr_nb" -> MediaRecorder.AudioEncoder.AMR_NB;
+                    case "amr_wb" -> MediaRecorder.AudioEncoder.AMR_WB;
+                    case "opus" -> MediaRecorder.AudioEncoder.OPUS;
+                    case null, default -> MediaRecorder.AudioEncoder.AAC;
+                };
 
                 int format = intent.getIntExtra("format", MediaRecorder.OutputFormat.DEFAULT);
                 if (format == MediaRecorder.OutputFormat.DEFAULT) {
-                    SparseIntArray format_map = new SparseIntArray(3);
-                    format_map.put(MediaRecorder.AudioEncoder.AAC,
-                                   MediaRecorder.OutputFormat.MPEG_4);
-                    format_map.put(MediaRecorder.AudioEncoder.AMR_NB,
-                                   MediaRecorder.OutputFormat.THREE_GPP);
-                    format_map.put(MediaRecorder.AudioEncoder.AMR_WB,
-                                   MediaRecorder.OutputFormat.THREE_GPP);
-                    format = format_map.get(encoder, MediaRecorder.OutputFormat.DEFAULT);
+                    format = switch (encoder) {
+                        case MediaRecorder.AudioEncoder.AMR_NB, MediaRecorder.AudioEncoder.AMR_WB -> MediaRecorder.OutputFormat.THREE_GPP;
+                        case MediaRecorder.AudioEncoder.OPUS -> MediaRecorder.OutputFormat.OGG;
+                        default -> MediaRecorder.OutputFormat.MPEG_4;
+                    };
                 }
 
-                SparseArray<String> extension_map = new SparseArray<>(2);
-                extension_map.put(MediaRecorder.OutputFormat.MPEG_4, ".m4a");
-                extension_map.put(MediaRecorder.OutputFormat.THREE_GPP, ".3gp");
-                String extension = extension_map.get(format);
+                var extension = switch (format) {
+                    case MediaRecorder.OutputFormat.MPEG_4 -> ".m4a";
+                    case MediaRecorder.OutputFormat.THREE_GPP -> ".3gp";
+                    case MediaRecorder.OutputFormat.OGG -> ".ogg";
+                    default -> "";
+                };
 
-                String filename = intent.hasExtra("file") ? intent.getStringExtra("file") : getDefaultRecordingFilename() + (extension != null ? extension : "");
-
+                String filename = intent.hasExtra("file") ? intent.getStringExtra("file") : getDefaultRecordingFilename() + extension;
                 int source = intent.getIntExtra("source", MediaRecorder.AudioSource.MIC);
-
                 int bitrate = intent.getIntExtra("bitrate", 0);
                 int srate = intent.getIntExtra("srate", 0);
                 int channels = intent.getIntExtra("channels", 0);
 
-                file = new File(filename);
-
-                Log.e(LOG_TAG, "MediaRecording file is: " + file.getAbsolutePath());
-
-                if (file.exists()) {
-                    result.error = String.format("File: %s already exists! Please specify a different filename", file.getName());
+                if (isRecording) {
+                    result.error = "Recording already in progress!";
                 } else {
-                    if (isRecording) {
-                        result.error = "Recording already in progress!";
+                    var newFile = new File(filename);
+                    if (newFile.exists()) {
+                        result.error = String.format("File: %s already exists! Please specify a different filename", newFile.getName());
                     } else {
+                        file = newFile;
                         try {
                             mediaRecorder.setAudioSource(source);
                             mediaRecorder.setOutputFormat(format);
                             mediaRecorder.setAudioEncoder(encoder);
                             mediaRecorder.setOutputFile(filename);
                             mediaRecorder.setMaxDuration(duration);
-                            if (bitrate > 0)
+                            if (bitrate > 0) {
                                 mediaRecorder.setAudioEncodingBitRate(bitrate);
-                            if (srate > 0)
+                            }
+                            if (srate > 0) {
                                 mediaRecorder.setAudioSamplingRate(srate);
-                            if (channels > 0)
+                            }
+                            if (channels > 0) {
                                 mediaRecorder.setAudioChannels(channels);
+                            }
                             mediaRecorder.prepare();
                             mediaRecorder.start();
                             isRecording = true;
                             result.message = String.format("Recording started: %s \nMax Duration: %s",
-                                                           file.getAbsolutePath(),
-                                                           duration <= 0 ?
-                                                           "unlimited" :
-                                                           MediaPlayerAPI.getTimeString(duration /
-                                                                                        1000));
+                                file.getAbsolutePath(),
+                                duration <= 0 ?
+                                    "unlimited" :
+                                    MediaPlayerAPI.getTimeString(duration /
+                                        1000));
 
                         } catch (IllegalStateException | IOException e) {
                             Log.e(LOG_TAG, "MediaRecorder error", e);
@@ -273,8 +250,9 @@ public class MicRecorderAPI {
                         }
                     }
                 }
-                if (!isRecording)
+                if (!isRecording) {
                     context.stopService(intent);
+                }
                 return result;
             }
         };
@@ -283,7 +261,6 @@ public class MicRecorderAPI {
             @Override
             public RecorderCommandResult handle(Context context, Intent intent) {
                 RecorderCommandResult result = new RecorderCommandResult();
-
                 if (isRecording) {
                     result.message = "Recording finished: " + file.getAbsolutePath();
                 } else {
@@ -298,7 +275,7 @@ public class MicRecorderAPI {
     /**
      * Interface for handling recorder commands
      */
-    interface RecorderCommandHandler {
+    public interface RecorderCommandHandler {
         RecorderCommandResult handle(final Context context, final Intent intent);
     }
 

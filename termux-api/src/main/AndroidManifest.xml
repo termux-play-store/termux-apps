@@ -102,17 +102,6 @@
             android:exported="true" />
 
         <service
-            android:name=".apis.JobSchedulerAPI$JobSchedulerService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="false" />
-
-        <service android:name=".apis.MediaPlayerAPI$MediaPlayerService"
-            android:exported="false" />
-
-        <service android:name=".apis.MicRecorderAPI$MicRecorderService"
-            android:exported="false" />
-
-        <service
             android:name=".apis.NotificationListAPI$NotificationService"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
             android:enabled="true"
@@ -124,9 +113,6 @@
         </service>
 
         <service android:name=".apis.SensorAPI$SensorReaderService"
-            android:exported="false" />
-
-        <service android:name=".apis.SpeechToTextAPI$SpeechToTextService"
             android:exported="false" />
 
         <service android:name=".apis.WallpaperAPI$WallpaperService"

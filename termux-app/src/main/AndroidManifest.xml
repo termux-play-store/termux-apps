@@ -44,6 +44,8 @@
         <!-- See https://developer.android.com/training/package-visibility
              and https://github.com/termux/termux-x11/blob/master/shell-loader/src/main/java/com/termux/x11/Loader.java -->
         <package android:name="com.termux.x11"/>
+        <!-- https://developer.android.com/about/versions/11/behavior-changes-11#speech-recognition -->
+        <intent><action android:name="android.speech.RecognitionService"/></intent>
     </queries>
 
     <application
@@ -120,6 +122,11 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".app.api.TermuxApiPermissionActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:exported="false" />
 
         <!-- Widgets -->
         <receiver
@@ -212,6 +219,11 @@
                 app is in the background. If the system were to interrupt or defer the Termux app while it is in the background the user
                 experience would be negatively affected since the above described use case would be broken." />
         </service>
+
+        <service android:name=".app.api.JobSchedulerAPI$JobSchedulerService" android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service android:name=".app.api.SpeechToTextAPI$SpeechToTextService" android:exported="false" />
+        <service android:name=".app.api.MediaPlayerAPI$MediaPlayerService" android:exported="false" />
+        <service android:name=".app.api.MicRecorderAPI$MicRecorderService" android:exported="false" />
 
         <receiver
             android:name=".app.TermuxBootReceiver"

@@ -1,4 +1,4 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,8 +10,6 @@ import android.speech.tts.TextToSpeech.EngineInfo;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.JsonWriter;
 import android.util.Log;
-
-import com.termux.api.util.ResultReturner;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -32,33 +30,18 @@ public class TextToSpeechAPI {
         var speechEngine = intent.getStringExtra("engine");
         var speechPitch = intent.getFloatExtra("pitch", 1.0f);
 
-        // STREAM_MUSIC is the default audio stream for TTS, see:
-        // http://stackoverflow.com/questions/6877272/what-is-the-default-audio-stream-of-tts/6979025#6979025
-        int streamToUseInt = AudioManager.STREAM_MUSIC;
         String streamToUseString = intent.getStringExtra("stream");
-        if (streamToUseString != null) {
-            switch (streamToUseString) {
-                case "NOTIFICATION":
-                    streamToUseInt = AudioManager.STREAM_NOTIFICATION;
-                    break;
-                case "ALARM":
-                    streamToUseInt = AudioManager.STREAM_ALARM;
-                    break;
-                case "MUSIC":
-                    streamToUseInt = AudioManager.STREAM_MUSIC;
-                    break;
-                case "RING":
-                    streamToUseInt = AudioManager.STREAM_RING;
-                    break;
-                case "SYSTEM":
-                    streamToUseInt = AudioManager.STREAM_SYSTEM;
-                    break;
-                case "VOICE_CALL":
-                    streamToUseInt = AudioManager.STREAM_VOICE_CALL;
-                    break;
-            }
-        }
-        final int streamToUse = streamToUseInt;
+        int streamToUse = switch (streamToUseString) {
+            case "NOTIFICATION" -> AudioManager.STREAM_NOTIFICATION;
+            case "ALARM" -> AudioManager.STREAM_ALARM;
+            case "MUSIC" -> AudioManager.STREAM_MUSIC;
+            case "RING" -> AudioManager.STREAM_RING;
+            case "SYSTEM" -> AudioManager.STREAM_SYSTEM;
+            case "VOICE_CALL" -> AudioManager.STREAM_VOICE_CALL;
+            // STREAM_MUSIC is the default audio stream for TTS, see:
+            // http://stackoverflow.com/questions/6877272/what-is-the-default-audio-stream-of-tts/6979025#6979025
+            case null, default -> AudioManager.STREAM_MUSIC;
+        };
 
         var mTtsLatch = new CountDownLatch(1);
 
@@ -67,11 +50,11 @@ public class TextToSpeechAPI {
                 mTtsLatch.countDown();
             } else {
                 Log.e(LOG_TAG, "Failed tts initialization: status=" + status);
-                //stopSelf();
+                //stopmelf();
             }
         }, speechEngine);
 
-        ResultReturner.returnData(context, intent, new ResultReturner.WithInput() {
+        ResultReturner.returnData(intent, new ResultReturner.WithInput() {
             @Override
             public void writeResult(PrintWriter out) {
                 try {

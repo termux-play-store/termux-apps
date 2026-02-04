@@ -62,7 +62,7 @@ public final class TermuxAppShell {
         this.mAppShellClient = appShellClient;
     }
 
-    public static @Nullable TermuxAppShell execute(File executable,
+    public static @Nullable TermuxAppShell execute(@NonNull File executable,
                                                    @NonNull String[] arguments,
                                                    @NonNull final TermuxService termuxService,
                                                    @Nullable String workingDirectoryString) {

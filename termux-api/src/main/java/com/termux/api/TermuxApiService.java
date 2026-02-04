@@ -16,24 +16,17 @@ import android.widget.Toast;
 import com.termux.api.activities.TermuxApiPermissionActivity;
 import com.termux.api.apis.BrightnessAPI;
 import com.termux.api.apis.CallLogAPI;
-import com.termux.api.apis.CameraInfoAPI;
 import com.termux.api.apis.CameraPhotoAPI;
 import com.termux.api.apis.ContactListAPI;
 import com.termux.api.apis.FingerprintAPI;
 import com.termux.api.apis.InfraredAPI;
-import com.termux.api.apis.JobSchedulerAPI;
 import com.termux.api.apis.LocationAPI;
-import com.termux.api.apis.MediaPlayerAPI;
-import com.termux.api.apis.MicRecorderAPI;
 import com.termux.api.apis.NfcAPI;
-import com.termux.api.apis.NotificationAPI;
 import com.termux.api.apis.NotificationListAPI;
 import com.termux.api.apis.SensorAPI;
 import com.termux.api.apis.SmsInboxAPI;
 import com.termux.api.apis.SmsSendAPI;
-import com.termux.api.apis.SpeechToTextAPI;
 import com.termux.api.apis.TelephonyAPI;
-import com.termux.api.apis.TextToSpeechAPI;
 import com.termux.api.apis.TorchAPI;
 import com.termux.api.apis.WallpaperAPI;
 import com.termux.api.apis.WifiAPI;
@@ -106,9 +99,6 @@ public class TermuxApiService extends Service {
                 }
                 BrightnessAPI.onReceive(context, intent);
                 break;
-            case "CameraInfo":
-                CameraInfoAPI.onReceive(context, intent);
-                break;
             case "CameraPhoto":
                 if (TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, android.Manifest.permission.CAMERA)) {
                     CameraPhotoAPI.onReceive(context, intent);
@@ -137,20 +127,9 @@ public class TermuxApiService extends Service {
                     InfraredAPI.onReceiveTransmit(context, intent);
                 }
                 break;
-            case "JobScheduler":
-                JobSchedulerAPI.onReceive(context, intent);
-                break;
             case "Location":
                 if (TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
                     LocationAPI.onReceive(context, intent);
-                }
-                break;
-            case "MediaPlayer":
-                MediaPlayerAPI.onReceive(context, intent);
-                break;
-            case "MicRecorder":
-                if (TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, android.Manifest.permission.RECORD_AUDIO)) {
-                    MicRecorderAPI.onReceive(context, intent);
                 }
                 break;
             case "Nfc":
@@ -167,20 +146,6 @@ public class TermuxApiService extends Service {
                     NotificationListAPI.onReceive(context, intent);
                 }
                 break;
-            case "Notification":
-                NotificationAPI.onReceiveShowNotification(context, intent);
-                break;
-            case "NotificationChannel":
-                NotificationAPI.onReceiveChannel(context, intent);
-                break;
-            case "NotificationRemove":
-                NotificationAPI.onReceiveRemoveNotification(context, intent);
-                break;
-            case "NotificationReply":
-                if (TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, Manifest.permission.POST_NOTIFICATIONS)) {
-                    NotificationAPI.onReceiveReplyToNotification(context, intent);
-                }
-                break;
             case "Sensor":
                 SensorAPI.onReceive(context, intent);
                 break;
@@ -192,11 +157,6 @@ public class TermuxApiService extends Service {
             case "SmsSend":
                 if (TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.SEND_SMS)) {
                     SmsSendAPI.onReceive(context, intent);
-                }
-                break;
-            case "SpeechToText":
-                if (TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, android.Manifest.permission.RECORD_AUDIO)) {
-                    SpeechToTextAPI.onReceive(context, intent);
                 }
                 break;
             case "TelephonyCall":
@@ -213,9 +173,6 @@ public class TermuxApiService extends Service {
                 if (TermuxApiPermissionActivity.checkAndRequestPermission(context, intent, android.Manifest.permission.READ_PHONE_STATE)) {
                     TelephonyAPI.onReceiveTelephonyDeviceInfo(context, intent);
                 }
-                break;
-            case "TextToSpeech":
-                TextToSpeechAPI.onReceive(context, intent);
                 break;
             case "Torch":
                 TorchAPI.onReceive(context, intent);

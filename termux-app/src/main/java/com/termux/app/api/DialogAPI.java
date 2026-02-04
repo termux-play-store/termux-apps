@@ -78,7 +78,6 @@ public class DialogAPI {
             final Intent intent = getIntent();
             final Context context = this;
 
-
             String methodType = intent.hasExtra("input_method") ? intent.getStringExtra("input_method") : "";
 
             mInputMethod = InputMethodFactory.get(methodType, this);

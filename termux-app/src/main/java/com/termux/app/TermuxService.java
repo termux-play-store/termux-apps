@@ -31,8 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A service holding a list of {@link TerminalSession} in {@link #mTerminalSessions} and background {@link TermuxAppShell}
+ * A service holding a list of {@link TerminalSession}:s in {@link #mTerminalSessions} and background {@link TermuxAppShell}
  * in {@link #mTermuxTasks}, showing a foreground notification while running so that it is not terminated.
+ * <p>
  * The user interacts with the session through {@link TermuxActivity}, but this service may outlive
  * the activity when the user or the system disposes of the activity. In that case the user may
  * restart {@link TermuxActivity} later to yet again access the sessions.
@@ -106,18 +107,22 @@ public final class TermuxService extends Service {
         TermuxInstaller.setupAppLibSymlink(this);
     }
 
+    /** {@inheritDoc} */
     @SuppressLint("Wakelock")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         setupNotificationChannel();
         startForeground(TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
 
-        if (intent != null && intent.getAction() != null) {
+        var action = (intent == null) ? null : intent.getAction();
+        if (action == null) {
+            Log.e(TermuxConstants.LOG_TAG, "Null action to onStartCommand");
+        } else {
             var apiMethod = intent.getStringExtra("api_method");
             if (apiMethod != null) {
                 mTermuxApiHandler.handleApiIntent(this, intent, apiMethod);
-            } else if (intent.getAction() != null) {
-                switch (intent.getAction()) {
+            } else {
+                switch (action) {
                     case ACTION_STOP_SERVICE:
                         Log.d(LOG_TAG, "ACTION_STOP_SERVICE intent received");
                         actionStopService();
@@ -215,9 +220,7 @@ public final class TermuxService extends Service {
         mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, getClass().getName());
         mWifiLock.acquire();
 
-        if (!TermuxPermissionUtils.checkIfBatteryOptimizationsDisabled(this)) {
-            TermuxPermissionUtils.requestDisableBatteryOptimizations(this);
-        }
+        TermuxPermissionUtils.requestDisableBatteryOptimizationsIfNecessary(this);
 
         updateNotification();
     }
@@ -272,7 +275,7 @@ public final class TermuxService extends Service {
         }
     }
 
-    private void executeBackgroundTask(File executable, @NonNull String[] arguments, @Nullable String workingDirectory) {
+    private void executeBackgroundTask(@NonNull File executable, @NonNull String[] arguments, @Nullable String workingDirectory) {
         var newTermuxTask = TermuxAppShell.execute(executable, arguments, this, workingDirectory);
         if (newTermuxTask != null) {
             mTermuxTasks.add(newTermuxTask);
@@ -427,7 +430,8 @@ public final class TermuxService extends Service {
         var wakeLockHeld = mWakeLock != null;
         if (wakeLockHeld) notificationText += " (wake lock held)";
 
-        var exitIntent = new Intent(this, TermuxService.class).setAction(TermuxService.ACTION_STOP_SERVICE);
+        var exitIntent = new Intent(this, TermuxService.class)
+            .setAction(TermuxService.ACTION_STOP_SERVICE);
 
         // Set Wakelock button actions
         var newWakeAction = wakeLockHeld ? TermuxService.ACTION_WAKE_UNLOCK : TermuxService.ACTION_WAKE_LOCK;

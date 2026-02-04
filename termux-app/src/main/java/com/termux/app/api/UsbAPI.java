@@ -24,8 +24,6 @@ public class UsbAPI {
 
     private static final SparseArray<UsbDeviceConnection> openDevices = new SparseArray<>();
 
-    private static final String LOG_TAG = "UsbAPI";
-
     public static void onReceive(final Context context, final Intent intent) {
         UsbDevice device;
         String action = intent.getAction();

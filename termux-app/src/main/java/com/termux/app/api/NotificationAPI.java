@@ -1,31 +1,29 @@
-package com.termux.api.apis;
+package com.termux.app.api;
 
 import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.RemoteInput;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
+import android.net.Uri;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.app.RemoteInput;
 import androidx.core.util.Pair;
 
-import com.termux.api.R;
-import com.termux.api.util.ResultReturner;
+import com.termux.R;
+import com.termux.app.TermuxConstants;
+import com.termux.app.TermuxService;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -39,20 +37,20 @@ public class NotificationAPI {
     private static final String KEY_TEXT_REPLY = "TERMUX_TEXT_REPLY";
 
     /**
-     * Show a notification. Driven by the termux-show-notification script.
+     * Show a notification. Driven by the termux-notification script.
      */
     public static void onReceiveShowNotification(final Context context, final Intent intent) {
-        Pair<NotificationCompat.Builder, String> pair = buildNotification(context, intent);
-        NotificationCompat.Builder notification = pair.first;
+        Pair<Notification.Builder, String> pair = buildNotification(context, intent);
+        Notification.Builder notification = pair.first;
         String notificationId = pair.second;
-        ResultReturner.returnData(context, intent, new ResultReturner.WithStringInput() {
+        ResultReturner.returnData(intent, new ResultReturner.WithStringInput() {
             @Override
             public void writeResult(PrintWriter out) {
                 NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
                 if (!TextUtils.isEmpty(inputString)) {
                     if (inputString.contains("\n")) {
-                        NotificationCompat.BigTextStyle style = new NotificationCompat.BigTextStyle();
+                        Notification.BigTextStyle style = new Notification.BigTextStyle();
                         style.bigText(inputString);
                         notification.setStyle(style);
                     } else {
@@ -76,26 +74,26 @@ public class NotificationAPI {
             String channelName = intent.getStringExtra("name");
 
             if (channelId == null || channelId.isEmpty()) {
-                ResultReturner.returnData(context, intent, out -> out.println("Channel id not specified."));
+                ResultReturner.returnData(intent, out -> out.println("Channel id not specified."));
                 return;
             }
 
             if (intent.getBooleanExtra("delete",false)) {
                 m.deleteNotificationChannel(channelId);
-                ResultReturner.returnData(context, intent, out -> out.println("Deleted channel with id \""+channelId+"\"."));
+                ResultReturner.returnData(intent, out -> out.println("Deleted channel with id \""+channelId+"\"."));
                 return;
             }
 
             if (channelName == null || channelName.isEmpty()) {
-                ResultReturner.returnData(context, intent, out -> out.println("Cannot create a channel without a name."));
+                ResultReturner.returnData(intent, out -> out.println("Cannot create a channel without a name."));
             }
 
             NotificationChannel c = new NotificationChannel(channelId, channelName, priorityFromIntent(intent));
             m.createNotificationChannel(c);
-            ResultReturner.returnData(context, intent, out -> out.println("Created channel with id \""+channelId+"\" and name \""+channelName+"\"."));
+            ResultReturner.returnData(intent, out -> out.println("Created channel with id \""+channelId+"\" and name \""+channelName+"\"."));
         } catch (Exception e) {
-            e.printStackTrace();
-            ResultReturner.returnData(context, intent, out -> out.println("Could not create/delete channel."));
+            Log.e(LOG_TAG, "Exception in onReceiveChannel()", e);
+            ResultReturner.returnData(intent, out -> out.println("Could not create/delete channel."));
         }
     }
     
@@ -120,7 +118,7 @@ public class NotificationAPI {
         return importance;
     }
 
-    static Pair<NotificationCompat.Builder, String> buildNotification(final Context context, final Intent intent) {
+    static Pair<Notification.Builder, String> buildNotification(final Context context, final Intent intent) {
         String priorityExtra = intent.getStringExtra("priority");
         if (priorityExtra == null) priorityExtra = "default";
         int priority;
@@ -174,8 +172,7 @@ public class NotificationAPI {
             channel = CHANNEL_ID;
         }
         
-        final NotificationCompat.Builder notification = new NotificationCompat.Builder(context,
-                channel);
+        var notification = new Notification.Builder(context, channel);
         notification.setSmallIcon(R.drawable.ic_event_note_black_24dp);
         notification.setColor(0xFF000000);
         notification.setContentTitle(title);
@@ -185,33 +182,13 @@ public class NotificationAPI {
         notification.setWhen(System.currentTimeMillis());
         notification.setShowWhen(true);
 
-        String SmallIcon = intent.getStringExtra("icon");
-
-        if (SmallIcon != null) {
-            final Class<?> clz = R.drawable.class;
-            final Field[] fields = clz.getDeclaredFields();
-            for (Field field : fields) {
-                String name = field.getName();
-                if (name.equals("ic_" + SmallIcon + "_black_24dp")) {
-                    try {
-                        notification.setSmallIcon(field.getInt(clz));
-                    } catch (Exception e) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        String ImagePath = intent.getStringExtra("image-path");
-
-        if (ImagePath != null) {
-            File imgFile = new File(ImagePath);
+        var imagePath = intent.getStringExtra("image-path");
+        if (imagePath != null) {
+            File imgFile = new File(imagePath);
             if (imgFile.exists()) {
                 Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
                 notification.setLargeIcon(myBitmap)
-                        .setStyle(new NotificationCompat.BigPictureStyle()
-                                .bigPicture(myBitmap));
+                        .setStyle(new Notification.BigPictureStyle().bigPicture(myBitmap));
             }
         }
 
@@ -223,26 +200,25 @@ public class NotificationAPI {
             String mediaNext = intent.getStringExtra("media-next");
 
             if (mediaPrevious != null && mediaPause != null && mediaPlay != null && mediaNext != null) {
-                if (SmallIcon == null) {
-                    notification.setSmallIcon(android.R.drawable.ic_media_play);
-                }
+                notification.setSmallIcon(android.R.drawable.ic_media_play);
 
                 PendingIntent previousIntent = createAction(context, mediaPrevious);
                 PendingIntent pauseIntent = createAction(context, mediaPause);
                 PendingIntent playIntent = createAction(context, mediaPlay);
                 PendingIntent nextIntent = createAction(context, mediaNext);
 
-                notification.addAction(new NotificationCompat.Action(android.R.drawable.ic_media_previous, "previous", previousIntent));
-                notification.addAction(new NotificationCompat.Action(android.R.drawable.ic_media_pause, "pause", pauseIntent));
-                notification.addAction(new NotificationCompat.Action(android.R.drawable.ic_media_play, "play", playIntent));
-                notification.addAction(new NotificationCompat.Action(android.R.drawable.ic_media_next, "next", nextIntent));
+                notification.addAction(new Notification.Action(android.R.drawable.ic_media_previous, "previous", previousIntent));
+                notification.addAction(new Notification.Action(android.R.drawable.ic_media_pause, "pause", pauseIntent));
+                notification.addAction(new Notification.Action(android.R.drawable.ic_media_play, "play", playIntent));
+                notification.addAction(new Notification.Action(android.R.drawable.ic_media_next, "next", nextIntent));
 
-                notification.setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        .setShowActionsInCompactView(0, 1, 3));
+                notification.setStyle(new android.app.Notification.MediaStyle().setShowActionsInCompactView(0, 1, 3));
             }
         }
 
-        if (groupKey != null) notification.setGroup(groupKey);
+        if (groupKey != null) {
+            notification.setGroup(groupKey);
+        }
 
         if (ledColor != 0) {
             notification.setLights(ledColor, ledOnMs, ledOffMs);
@@ -260,7 +236,9 @@ public class NotificationAPI {
             notification.setVibrate(vibrateArg);
         }
 
-        if (useSound) notification.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+        if (useSound) {
+            notification.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+        }
 
         notification.setAutoCancel(true);
 
@@ -275,13 +253,11 @@ public class NotificationAPI {
 
             if (buttonText != null && buttonAction != null) {
                 if (buttonAction.contains("$REPLY")) {
-                    NotificationCompat.Action action = createReplyAction(context, intent,
-                            button,
-                            buttonText, buttonAction, notificationId);
+                    var action = createReplyAction(context, intent, button, buttonText, buttonAction, notificationId);
                     notification.addAction(action);
                 } else {
-                PendingIntent pi = createAction(context, buttonAction);
-                    notification.addAction(new NotificationCompat.Action(android.R.drawable.ic_input_add, buttonText, pi));
+                    PendingIntent pi = createAction(context, buttonAction);
+                    notification.addAction(new Notification.Action(android.R.drawable.ic_input_add, buttonText, pi));
                 }
             }
         }
@@ -302,54 +278,33 @@ public class NotificationAPI {
     }
 
     public static void onReceiveRemoveNotification(final Context context, final Intent intent) {
-        ResultReturner.noteDone(context, intent);
-        String notificationId = intent.getStringExtra("id");
+        ResultReturner.noteDone(intent);
+        var notificationId = intent.getStringExtra("id");
         if (notificationId != null) {
-            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            var manager = context.getSystemService(NotificationManager.class);
             manager.cancel(notificationId, 0);
         }
     }
 
-    static NotificationCompat.Action createReplyAction(final Context context, Intent intent,
-                                                       int buttonNum,
-                                                       String buttonText,
-                                                       String buttonAction, String notificationId) {
-        RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
-                .setLabel(buttonText)
-                .build();
-
-        // Build a PendingIntent for the reply action to trigger.
-        PendingIntent replyPendingIntent =
-                PendingIntent.getBroadcast(context,
-                        buttonNum,
-                        getMessageReplyIntent((Intent)intent.clone(), buttonText, buttonAction, notificationId),
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // Create the reply action and add the remote input.
-        return new NotificationCompat.Action.Builder(R.drawable.ic_event_note_black_24dp,
-                        buttonText,
-                        replyPendingIntent)
+    static Notification.Action createReplyAction(Context context,
+                                                 Intent intent,
+                                                 int buttonNum,
+                                                 String buttonText,
+                                                 String buttonAction,
+                                                 String notificationId) {
+        var replyIntent = ((Intent) intent.clone())
+            .setClass(context, TermuxService.class)
+            .putExtra("api_method", "NotificationReply")
+            .putExtra("id", notificationId)
+            .putExtra("action", buttonAction);
+        var pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE;
+        var replyPendingIntent = PendingIntent.getService(context, buttonNum, replyIntent, pendingFlags);
+        var remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
+            .setLabel(buttonText)
+            .build();
+        return new Notification.Action.Builder(com.termux.R.drawable.ic_event_note_black_24dp, buttonText, replyPendingIntent)
                         .addRemoteInput(remoteInput)
                         .build();
-    }
-
-    private static Intent getMessageReplyIntent(Intent oldIntent,
-                                                String buttonText, String buttonAction,
-                                                String notificationId) {
-        return oldIntent.
-                //setClassName(TermuxConstants.TERMUX_API_PACKAGE_NAME, TermuxAPIConstants.TERMUX_API_RECEIVER_NAME).
-                putExtra("api_method", "NotificationReply").
-                putExtra("id", notificationId).
-                putExtra("action", buttonAction);
-    }
-
-
-    static private CharSequence getMessageText(Intent intent) {
-        Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
-        if (remoteInput != null) {
-            return remoteInput.getCharSequence(KEY_TEXT_REPLY);
-        }
-        return null;
     }
 
     static CharSequence shellEscape(CharSequence input) {
@@ -358,12 +313,13 @@ public class NotificationAPI {
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     public static void onReceiveReplyToNotification(Context context, Intent intent) {
-        CharSequence reply = getMessageText(intent);
+        var remoteInput = RemoteInput.getResultsFromIntent(intent);
+        CharSequence reply = (remoteInput == null) ? null : remoteInput.getCharSequence(KEY_TEXT_REPLY);
 
-        String action = intent.getStringExtra("action");
-
-        if (action != null && reply != null)
+        var action = intent.getStringExtra("action");
+        if (action != null && reply != null) {
             action = action.replace("$REPLY", shellEscape(reply));
+        }
 
         try {
             createAction(context, action).send();
@@ -374,7 +330,7 @@ public class NotificationAPI {
         String notificationId = intent.getStringExtra("id");
         boolean ongoing = intent.getBooleanExtra("ongoing", false);
         Notification repliedNotification;
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        var notificationManager = context.getSystemService(NotificationManager.class);
         if (ongoing) {
             // Re-issue the new notification to clear the spinner
             repliedNotification = buildNotification(context, intent).first.build();
@@ -385,26 +341,16 @@ public class NotificationAPI {
         }
     }
 
-    static Intent createExecuteIntent(String action){
-        /* TODO
-        ExecutionCommand executionCommand = new ExecutionCommand();
-        executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(BIN_SH).build();
-        executionCommand.arguments = new String[]{"-c", action};
-        executionCommand.runner = ExecutionCommand.Runner.APP_SHELL.getName();
-
-        // Create execution intent with the action TERMUX_SERVICE#ACTION_SERVICE_EXECUTE to be sent to the TERMUX_SERVICE
-        Intent executionIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executionCommand.executableUri);
-        executionIntent.setClassName(TermuxConstants.TERMUX_PACKAGE_NAME, TermuxConstants.TERMUX_APP.TERMUX_SERVICE_NAME);
-        executionIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, executionCommand.arguments);
-        executionIntent.putExtra(TERMUX_SERVICE.EXTRA_RUNNER, executionCommand.runner);
-        executionIntent.putExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, true); // Also pass in case user using termux-app version < 0.119.0
-        return executionIntent;
-         */
-        return null;
+    static Intent createExecuteIntent(Context context, String action){
+        return new Intent(TermuxService.ACTION_SERVICE_EXECUTE)
+            .setClass(context, TermuxService.class)
+            .setData(Uri.fromFile(new File(TermuxConstants.BIN_PATH + "/bash")))
+            .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_ARGUMENTS, new String[]{"-c", action})
+            .putExtra(TermuxService.TERMUX_EXECUTE_EXTRA_BACKGROUND, true);
     }
 
     static PendingIntent createAction(final Context context, String action){
-        Intent executeIntent = createExecuteIntent(action);
+        Intent executeIntent = createExecuteIntent(context, action);
         return PendingIntent.getService(context, 0, executeIntent, PendingIntent.FLAG_IMMUTABLE);
     }
 }
