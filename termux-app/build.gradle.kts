@@ -165,11 +165,11 @@ tasks {
 
 tasks.register("downloadPrebuilt") {
     doLast {
-        val bootstrapVersion = "2026.01.06-r1"
+        val bootstrapVersion = "2026.02.04-r1"
         val arches = mapOf(
-            "aarch64" to "a895ac47b537580812f8a9b91316abb599cdc2132d5a8de35f7f3e2efaf05ff4",
-            "arm" to "000373f77ec9a1a6c850d4bf9b2516c3561db35d4205e924f0aa6fb7adcb3d86",
-            "x86_64" to "bf89369aed73cdef23e48d0f6e12e3e68f563c5e178a9ae52ded102226cbb938"
+            "aarch64" to "674899b049c3adcdfd3995b0ae0f985ec13113002bc0dcb7655cd8731d35b13a",
+            "arm" to "edebab62443385104ff86fa07a68a54c7a6e96831b54a8bbb6e1bef6bf28d95c",
+            "x86_64" to "e93cb86f17971bafbc02aad62aa5bfb95c2ad02f19cdd2a32a98607b4bbf52e1"
         )
         arches.forEach { (arch, checksum) ->
             val downloadTo = "src/main/cpp/bootstrap-${arch}.zip"
@@ -177,8 +177,8 @@ tasks.register("downloadPrebuilt") {
             downloadFile(downloadTo, url, checksum)
         }
 
-        val prootTag = "proot-2026.01.04-r1"
-        val prootVersion = "5.1.107-68"
+        val prootTag = "proot-2026.01.22-r1"
+        val prootVersion = "5.1.107-70"
         var prootUrl = "https://github.com/termux-play-store/termux-packages/releases/download/${prootTag}/libproot-loader-ARCH-${prootVersion}.so"
         downloadFile("src/main/jniLibs/armeabi-v7a/libproot-loader.so", prootUrl.replace("ARCH", "arm"), "09729047155df0c1a6b55c265ff4e272107775961d7efaff06bdd7cf37904050")
         downloadFile("src/main/jniLibs/arm64-v8a/libproot-loader.so", prootUrl.replace("ARCH", "aarch64"), "f7e3211e4c210c2a39a1f22b7f38666d99aee172fd009c0d19b84108cf20bb42")
