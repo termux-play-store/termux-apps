@@ -815,7 +815,7 @@ public class DialogAPI {
                     public void onResults(Bundle results) {
                         List<String> voiceResults = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-                        if (voiceResults != null && voiceResults.size() > 0) {
+                        if (voiceResults != null && !voiceResults.isEmpty()) {
                             inputResult.text = voiceResults.get(0);
                         }
                         listener.onResult(inputResult);
@@ -826,15 +826,7 @@ public class DialogAPI {
                      */
                     @Override
                     public void onError(int error) {
-                        inputResult.error = switch (error) {
-                            case SpeechRecognizer.ERROR_AUDIO -> "ERROR_AUDIO";
-                            case SpeechRecognizer.ERROR_CLIENT -> "ERROR_CLIENT";
-                            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "ERROR_INSUFFICIENT_PERMISSIONS";
-                            case SpeechRecognizer.ERROR_NETWORK -> "ERROR_NETWORK";
-                            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "ERROR_NETWORK_TIMEOUT";
-                            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "ERROR_SPEECH_TIMEOUT";
-                            default -> "ERROR_UNKNOWN";
-                        };
+                        inputResult.error = SpeechToTextAPI.errorToString(error);
                         listener.onResult(inputResult);
                     }
 

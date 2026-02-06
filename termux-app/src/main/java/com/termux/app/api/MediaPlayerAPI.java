@@ -10,6 +10,7 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * API that enables playback of standard audio formats such as:
@@ -39,9 +40,9 @@ public class MediaPlayerAPI {
 
         // only show hours if we have them
         if (hours > 0) {
-            result += String.format("%02d:", hours);
+            result += String.format(Locale.ENGLISH, "%02d:", hours);
         }
-        result += String.format("%02d:%02d", mins, secs);
+        result += String.format(Locale.ENGLISH, "%02d:%02d", mins, secs);
         return result;
     }
 
@@ -156,7 +157,7 @@ public class MediaPlayerAPI {
 
                 if (hasTrack) {
                     String status = player.isPlaying() ? "Playing" : "Paused";
-                    result.message = String.format("Status: %s\nTrack: %s\nCurrent Position: %s", status, trackName, getPlaybackPositionString(player));
+                    result.message = String.format(Locale.ENGLISH, "Status: %s\nTrack: %s\nCurrent Position: %s", status, trackName, getPlaybackPositionString(player));
                 } else {
                     result.message = "No track currently!";
                 }

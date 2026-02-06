@@ -11,6 +11,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.PrintWriter;
@@ -82,21 +83,7 @@ public class SpeechToTextAPI {
 
                 @Override
                 public void onError(int error) {
-                    var description = switch (error) {
-                        case SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "ERROR_NETWORK_TIMEOUT";
-                        case SpeechRecognizer.ERROR_NETWORK -> "ERROR_NETWORK";
-                        case SpeechRecognizer.ERROR_AUDIO -> "ERROR_AUDIO";
-                        case SpeechRecognizer.ERROR_SERVER -> "ERROR_SERVER";
-                        case SpeechRecognizer.ERROR_CLIENT -> "ERROR_CLIENT";
-                        case SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "ERROR_SPEECH_TIMEOUT";
-                        case SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "ERROR_RECOGNIZER_BUSY";
-                        case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "ERROR_INSUFFICIENT_PERMISSIONS";
-                        case SpeechRecognizer.ERROR_TOO_MANY_REQUESTS -> "ERROR_TOO_MANY_REQUESTS";
-                        case SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> "ERROR_LANGUAGE_UNAVAILABLE";
-                        case SpeechRecognizer.ERROR_NO_MATCH -> "ERROR_NO_MATCH";
-                        case SpeechRecognizer.ERROR_SERVER_DISCONNECTED -> "ERROR_SERVER_DISCONNECTED";
-                        default -> Integer.toString(error);
-                    };
+                    var description = SpeechToTextAPI.errorToString(error);
                     Log.e(LOG_TAG, "RecognitionListener#onError: " + description);
                     queueu.add("ERROR: " + description);
                     queueu.add(STOP_ELEMENT);
@@ -160,6 +147,28 @@ public class SpeechToTextAPI {
             });
             return Service.START_NOT_STICKY;
         }
+    }
+
+    @NonNull
+    static String errorToString(int error) {
+        return switch (error) {
+            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "ERROR_NETWORK_TIMEOUT";
+            case SpeechRecognizer.ERROR_NETWORK -> "ERROR_NETWORK";
+            case SpeechRecognizer.ERROR_AUDIO -> "ERROR_AUDIO";
+            case SpeechRecognizer.ERROR_SERVER -> "ERROR_SERVER";
+            case SpeechRecognizer.ERROR_CLIENT -> "ERROR_CLIENT";
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "ERROR_SPEECH_TIMEOUT";
+            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "ERROR_RECOGNIZER_BUSY";
+            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "ERROR_INSUFFICIENT_PERMISSIONS";
+            case SpeechRecognizer.ERROR_TOO_MANY_REQUESTS -> "ERROR_TOO_MANY_REQUESTS";
+            case SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> "ERROR_LANGUAGE_UNAVAILABLE";
+            case SpeechRecognizer.ERROR_NO_MATCH -> "ERROR_NO_MATCH";
+            case SpeechRecognizer.ERROR_SERVER_DISCONNECTED -> "ERROR_SERVER_DISCONNECTED";
+            case SpeechRecognizer.ERROR_CANNOT_CHECK_SUPPORT -> "ERROR_CANNOT_CHECK_SUPPORT";
+            case SpeechRecognizer.ERROR_CANNOT_LISTEN_TO_DOWNLOAD_EVENTS -> "ERROR_CANNOT_LISTEN_TO_DOWNLOAD_EVENTS";
+            case SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED -> "ERROR_LANGUAGE_NOT_SUPPORTED";
+            default -> "ERROR_UNKNOWN_" + error;
+        };
     }
 
     public static void onReceive(final Context context, Intent intent) {

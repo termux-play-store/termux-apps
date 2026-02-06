@@ -182,7 +182,7 @@ public class MicRecorderAPI {
                     duration = MIN_RECORDING_LIMIT;
 
                 var encoderString = intent.getStringExtra("encoder");
-                var encoder = switch (encoderString == null ? null : encoderString.toLowerCase()) {
+                var encoder = switch (encoderString == null ? null : encoderString.toLowerCase(Locale.ROOT)) {
                     case "amr_nb" -> MediaRecorder.AudioEncoder.AMR_NB;
                     case "amr_wb" -> MediaRecorder.AudioEncoder.AMR_WB;
                     case "opus" -> MediaRecorder.AudioEncoder.OPUS;
