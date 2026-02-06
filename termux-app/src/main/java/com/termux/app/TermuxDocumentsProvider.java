@@ -44,7 +44,6 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     private static final File BASE_DIR = new File(TermuxConstants.HOME_PATH);
 
-
     // The default columns to return information about a root if no specific
     // columns are requested in a query.
     private static final String[] DEFAULT_ROOT_PROJECTION = new String[]{
@@ -262,7 +261,10 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
             }
             if (isInsideHome) {
                 if (file.isDirectory()) {
-                    Collections.addAll(pending, file.listFiles());
+                    var filesInDir = file.listFiles();
+                    if (filesInDir != null) {
+                        Collections.addAll(pending, filesInDir);
+                    }
                 } else {
                     if (file.getName().toLowerCase(Locale.ROOT).contains(query)) {
                         includeFile(result, null, file);
@@ -330,15 +332,23 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
         int flags = 0;
         if (file.isDirectory()) {
-            if (file.canWrite()) flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
+            if (file.canWrite()) {
+                flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
+            }
         } else if (file.canWrite()) {
             flags |= Document.FLAG_SUPPORTS_WRITE;
         }
-        if (file.getParentFile().canWrite()) flags |= Document.FLAG_SUPPORTS_DELETE;
+
+        var parentfile = file.getParentFile();
+        if (parentfile != null && parentfile.canWrite()) {
+            flags |= Document.FLAG_SUPPORTS_DELETE | Document.FLAG_SUPPORTS_MOVE | Document.FLAG_SUPPORTS_RENAME;
+        }
 
         final String displayName = file.getName();
         final String mimeType = getMimeType(file);
-        if (mimeType.startsWith("image/")) flags |= Document.FLAG_SUPPORTS_THUMBNAIL;
+        if (mimeType.startsWith("image/")) {
+            flags |= Document.FLAG_SUPPORTS_THUMBNAIL;
+        }
 
         var row = result.newRow();
         row.add(Document.COLUMN_DOCUMENT_ID, docId);
