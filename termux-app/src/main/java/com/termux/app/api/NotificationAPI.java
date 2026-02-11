@@ -98,53 +98,29 @@ public class NotificationAPI {
     }
     
     private static int priorityFromIntent(Intent intent) {
-        String priorityExtra = intent.getStringExtra("priority");
-        if (priorityExtra == null) priorityExtra = "default";
-        int importance;
-        switch (priorityExtra) {
-            case "high":
-            case "max":
-                importance = NotificationManager.IMPORTANCE_HIGH;
-                break;
-            case "low":
-                importance = NotificationManager.IMPORTANCE_LOW;
-                break;
-            case "min":
-                importance = NotificationManager.IMPORTANCE_MIN;
-                break;
-            default:
-                importance = NotificationManager.IMPORTANCE_DEFAULT;
-        }
-        return importance;
+        var priorityExtra = intent.getStringExtra("priority");
+        return switch (priorityExtra) {
+            case "high", "max" -> NotificationManager.IMPORTANCE_HIGH;
+            case "low" -> NotificationManager.IMPORTANCE_LOW;
+            case "min" -> NotificationManager.IMPORTANCE_MIN;
+            case null, default -> NotificationManager.IMPORTANCE_DEFAULT;
+        };
     }
 
     static Pair<Notification.Builder, String> buildNotification(final Context context, final Intent intent) {
-        String priorityExtra = intent.getStringExtra("priority");
-        if (priorityExtra == null) priorityExtra = "default";
-        int priority;
-        switch (priorityExtra) {
-            case "high":
-                priority = Notification.PRIORITY_HIGH;
-                break;
-            case "low":
-                priority = Notification.PRIORITY_LOW;
-                break;
-            case "max":
-                priority = Notification.PRIORITY_MAX;
-                break;
-            case "min":
-                priority = Notification.PRIORITY_MIN;
-                break;
-            default:
-                priority = Notification.PRIORITY_DEFAULT;
-        }
+        var priorityExtra = intent.getStringExtra("priority");
+        int priority = switch (priorityExtra) {
+            case "high" -> Notification.PRIORITY_HIGH;
+            case "low" -> Notification.PRIORITY_LOW;
+            case "max" -> Notification.PRIORITY_MAX;
+            case "min" -> Notification.PRIORITY_MIN;
+            case null, default -> Notification.PRIORITY_DEFAULT;
+        };
 
         String title = intent.getStringExtra("title");
-
         String lightsArgbExtra = intent.getStringExtra("led-color");
 
         int ledColor = 0;
-
         if (lightsArgbExtra != null) {
             try {
                 ledColor = Integer.parseInt(lightsArgbExtra, 16) | 0xff000000;
