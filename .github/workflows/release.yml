@@ -51,9 +51,11 @@ jobs:
             exit 1
           fi
 
-          if ! [[ "$RELEASED_VERSION" =~ ^googleplay.[0-9]{4}.[0-9]{2}.[0-9]{2}$ ]]; then
-            echo "Bad version: $RELEASED_VERSION"
-            exit 1
+          if [ "$RELEASED_APP" = "termux-app" ]; then
+            if ! [[ "$RELEASED_VERSION" =~ ^googleplay.[0-9]{4}.[0-9]{2}.[0-9]{2}$ ]]; then
+              echo "Bad version: $RELEASED_VERSION"
+              exit 1
+            fi
           fi
 
           # One initial build to get rid of the one-time "License for package NDK .. accepted" outputs
