@@ -1,4 +1,3 @@
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import java.io.BufferedOutputStream
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -15,16 +14,6 @@ android {
 
     val ndkVersion: String by project
     this.ndkVersion = ndkVersion
-
-    dependencies {
-        implementation("androidx.annotation:annotation:1.9.1")
-        implementation("androidx.core:core:1.17.0")
-        implementation("androidx.drawerlayout:drawerlayout:1.2.0")
-        implementation("androidx.viewpager:viewpager:1.1.0")
-        implementation("com.google.android.material:material:1.13.0")
-
-        implementation(project(":terminal-view"))
-    }
 
     defaultConfig {
         versionCode = 140
@@ -61,7 +50,7 @@ android {
          getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
 
         getByName("debug") {
@@ -102,6 +91,13 @@ android {
 }
 
 dependencies {
+    implementation("androidx.annotation:annotation:1.9.1")
+    implementation("androidx.core:core:1.17.0")
+    implementation("androidx.drawerlayout:drawerlayout:1.2.0")
+    implementation("androidx.viewpager:viewpager:1.1.0")
+    implementation("com.google.android.material:material:1.13.0")
+    implementation(project(":terminal-view"))
+
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.16.1")
 }
@@ -186,11 +182,8 @@ tasks.register("downloadPrebuilt") {
     }
 }
 
-afterEvaluate {
-    android.applicationVariants.all { variant ->
-        variant.javaCompileProvider.dependsOn("downloadPrebuilt")
-        true
-    }
+tasks.named("preBuild") {
+    dependsOn("downloadPrebuilt")
 }
 
 // https://stackoverflow.com/questions/75274720/a-failure-occurred-while-executing-appcheckdebugduplicateclasses/

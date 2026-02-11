@@ -1,12 +1,9 @@
-import com.android.build.gradle.internal.tasks.factory.dependsOn
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.BufferedOutputStream
 import java.io.FileOutputStream
 import java.net.URI
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
 }
 
 android {
@@ -53,11 +50,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
     lint {
         warningsAsErrors = true
     }
@@ -66,13 +58,7 @@ android {
 kotlin {
     compilerOptions {
         allWarningsAsErrors = true
-        jvmTarget = JvmTarget.JVM_11
     }
-}
-
-dependencies {
-    val kotlinVersion: String by project
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 }
 
 tasks.register("versionName") {
@@ -85,7 +71,7 @@ tasks.register("versionName") {
 fun downloadFile(downloadTo: File, remoteUrl: String) {
     if (downloadTo.exists()) {
         logger.info("Keeping local file: ${downloadTo.absolutePath}")
-        return;
+        return
     }
 
     logger.quiet("Downloading $remoteUrl to $downloadTo ...")
@@ -162,9 +148,6 @@ tasks.register("downloadPrebuilt") {
     }
 }
 
-afterEvaluate {
-    android.applicationVariants.all { variant ->
-        variant.javaCompileProvider.dependsOn("downloadPrebuilt")
-        true
-    }
+tasks.named("preBuild") {
+    dependsOn("downloadPrebuilt")
 }
