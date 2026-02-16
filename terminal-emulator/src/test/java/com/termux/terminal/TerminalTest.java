@@ -150,9 +150,9 @@ public class TerminalTest extends TerminalTestCase {
 	public void selectGraphicsTestRun(char separator) {
 		withTerminalSized(5, 5);
 		enterString("\033[31m");
-		assertEquals(mTerminal.mForeColor, 1);
+		assertEquals(1, mTerminal.mForeColor);
 		enterString("\033[32m");
-		assertEquals(mTerminal.mForeColor, 2);
+		assertEquals(2, mTerminal.mForeColor);
 		enterString("\033[43m");
 		assertEquals(2, mTerminal.mForeColor);
 		assertEquals(3, mTerminal.mBackColor);

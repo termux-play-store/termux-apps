@@ -91,13 +91,13 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 		withTerminalSized(4, 4).enterString("\033]4;5;#00FF00\007");
 		assertEquals(Integer.toHexString(0xFF00FF00), Integer.toHexString(mTerminal.mColors.mCurrentColors[5]));
 		enterString("\033]4;5;#00FFAB\007");
-		assertEquals(mTerminal.mColors.mCurrentColors[5], 0xFF00FFAB);
+		assertEquals(0xFF00FFAB, mTerminal.mColors.mCurrentColors[5]);
 		enterString("\033]4;255;#ABFFAB\007");
-		assertEquals(mTerminal.mColors.mCurrentColors[255], 0xFFABFFAB);
+		assertEquals(0xFFABFFAB, mTerminal.mColors.mCurrentColors[255]);
 		// Two indexed colors at once:
 		enterString("\033]4;7;#00FF00;8;#0000FF\007");
-		assertEquals(mTerminal.mColors.mCurrentColors[7], 0xFF00FF00);
-		assertEquals(mTerminal.mColors.mCurrentColors[8], 0xFF0000FF);
+		assertEquals(0xFF00FF00, mTerminal.mColors.mCurrentColors[7]);
+		assertEquals(0xFF0000FF, mTerminal.mColors.mCurrentColors[8]);
 	}
 
 	void assertIndexColorsMatch(int[] expected) {
