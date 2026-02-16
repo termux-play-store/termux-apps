@@ -13,13 +13,6 @@ android {
         val compileSdkVersion: String by project
         minSdk = minSdkVersion.toInt()
         compileSdk = compileSdkVersion.toInt()
-
-        externalNativeBuild {
-            ndkBuild {
-                cFlags += listOf("-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections")
-            }
-        }
-
         ndk {
             abiFilters += listOf("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
         }

@@ -25,15 +25,8 @@ android {
         minSdk = minSdkVersion.toInt()
         targetSdk = targetSdkVersion.toInt()
         compileSdk = compileSdkVersion.toInt()
-
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
-        }
-
-        externalNativeBuild {
-            ndkBuild {
-                cFlags += listOf("-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections")
-            }
         }
     }
 
