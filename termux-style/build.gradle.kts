@@ -1,3 +1,4 @@
+import org.gradle.api.internal.file.FileOperations
 import java.io.BufferedOutputStream
 import java.io.FileOutputStream
 import java.net.URI
@@ -67,36 +68,34 @@ tasks.register("versionName") {
     }
 }
 
+abstract class CleanFontsTask : DefaultTask() {
+    @get:InputDirectory abstract val projectDir: DirectoryProperty
+    @get:Inject abstract val fileOperations: FileOperations
 
-fun downloadFile(downloadTo: File, remoteUrl: String) {
-    if (downloadTo.exists()) {
-        logger.info("Keeping local file: ${downloadTo.absolutePath}")
-        return
-    }
-
-    logger.quiet("Downloading $remoteUrl to $downloadTo ...")
-    downloadTo.parentFile.mkdirs()
-    val tmpFile = File(downloadTo.absolutePath + ".tmp")
-    BufferedOutputStream(FileOutputStream(tmpFile)).use {
-        val connection = URI(remoteUrl).toURL().openConnection()
-        connection.inputStream.transferTo(it)
-    }
-    tmpFile.renameTo(downloadTo)
-}
-
-tasks {
-    getByName<Delete>("clean") {
-        doLast {
-            val tree = fileTree(File(projectDir, "src/main/assets/fonts"))
-            tree.include("**/*.otf")
-            tree.include("**/*.ttf")
-            tree.forEach { it.delete() }
-        }
+    @TaskAction
+    fun action() {
+        val tree = fileOperations.fileTree(File(projectDir.asFile.get(), "src/main/assets/fonts"))
+        tree.include("**/*.otf")
+        tree.include("**/*.ttf")
+        tree.forEach { it.delete() }
     }
 }
 
-tasks.register("downloadPrebuilt") {
-    doLast {
+tasks.register<CleanFontsTask>("cleanFonts") {
+    projectDir = layout.projectDirectory
+}
+
+tasks.named("clean") {
+    dependsOn("cleanFonts")
+}
+
+abstract class DownloadFontsTask : DefaultTask() {
+    @get:InputFiles abstract val buildDirectory: DirectoryProperty
+    @get:Inject abstract val fs: FileSystemOperations
+    @get:Inject abstract val fileOperations: FileOperations
+
+    @TaskAction
+    fun action() {
         val nerdFontsVersion = "3.4.0"
         val fonts = mapOf(
             "Adwaita-Mono" to "AdwaitaMonoNerdFont-Regular.ttf",
@@ -130,24 +129,40 @@ tasks.register("downloadPrebuilt") {
             val fontPack = if (fontName == "Go-Mono") fontName else fontName.replace("-", "")
             val fontUrl =
                 "https://github.com/ryanoasis/nerd-fonts/releases/download/v${nerdFontsVersion}/${fontPack}.zip"
-            val cacheDir = File(layout.buildDirectory.asFile.get(), "termux-fonts")
+            val cacheDir = File(buildDirectory.asFile.get(), "termux-fonts")
             val zipFile = File(cacheDir, "${fontPack}.zip")
             downloadFile(zipFile, fontUrl)
             val destinationDir = "src/main/assets/fonts/"
             val destinationFileName = "${fontName}.ttf"
-            copy {
-                from(zipTree(zipFile)) {
-                    include(fontFile)
-                }
+            fs.copy {
+                from(fileOperations.zipTree(zipFile)) { include(fontFile) }
                 into(destinationDir)
-                eachFile {
-                    relativePath = RelativePath(true, destinationFileName)
-                }
+                eachFile { relativePath = RelativePath(true, destinationFileName) }
             }
         }
     }
+
+    fun downloadFile(downloadTo: File, remoteUrl: String) {
+        if (downloadTo.exists()) {
+            logger.info("Keeping local file: ${downloadTo.absolutePath}")
+            return
+        }
+
+        logger.quiet("Downloading $remoteUrl to $downloadTo ...")
+        downloadTo.parentFile.mkdirs()
+        val tmpFile = File(downloadTo.absolutePath + ".tmp")
+        BufferedOutputStream(FileOutputStream(tmpFile)).use {
+            val connection = URI(remoteUrl).toURL().openConnection()
+            connection.inputStream.transferTo(it)
+        }
+        tmpFile.renameTo(downloadTo)
+    }
+}
+
+tasks.register<DownloadFontsTask>("downloadFonts") {
+    buildDirectory = project.layout.buildDirectory
 }
 
 tasks.named("preBuild") {
-    dependsOn("downloadPrebuilt")
+    dependsOn("downloadFonts")
 }
