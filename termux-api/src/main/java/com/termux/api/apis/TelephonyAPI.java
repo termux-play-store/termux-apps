@@ -68,8 +68,7 @@ public class TelephonyAPI {
                 if (cellInfoData != null) {
                     for (CellInfo cellInfo : cellInfoData) {
                         out.beginObject();
-                        if (cellInfo instanceof CellInfoGsm) {
-                            CellInfoGsm gsmInfo = (CellInfoGsm) cellInfo;
+                        if (cellInfo instanceof CellInfoGsm gsmInfo) {
                             out.name("type").value("gsm");
                             out.name("registered").value(cellInfo.isRegistered());
 
@@ -79,10 +78,9 @@ public class TelephonyAPI {
 
                             writeIfKnown(out, "cid", gsmInfo.getCellIdentity().getCid());
                             writeIfKnown(out, "lac", gsmInfo.getCellIdentity().getLac());
-                            writeIfKnown(out, "mcc", gsmInfo.getCellIdentity().getMcc());
-                            writeIfKnown(out, "mnc", gsmInfo.getCellIdentity().getMnc());
-                        } else if (cellInfo instanceof CellInfoLte) {
-                            CellInfoLte lteInfo = (CellInfoLte) cellInfo;
+                            out.name("mcc").value(gsmInfo.getCellIdentity().getMccString());
+                            out.name("mnc").value(gsmInfo.getCellIdentity().getMncString());
+                        } else if (cellInfo instanceof CellInfoLte lteInfo) {
                             out.name("type").value("lte");
                             out.name("registered").value(cellInfo.isRegistered());
 
@@ -102,8 +100,7 @@ public class TelephonyAPI {
                             writeIfKnown(out, "rssi", lteInfo.getCellSignalStrength().getRssi());
 
                             writeIfKnown(out, "bands", lteInfo.getCellIdentity().getBands());
-                        } else if (cellInfo instanceof CellInfoNr) {
-                            CellInfoNr nrInfo = (CellInfoNr) cellInfo;
+                        } else if (cellInfo instanceof CellInfoNr nrInfo) {
                             CellIdentityNr nrcellIdent = (CellIdentityNr) nrInfo.getCellIdentity();
                             CellSignalStrength ssInfo = nrInfo.getCellSignalStrength();
                             out.name("type").value("nr");
@@ -117,8 +114,7 @@ public class TelephonyAPI {
                             writeIfKnown(out, "tac", nrcellIdent.getTac());
                             out.name("mcc").value(nrcellIdent.getMccString());
                             out.name("mnc").value(nrcellIdent.getMncString());
-                            if (ssInfo instanceof  CellSignalStrengthNr) {
-                                CellSignalStrengthNr nrssInfo = (CellSignalStrengthNr) ssInfo;
+                            if (ssInfo instanceof CellSignalStrengthNr nrssInfo) {
                                 writeIfKnown(out, "csi_rsrp", nrssInfo.getCsiRsrp());
                                 writeIfKnown(out, "csi_rsrq", nrssInfo.getCsiRsrq());
                                 writeIfKnown(out, "csi_sinr", nrssInfo.getCsiSinr());
@@ -127,8 +123,7 @@ public class TelephonyAPI {
                                 writeIfKnown(out, "ss_sinr", nrssInfo.getSsSinr());
                             }
                             writeIfKnown(out, "bands", nrcellIdent.getBands());
-                        } else if (cellInfo instanceof CellInfoCdma) {
-                            CellInfoCdma cdmaInfo = (CellInfoCdma) cellInfo;
+                        } else if (cellInfo instanceof CellInfoCdma cdmaInfo) {
                             out.name("type").value("cdma");
                             out.name("registered").value(cellInfo.isRegistered());
 
@@ -148,8 +143,7 @@ public class TelephonyAPI {
                             out.name("longitude").value(cdmaInfo.getCellIdentity().getLongitude());
                             out.name("network").value(cdmaInfo.getCellIdentity().getNetworkId());
                             out.name("system").value(cdmaInfo.getCellIdentity().getSystemId());
-                        } else if (cellInfo instanceof CellInfoWcdma) {
-                            CellInfoWcdma wcdmaInfo = (CellInfoWcdma) cellInfo;
+                        } else if (cellInfo instanceof CellInfoWcdma wcdmaInfo) {
                             out.name("type").value("wcdma");
                             out.name("registered").value(cellInfo.isRegistered());
 
@@ -185,48 +179,24 @@ public class TelephonyAPI {
                     out.name("data_enabled").value(Boolean.toString(manager.isDataEnabled()));
 
                     int dataActivity = manager.getDataActivity();
-                    String dataActivityString;
-                    switch (dataActivity) {
-                        case TelephonyManager.DATA_ACTIVITY_NONE:
-                            dataActivityString = "none";
-                            break;
-                        case TelephonyManager.DATA_ACTIVITY_IN:
-                            dataActivityString = "in";
-                            break;
-                        case TelephonyManager.DATA_ACTIVITY_OUT:
-                            dataActivityString = "out";
-                            break;
-                        case TelephonyManager.DATA_ACTIVITY_INOUT:
-                            dataActivityString = "inout";
-                            break;
-                        case TelephonyManager.DATA_ACTIVITY_DORMANT:
-                            dataActivityString = "dormant";
-                            break;
-                        default:
-                            dataActivityString = Integer.toString(dataActivity);
-                            break;
-                    }
+                    var dataActivityString = switch (dataActivity) {
+                        case TelephonyManager.DATA_ACTIVITY_NONE -> "none";
+                        case TelephonyManager.DATA_ACTIVITY_IN -> "in";
+                        case TelephonyManager.DATA_ACTIVITY_OUT -> "out";
+                        case TelephonyManager.DATA_ACTIVITY_INOUT -> "inout";
+                        case TelephonyManager.DATA_ACTIVITY_DORMANT -> "dormant";
+                        default -> Integer.toString(dataActivity);
+                    };
                     out.name("data_activity").value(dataActivityString);
 
                     int dataState = manager.getDataState();
-                    String dataStateString;
-                    switch (dataState) {
-                        case TelephonyManager.DATA_DISCONNECTED:
-                            dataStateString = "disconnected";
-                            break;
-                        case TelephonyManager.DATA_CONNECTING:
-                            dataStateString = "connecting";
-                            break;
-                        case TelephonyManager.DATA_CONNECTED:
-                            dataStateString = "connected";
-                            break;
-                        case TelephonyManager.DATA_SUSPENDED:
-                            dataStateString = "suspended";
-                            break;
-                        default:
-                            dataStateString = Integer.toString(dataState);
-                            break;
-                    }
+                    var dataStateString = switch (dataState) {
+                        case TelephonyManager.DATA_DISCONNECTED -> "disconnected";
+                        case TelephonyManager.DATA_CONNECTING -> "connecting";
+                        case TelephonyManager.DATA_CONNECTED -> "connected";
+                        case TelephonyManager.DATA_SUSPENDED -> "suspended";
+                        default -> Integer.toString(dataState);
+                    };
                     out.name("data_state").value(dataStateString);
 
                     int phoneType = manager.getPhoneType();
@@ -243,89 +213,40 @@ public class TelephonyAPI {
 
                     out.name("device_id").value(device_id);
                     out.name("device_software_version").value(manager.getDeviceSoftwareVersion());
-                    out.name("phone_count").value(manager.getPhoneCount());
-                    String phoneTypeString;
-                    switch (phoneType) {
-                        case TelephonyManager.PHONE_TYPE_CDMA:
-                            phoneTypeString = "cdma";
-                            break;
-                        case TelephonyManager.PHONE_TYPE_GSM:
-                            phoneTypeString = "gsm";
-                            break;
-                        case TelephonyManager.PHONE_TYPE_NONE:
-                            phoneTypeString = "none";
-                            break;
-                        case TelephonyManager.PHONE_TYPE_SIP:
-                            phoneTypeString = "sip";
-                            break;
-                        default:
-                            phoneTypeString = Integer.toString(phoneType);
-                            break;
-                    }
+                    out.name("phone_count").value(manager.getActiveModemCount());
+                    var phoneTypeString = switch (phoneType) {
+                        case TelephonyManager.PHONE_TYPE_CDMA -> "cdma";
+                        case TelephonyManager.PHONE_TYPE_GSM -> "gsm";
+                        case TelephonyManager.PHONE_TYPE_NONE -> "none";
+                        case TelephonyManager.PHONE_TYPE_SIP -> "sip";
+                        default -> Integer.toString(phoneType);
+                    };
                     out.name("phone_type").value(phoneTypeString);
 
                     out.name("network_operator").value(manager.getNetworkOperator());
                     out.name("network_operator_name").value(manager.getNetworkOperatorName());
                     out.name("network_country_iso").value(manager.getNetworkCountryIso());
-                    int networkType = manager.getNetworkType();
-                    String networkTypeName;
-                    switch (networkType) {
-                        case TelephonyManager.NETWORK_TYPE_1xRTT:
-                            networkTypeName = "1xrtt";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_CDMA:
-                            networkTypeName = "cdma";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_EDGE:
-                            networkTypeName = "edge";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_EHRPD:
-                            networkTypeName = "ehrpd";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_EVDO_0:
-                            networkTypeName = "evdo_0";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_EVDO_A:
-                            networkTypeName = "evdo_a";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_EVDO_B:
-                            networkTypeName = "evdo_b";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_GPRS:
-                            networkTypeName = "gprs";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_HSDPA:
-                            networkTypeName = "hdspa";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_HSPA:
-                            networkTypeName = "hspa";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_HSPAP:
-                            networkTypeName = "hspap";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_HSUPA:
-                            networkTypeName = "hsupa";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_IDEN:
-                            networkTypeName = "iden";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_LTE:
-                            networkTypeName = "lte";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_UMTS:
-                            networkTypeName = "umts";
-                            break;
-                        case TelephonyManager.NETWORK_TYPE_UNKNOWN:
-                            networkTypeName = "unknown";
-                            break;
-                        default:
-                            if (networkType == TelephonyManager.NETWORK_TYPE_NR) {
-                                networkTypeName = "nr";
-                                break;
-                            }
-                            networkTypeName = Integer.toString(networkType);
-                            break;
-                    }
+                    int networkType = manager.getDataNetworkType();
+                    var networkTypeName = switch (networkType) {
+                        case TelephonyManager.NETWORK_TYPE_1xRTT -> "1xrtt";
+                        case TelephonyManager.NETWORK_TYPE_CDMA -> "cdma";
+                        case TelephonyManager.NETWORK_TYPE_EDGE -> "edge";
+                        case TelephonyManager.NETWORK_TYPE_EHRPD -> "ehrpd";
+                        case TelephonyManager.NETWORK_TYPE_EVDO_0 -> "evdo_0";
+                        case TelephonyManager.NETWORK_TYPE_EVDO_A -> "evdo_a";
+                        case TelephonyManager.NETWORK_TYPE_EVDO_B -> "evdo_b";
+                        case TelephonyManager.NETWORK_TYPE_GPRS -> "gprs";
+                        case TelephonyManager.NETWORK_TYPE_HSDPA -> "hdspa";
+                        case TelephonyManager.NETWORK_TYPE_HSPA -> "hspa";
+                        case TelephonyManager.NETWORK_TYPE_HSPAP -> "hspap";
+                        case TelephonyManager.NETWORK_TYPE_HSUPA -> "hsupa";
+                        case TelephonyManager.NETWORK_TYPE_IDEN -> "iden";
+                        case TelephonyManager.NETWORK_TYPE_LTE -> "lte";
+                        case TelephonyManager.NETWORK_TYPE_UMTS -> "umts";
+                        case TelephonyManager.NETWORK_TYPE_UNKNOWN -> "unknown";
+                        case TelephonyManager.NETWORK_TYPE_NR -> "nr";
+                        default -> Integer.toString(networkType);
+                    };
                     out.name("network_type").value(networkTypeName);
                     out.name("network_roaming").value(manager.isNetworkRoaming());
                     out.name("sim_country_iso").value(manager.getSimCountryIso());
@@ -345,30 +266,15 @@ public class TelephonyAPI {
                     out.name("sim_subscriber_id").value(subscriber_id);
 
                     int simState = manager.getSimState();
-                    String simStateString;
-                    switch (simState) {
-                        case TelephonyManager.SIM_STATE_ABSENT:
-                            simStateString = "absent";
-                            break;
-                        case TelephonyManager.SIM_STATE_NETWORK_LOCKED:
-                            simStateString = "network_locked";
-                            break;
-                        case TelephonyManager.SIM_STATE_PIN_REQUIRED:
-                            simStateString = "pin_required";
-                            break;
-                        case TelephonyManager.SIM_STATE_PUK_REQUIRED:
-                            simStateString = "puk_required";
-                            break;
-                        case TelephonyManager.SIM_STATE_READY:
-                            simStateString = "ready";
-                            break;
-                        case TelephonyManager.SIM_STATE_UNKNOWN:
-                            simStateString = "unknown";
-                            break;
-                        default:
-                            simStateString = Integer.toString(simState);
-                            break;
-                    }
+                    var simStateString = switch (simState) {
+                        case TelephonyManager.SIM_STATE_ABSENT -> "absent";
+                        case TelephonyManager.SIM_STATE_NETWORK_LOCKED -> "network_locked";
+                        case TelephonyManager.SIM_STATE_PIN_REQUIRED -> "pin_required";
+                        case TelephonyManager.SIM_STATE_PUK_REQUIRED -> "puk_required";
+                        case TelephonyManager.SIM_STATE_READY -> "ready";
+                        case TelephonyManager.SIM_STATE_UNKNOWN -> "unknown";
+                        default -> Integer.toString(simState);
+                    };
                     out.name("sim_state").value(simStateString);
                 }
 
