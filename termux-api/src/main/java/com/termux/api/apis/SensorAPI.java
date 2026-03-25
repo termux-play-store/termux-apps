@@ -145,20 +145,16 @@ public class SensorAPI {
         };
 
         protected static SensorCommandHandler getSensorCommandHandler(final String command) {
-            switch (command == null ? "" : command) {
-                case "list":
-                    return listHandler;
-                case "cleanup":
-                    return cleanupHandler;
-                case "sensors":
-                    return sensorHandler;
-                default:
-                    return (sensorManager, context, intent) -> {
-                        SensorCommandResult result = new SensorCommandResult();
-                        result.message = "Unknown command: " + command;
-                        return result;
-                    };
-            }
+            return switch (command) {
+                case "list" -> listHandler;
+                case "cleanup" -> cleanupHandler;
+                case "sensors" -> sensorHandler;
+                case null, default -> (sensorManager, context, intent) -> {
+                    SensorCommandResult result = new SensorCommandResult();
+                    result.message = "Unknown command: " + command;
+                    return result;
+                };
+            };
         }
 
         private void postSensorCommandResult(final Context context, final Intent intent,

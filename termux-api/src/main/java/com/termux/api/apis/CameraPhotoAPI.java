@@ -227,27 +227,19 @@ public class CameraPhotoAPI {
             sensorOrientation = 0;
         }
 
-        int deviceOrientation;
         final int deviceRotation =
                 ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
-        switch (deviceRotation) {
-            case Surface.ROTATION_0:
-                deviceOrientation = 0;
-                break;
-            case Surface.ROTATION_90:
-                deviceOrientation = 90;
-                break;
-            case Surface.ROTATION_180:
-                deviceOrientation = 180;
-                break;
-            case Surface.ROTATION_270:
-                deviceOrientation = 270;
-                break;
-            default:
+        int deviceOrientation = switch (deviceRotation) {
+            case Surface.ROTATION_0 -> 0;
+            case Surface.ROTATION_90 -> 90;
+            case Surface.ROTATION_180 -> 180;
+            case Surface.ROTATION_270 -> 270;
+            default -> {
                 Log.i(LOG_TAG,
-                        String.format("Default display has unknown rotation %d. Assuming 0 degrees.", deviceRotation));
-                deviceOrientation = 0;
-        }
+                    String.format("Default display has unknown rotation %d. Assuming 0 degrees.", deviceRotation));
+                yield 0;
+            }
+        };
         Log.i(LOG_TAG, String.format("Device orientation: %d degrees", deviceOrientation));
 
         int jpegOrientation;

@@ -69,15 +69,15 @@ public class CallLogAPI {
     }
 
     private static String getCallTypeString(int type) {
-        switch (type) {
-            case CallLog.Calls.BLOCKED_TYPE:    return "BLOCKED";
-            case CallLog.Calls.INCOMING_TYPE:   return "INCOMING";
-            case CallLog.Calls.MISSED_TYPE:     return "MISSED";
-            case CallLog.Calls.OUTGOING_TYPE:   return "OUTGOING";
-            case CallLog.Calls.REJECTED_TYPE:   return "REJECTED";
-            case CallLog.Calls.VOICEMAIL_TYPE:  return "VOICEMAIL";
-            default: return "UNKNOWN_TYPE";
-        }
+        return switch (type) {
+            case CallLog.Calls.BLOCKED_TYPE -> "BLOCKED";
+            case CallLog.Calls.INCOMING_TYPE -> "INCOMING";
+            case CallLog.Calls.MISSED_TYPE -> "MISSED";
+            case CallLog.Calls.OUTGOING_TYPE -> "OUTGOING";
+            case CallLog.Calls.REJECTED_TYPE -> "REJECTED";
+            case CallLog.Calls.VOICEMAIL_TYPE -> "VOICEMAIL";
+            default -> "UNKNOWN_TYPE";
+        };
     }
 
     private static String getCallerNameString(String name) {

@@ -388,35 +388,22 @@ public final class TerminalEmulator {
     }
 
     static int mapDecSetBitToInternalBit(int decsetBit) {
-        switch (decsetBit) {
-            case 1:
-                return DECSET_BIT_APPLICATION_CURSOR_KEYS;
-            case 5:
-                return DECSET_BIT_REVERSE_VIDEO;
-            case 6:
-                return DECSET_BIT_ORIGIN_MODE;
-            case 7:
-                return DECSET_BIT_AUTOWRAP;
-            case 25:
-                return DECSET_BIT_CURSOR_ENABLED;
-            case 66:
-                return DECSET_BIT_APPLICATION_KEYPAD;
-            case 69:
-                return DECSET_BIT_LEFTRIGHT_MARGIN_MODE;
-            case 1000:
-                return DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE;
-            case 1002:
-                return DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT;
-            case 1004:
-                return DECSET_BIT_SEND_FOCUS_EVENTS;
-            case 1006:
-                return DECSET_BIT_MOUSE_PROTOCOL_SGR;
-            case 2004:
-                return DECSET_BIT_BRACKETED_PASTE_MODE;
-            default:
-                return -1;
+        return switch (decsetBit) {
+            case 1 -> DECSET_BIT_APPLICATION_CURSOR_KEYS;
+            case 5 -> DECSET_BIT_REVERSE_VIDEO;
+            case 6 -> DECSET_BIT_ORIGIN_MODE;
+            case 7 -> DECSET_BIT_AUTOWRAP;
+            case 25 -> DECSET_BIT_CURSOR_ENABLED;
+            case 66 -> DECSET_BIT_APPLICATION_KEYPAD;
+            case 69 -> DECSET_BIT_LEFTRIGHT_MARGIN_MODE;
+            case 1000 -> DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE;
+            case 1002 -> DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT;
+            case 1004 -> DECSET_BIT_SEND_FOCUS_EVENTS;
+            case 1006 -> DECSET_BIT_MOUSE_PROTOCOL_SGR;
+            case 2004 -> DECSET_BIT_BRACKETED_PASTE_MODE;
+            default -> -1;
             // throw new IllegalArgumentException("Unsupported decset: " + decsetBit);
-        }
+        };
     }
 
     public TerminalEmulator(TerminalOutput session, int columns, int rows, int cellWidthPixels, int cellHeightPixels, Integer transcriptRows, TerminalSessionClient client) {
@@ -603,11 +590,10 @@ public final class TerminalEmulator {
                         // "It is not possible to use a C1 control obtained from decoding the
                         // UTF-8 text" - http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
                     } else {
-                        switch (Character.getType(codePoint)) {
-                            case Character.UNASSIGNED:
-                            case Character.SURROGATE:
-                                codePoint = UNICODE_REPLACEMENT_CHAR;
-                        }
+                        codePoint = switch (Character.getType(codePoint)) {
+                            case Character.UNASSIGNED, Character.SURROGATE -> UNICODE_REPLACEMENT_CHAR;
+                            default -> codePoint;
+                        };
                         processCodePoint(codePoint);
                     }
                 }
@@ -1060,21 +1046,13 @@ public final class TerminalEmulator {
                             }
 
                             String trans = transBuffer.toString();
-                            String responseValue;
-                            switch (trans) {
-                                case "Co":
-                                case "colors":
-                                    responseValue = "256"; // Number of colors.
-                                    break;
-                                case "TN":
-                                case "name":
-                                    responseValue = "xterm";
-                                    break;
-                                default:
-                                    responseValue = KeyHandler.getCodeFromTermcap(trans, isDecsetInternalBitSet(DECSET_BIT_APPLICATION_CURSOR_KEYS),
+                            String responseValue = switch (trans) {
+                                case "Co", "colors" -> "256"; // Number of colors.
+                                case "TN", "name" -> "xterm";
+                                default ->
+                                    KeyHandler.getCodeFromTermcap(trans, isDecsetInternalBitSet(DECSET_BIT_APPLICATION_CURSOR_KEYS),
                                         isDecsetInternalBitSet(DECSET_BIT_APPLICATION_KEYPAD));
-                                    break;
-                            }
+                            };
                             if (responseValue == null) {
                                 switch (trans) {
                                     case "%1": // Help key - ignore

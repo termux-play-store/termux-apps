@@ -73,12 +73,11 @@ public abstract class TerminalTestCase extends TestCase {
 			this.newTitle = newTitle;
 		}
 
-		@Override
-		public boolean equals(Object o) {
-			if (!(o instanceof ChangedTitle)) return false;
-			ChangedTitle other = (ChangedTitle) o;
-			return Objects.equals(oldTitle, other.oldTitle) && Objects.equals(newTitle, other.newTitle);
-		}
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ChangedTitle other)) return false;
+            return Objects.equals(oldTitle, other.oldTitle) && Objects.equals(newTitle, other.newTitle);
+        }
 
 		@Override
 		public int hashCode() {

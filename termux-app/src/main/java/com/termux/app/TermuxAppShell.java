@@ -23,15 +23,12 @@ public final class TermuxAppShell {
         @NonNull
         private final String shell;
         @NonNull
-        private final InputStream inputStream;
-        @NonNull
         private final BufferedReader reader;
 
         public StreamGobbler(@NonNull String shell, @NonNull InputStream inputStream) {
             super("TermuxStreamGobbler");
             this.shell = shell;
-            this.inputStream = inputStream;
-            reader = new BufferedReader(new InputStreamReader(inputStream));
+            this.reader = new BufferedReader(new InputStreamReader(inputStream));
         }
 
         @Override
@@ -55,11 +52,9 @@ public final class TermuxAppShell {
     }
 
     private final Process mProcess;
-    private final TermuxService mAppShellClient;
 
-    private TermuxAppShell(@NonNull final Process process, final TermuxService appShellClient) {
+    private TermuxAppShell(@NonNull final Process process) {
         this.mProcess = process;
-        this.mAppShellClient = appShellClient;
     }
 
     public static @Nullable TermuxAppShell execute(@NonNull File executable,
@@ -81,7 +76,7 @@ public final class TermuxAppShell {
             return null;
         }
 
-        var appShell = new TermuxAppShell(process, termuxService);
+        var appShell = new TermuxAppShell(process);
         new Thread(() -> {
             try {
                 int mPid = TermuxShellUtils.getPid(process);

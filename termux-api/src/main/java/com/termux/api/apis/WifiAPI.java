@@ -79,27 +79,15 @@ public class WifiAPI {
                         out.name("timestamp").value(scan.timestamp);
 
                         int channelWidth = scan.channelWidth;
-                        String channelWidthMhz = "???";
-                        switch (channelWidth) {
-                            case ScanResult.CHANNEL_WIDTH_20MHZ:
-                                channelWidthMhz = "20";
-                                break;
-                            case ScanResult.CHANNEL_WIDTH_40MHZ:
-                                channelWidthMhz = "40";
-                                break;
-                            case ScanResult.CHANNEL_WIDTH_80MHZ:
-                                channelWidthMhz = "80";
-                                break;
-                            case ScanResult.CHANNEL_WIDTH_80MHZ_PLUS_MHZ:
-                                channelWidthMhz = "80+80";
-                                break;
-                            case ScanResult.CHANNEL_WIDTH_160MHZ:
-                                channelWidthMhz = "160";
-                                break;
-                            case ScanResult.CHANNEL_WIDTH_320MHZ:
-                                channelWidthMhz = "320";
-                                break;
-                        }
+                        String channelWidthMhz = switch (channelWidth) {
+                            case ScanResult.CHANNEL_WIDTH_20MHZ -> "20";
+                            case ScanResult.CHANNEL_WIDTH_40MHZ -> "40";
+                            case ScanResult.CHANNEL_WIDTH_80MHZ -> "80";
+                            case ScanResult.CHANNEL_WIDTH_80MHZ_PLUS_MHZ -> "80+80";
+                            case ScanResult.CHANNEL_WIDTH_160MHZ -> "160";
+                            case ScanResult.CHANNEL_WIDTH_320MHZ -> "320";
+                            default -> "???";
+                        };
                         out.name("channel_bandwidth_mhz").value(channelWidthMhz);
                         if (channelWidth != ScanResult.CHANNEL_WIDTH_20MHZ) {
                             // centerFreq0 says "Not used if the AP bandwidth is 20 MHz".

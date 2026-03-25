@@ -154,37 +154,24 @@ public class SmsInboxAPI {
     }
 
     private static String getMessageType(int type) {
-        switch (type)
-        {
-            case TextBasedSmsColumns.MESSAGE_TYPE_INBOX:
-                return "inbox";
-            case TextBasedSmsColumns.MESSAGE_TYPE_SENT:
-                return "sent";
-            case TextBasedSmsColumns.MESSAGE_TYPE_DRAFT:
-                return "draft";
-            case TextBasedSmsColumns.MESSAGE_TYPE_FAILED:
-                return "failed";
-            case TextBasedSmsColumns.MESSAGE_TYPE_OUTBOX:
-                return "outbox";
-            default:
-                return "";
-        }
+        return switch (type) {
+            case TextBasedSmsColumns.MESSAGE_TYPE_INBOX -> "inbox";
+            case TextBasedSmsColumns.MESSAGE_TYPE_SENT -> "sent";
+            case TextBasedSmsColumns.MESSAGE_TYPE_DRAFT -> "draft";
+            case TextBasedSmsColumns.MESSAGE_TYPE_FAILED -> "failed";
+            case TextBasedSmsColumns.MESSAGE_TYPE_OUTBOX -> "outbox";
+            default -> "";
+        };
     }
 
     private static Uri typeToContentURI(int type) {
-        switch (type) {
-            case TextBasedSmsColumns.MESSAGE_TYPE_SENT:
-                return Sms.Sent.CONTENT_URI;
-            case TextBasedSmsColumns.MESSAGE_TYPE_DRAFT:
-                return Sms.Draft.CONTENT_URI;
-            case TextBasedSmsColumns.MESSAGE_TYPE_OUTBOX:
-                return Sms.Outbox.CONTENT_URI;
-            case TextBasedSmsColumns.MESSAGE_TYPE_INBOX:
-                return Sms.Inbox.CONTENT_URI;
-            case TextBasedSmsColumns.MESSAGE_TYPE_ALL:
-            default:
-                return Sms.CONTENT_URI;
-        }
+        return switch (type) {
+            case TextBasedSmsColumns.MESSAGE_TYPE_SENT -> Sms.Sent.CONTENT_URI;
+            case TextBasedSmsColumns.MESSAGE_TYPE_DRAFT -> Sms.Draft.CONTENT_URI;
+            case TextBasedSmsColumns.MESSAGE_TYPE_OUTBOX -> Sms.Outbox.CONTENT_URI;
+            case TextBasedSmsColumns.MESSAGE_TYPE_INBOX -> Sms.Inbox.CONTENT_URI;
+            default -> Sms.CONTENT_URI;
+        };
     }
 
 }
