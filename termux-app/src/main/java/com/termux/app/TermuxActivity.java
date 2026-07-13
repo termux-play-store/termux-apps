@@ -326,6 +326,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 Manifest.permission.POST_NOTIFICATIONS
             );
         }
+
+        // Starting with Android 17, apps targeting SDK 37+ have local network access
+        // (e.g. ping, ssh to LAN devices) blocked unless this runtime permission is granted.
+        // See https://developer.android.com/privacy-and-security/local-network-permission
+        if (Build.VERSION.SDK_INT >= 37) {
+            TermuxPermissionUtils.requestPermissions(this,
+                TermuxPermissionUtils.REQUEST_ACCESS_LOCAL_NETWORK,
+                TermuxPermissionUtils.PERMISSION_ACCESS_LOCAL_NETWORK
+            );
+        }
     }
 
     @Override
