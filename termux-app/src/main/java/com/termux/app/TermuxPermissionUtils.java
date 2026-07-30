@@ -21,6 +21,7 @@ public class TermuxPermissionUtils {
 
     public static final int REQUEST_DISABLE_BATTERY_OPTIMIZATIONS = 2001;
     public static final int REQUEST_POST_NOTIFICATIONS = 2002;
+    public static final int REQUEST_ACCESS_LOCAL_NETWORK = 2003;
 
     /**
      * Check which permissions that has not been granted.

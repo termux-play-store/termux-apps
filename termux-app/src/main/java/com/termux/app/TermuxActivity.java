@@ -326,6 +326,16 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 Manifest.permission.POST_NOTIFICATIONS
             );
         }
+
+        // Android 17 (API 37) enforces Local Network Protection: without ACCESS_LOCAL_NETWORK the
+        // OS blocks all LAN traffic, making sshd and other servers unreachable. The permission
+        // exists from API 36 but is only enforced at 37+, so request it there.
+        if (Build.VERSION.SDK_INT >= 37) {
+            TermuxPermissionUtils.requestPermissions(this,
+                TermuxPermissionUtils.REQUEST_ACCESS_LOCAL_NETWORK,
+                Manifest.permission.ACCESS_LOCAL_NETWORK
+            );
+        }
     }
 
     @Override

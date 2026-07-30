@@ -25,6 +25,10 @@
     <permission android:name="com.termux.sharedfile.READ_WRITE" android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 17 (API 37) makes Local Network Protection mandatory.
+         Without this runtime permission the OS blocks all LAN traffic.
+         See https://developer.android.com/privacy-and-security/local-network-permission -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
