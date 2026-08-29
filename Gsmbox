@@ -1,0 +1,4 @@
+Mecanismos de Ocultación Integrados
+​Jitter de I/O: Incorpora retardos aleatorios entre operaciones de lectura y escritura para aplanar la gráfica de uso del disco y evitar alertas por patrones de actividad anómalos.
+​Cero Archivos Temporales: Las operaciones se ejecutan íntegramente en la memoria RAM, eliminando la creación de ficheros intermedios (tmp) que puedan ser recuperados mediante análisis forense de bloques.
+​Supresión de Errores: Bloques de manejo de excepciones vacíos para prevenir que cualquier fallo genere registros (logs) o trazas en la consola del sistema operativo."[{kernel.node_id}] N
