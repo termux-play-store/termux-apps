@@ -97,13 +97,13 @@ abstract class DownloadFontsTask : DefaultTask() {
 
     @TaskAction
     fun action() {
-        val nerdFontsVersion = "3.4.0"
+        val nerdFontsVersion = "3.5.1"
         val fonts = mapOf(
             "Adwaita-Mono" to "AdwaitaMonoNerdFont-Regular.ttf",
             "Anonymous-Pro" to "AnonymiceProNerdFont-Regular.ttf",
             "Atkinson-Hyperlegible-Mono" to "AtkynsonMonoNerdFont-Regular.otf",
             "Cascadia-Code" to "CaskaydiaCoveNerdFont-Regular.ttf",
-            "D2-Coding" to "D2CodingLigatureNerdFont-Regular.ttf",
+            "D2-Coding" to "D2KodingLigatureNerdFont-Regular.ttf",
             "DejaVu-Sans-Mono" to "DejaVuSansMNerdFont-Regular.ttf",
             "Fantasque-Sans-Mono" to "FantasqueSansMNerdFont-Regular.ttf",
             "Fira-Code" to "FiraCodeNerdFont-Regular.ttf",
@@ -130,7 +130,7 @@ abstract class DownloadFontsTask : DefaultTask() {
             val fontPack = if (fontName == "Go-Mono") fontName else fontName.replace("-", "")
             val fontUrl =
                 "https://github.com/ryanoasis/nerd-fonts/releases/download/v${nerdFontsVersion}/${fontPack}.zip"
-            val cacheDir = File(buildDirectory.asFile.get(), "termux-fonts")
+            val cacheDir = File(buildDirectory.asFile.get(), "termux-fonts/$nerdFontsVersion")
             val zipFile = File(cacheDir, "${fontPack}.zip")
             downloadFile(zipFile, fontUrl)
             val destinationDir = "src/main/assets/fonts/"

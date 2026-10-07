@@ -85,15 +85,15 @@ android {
 }
 
 dependencies {
-    implementation("androidx.annotation:annotation:1.10.0")
-    implementation("androidx.core:core:1.19.0")
+    implementation("androidx.annotation:annotation:1.11.0")
+    implementation("androidx.core:core:1.19.1")
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
     implementation("androidx.viewpager:viewpager:1.1.0")
     implementation("com.google.android.material:material:1.14.0")
     implementation(project(":terminal-view"))
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.16.1")
+    testImplementation("org.robolectric:robolectric:4.17")
 }
 
 tasks.register("versionName") {
@@ -168,11 +168,11 @@ tasks.register("downloadPrebuilt") {
     val projectDir = layout.projectDirectory
 
     doLast {
-        val bootstrapVersion = "2026.06.21-r2"
+        val bootstrapVersion = "2026.10.04-r1"
         val arches = mapOf(
-            "aarch64" to "0aaa4b890c4de28c1da01c2a12bfbf342009faf626e6b504aed303e6a936bebe",
-            "arm" to "a0c3f9c0bb313ad5e371150a462bfe975c0108a444cf6f7f8c89173b9e9dc5f8",
-            "x86_64" to "1799aef733532fe29eb913968302d681a9d22b5c38654b980330ceb0e182aa64"
+            "aarch64" to "75a71ea34d5a0acef2cf15849b31b11d5c293fc34df5c74f4f905438202dad0d",
+            "arm" to "2e053f50d36b01d00c330b509001fd630661a44a54998db503311033147d4ac6",
+            "x86_64" to "3a2cd78d8546dad406a52b0458299b625ab059174503c70b4cd1c7093ae6069e"
         )
         arches.forEach { (arch, checksum) ->
             val downloadTo = "src/main/cpp/bootstrap-${arch}.zip"
