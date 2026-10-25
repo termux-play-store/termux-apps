@@ -98,33 +98,35 @@ abstract class DownloadFontsTask : DefaultTask() {
     @TaskAction
     fun action() {
         val nerdFontsVersion = "3.5.1"
+        // Use Nerd Font Mono variants so patched icons fit a single terminal cell.
+        // "Mono" in the original family name alone does not select this variant.
         val fonts = mapOf(
-            "Adwaita-Mono" to "AdwaitaMonoNerdFont-Regular.ttf",
-            "Anonymous-Pro" to "AnonymiceProNerdFont-Regular.ttf",
-            "Atkinson-Hyperlegible-Mono" to "AtkynsonMonoNerdFont-Regular.otf",
-            "Cascadia-Code" to "CaskaydiaCoveNerdFont-Regular.ttf",
-            "D2-Coding" to "D2KodingLigatureNerdFont-Regular.ttf",
-            "DejaVu-Sans-Mono" to "DejaVuSansMNerdFont-Regular.ttf",
-            "Fantasque-Sans-Mono" to "FantasqueSansMNerdFont-Regular.ttf",
-            "Fira-Code" to "FiraCodeNerdFont-Regular.ttf",
-            "Fira-Mono" to "FiraMonoNerdFont-Regular.otf",
-            "Go-Mono" to "GoMonoNerdFont-Regular.ttf",
-            "Hack" to "HackNerdFont-Regular.ttf",
-            "Hermit" to "HurmitNerdFont-Regular.otf",
-            "Inconsolata" to "InconsolataNerdFont-Regular.ttf",
-            "Iosevka" to "IosevkaNerdFont-Regular.ttf",
-            "JetBrains-Mono" to "JetBrainsMonoNerdFont-Regular.ttf",
-            "Liberation-Mono" to "LiterationMonoNerdFont-Regular.ttf",
-            "Meslo" to "MesloLGLNerdFont-Regular.ttf",
-            "Monofur" to "MonofurNerdFont-Regular.ttf",
-            "Monoid" to "MonoidNerdFont-Regular.ttf",
-            "Noto" to "NotoMonoNerdFont-Regular.ttf",
-            "OpenDyslexic" to "OpenDyslexicMNerdFont-Regular.otf",
-            "Roboto-Mono" to "RobotoMonoNerdFont-Regular.ttf",
-            "Source-Code-Pro" to "SauceCodeProNerdFont-Regular.ttf",
-            "Terminus" to "TerminessNerdFont-Regular.ttf",
-            "Ubuntu-Mono" to "UbuntuMonoNerdFont-Regular.ttf",
-            "Victor-Mono" to "VictorMonoNerdFont-Regular.ttf"
+            "Adwaita-Mono" to "AdwaitaMonoNerdFontMono-Regular.ttf",
+            "Anonymous-Pro" to "AnonymiceProNerdFontMono-Regular.ttf",
+            "Atkinson-Hyperlegible-Mono" to "AtkynsonMonoNerdFontMono-Regular.otf",
+            "Cascadia-Code" to "CaskaydiaCoveNerdFontMono-Regular.ttf",
+            "D2-Coding" to "D2KodingLigatureNerdFontMono-Regular.ttf",
+            "DejaVu-Sans-Mono" to "DejaVuSansMNerdFontMono-Regular.ttf",
+            "Fantasque-Sans-Mono" to "FantasqueSansMNerdFontMono-Regular.ttf",
+            "Fira-Code" to "FiraCodeNerdFontMono-Regular.ttf",
+            "Fira-Mono" to "FiraMonoNerdFontMono-Regular.otf",
+            "Go-Mono" to "GoMonoNerdFontMono-Regular.ttf",
+            "Hack" to "HackNerdFontMono-Regular.ttf",
+            "Hermit" to "HurmitNerdFontMono-Regular.otf",
+            "Inconsolata" to "InconsolataNerdFontMono-Regular.ttf",
+            "Iosevka" to "IosevkaNerdFontMono-Regular.ttf",
+            "JetBrains-Mono" to "JetBrainsMonoNerdFontMono-Regular.ttf",
+            "Liberation-Mono" to "LiterationMonoNerdFontMono-Regular.ttf",
+            "Meslo" to "MesloLGLNerdFontMono-Regular.ttf",
+            "Monofur" to "MonofurNerdFontMono-Regular.ttf",
+            "Monoid" to "MonoidNerdFontMono-Regular.ttf",
+            "Noto" to "NotoMonoNerdFontMono-Regular.ttf",
+            "OpenDyslexic" to "OpenDyslexicMNerdFontMono-Regular.otf",
+            "Roboto-Mono" to "RobotoMonoNerdFontMono-Regular.ttf",
+            "Source-Code-Pro" to "SauceCodeProNerdFontMono-Regular.ttf",
+            "Terminus" to "TerminessNerdFontMono-Regular.ttf",
+            "Ubuntu-Mono" to "UbuntuMonoNerdFontMono-Regular.ttf",
+            "Victor-Mono" to "VictorMonoNerdFontMono-Regular.ttf"
         )
         fonts.forEach { (fontName, fontFile) ->
             val fontPack = if (fontName == "Go-Mono") fontName else fontName.replace("-", "")
