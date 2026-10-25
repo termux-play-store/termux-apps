@@ -143,6 +143,25 @@ abstract class DownloadFontsTask : DefaultTask() {
                 eachFile { relativePath = RelativePath(true, destinationFileName) }
             }
         }
+
+        // Monaspace's official Nerd Fonts builds already size icons to a single cell.
+        val monaspaceVersion = "1.400"
+        val monaspaceArchive = "monaspace-nerdfonts-v$monaspaceVersion.zip"
+        val monaspaceZip = File(
+            buildDirectory.asFile.get(),
+            "termux-fonts/monaspace/$monaspaceVersion/$monaspaceArchive"
+        )
+        downloadFile(
+            monaspaceZip,
+            "https://github.com/githubnext/monaspace/releases/download/v$monaspaceVersion/$monaspaceArchive"
+        )
+        val monaspaceFonts = fileOperations.zipTree(monaspaceZip)
+        val neonFont = "NerdFonts/Monaspace Neon/MonaspaceNeonNF-Regular.otf"
+        fs.copy {
+            from(monaspaceFonts.matching { include(neonFont) }.singleFile)
+            into("src/main/assets/fonts/")
+            rename { "Monaspace-Neon.ttf" }
+        }
     }
 
     fun downloadFile(downloadTo: File, remoteUrl: String) {
