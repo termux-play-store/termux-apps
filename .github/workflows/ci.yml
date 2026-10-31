@@ -29,26 +29,18 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.javaVersion }}
-    - name: Lint
-      run: ./gradlew lint
-    - name: Test
-      run: ./gradlew test
-    - name: Assemble Debug
-      shell: bash
-      run: |
-        ./gradlew assembleDebug
-        DIRNAME=upload/termux-debug-apks-"$GITHUB_SHA"
-        mkdir -p "$DIRNAME"
-        shopt -s globstar; for file in termux-*/**/*.apk; do FILENAME="$(basename "$file")"; cp "$file" "$DIRNAME"/"${FILENAME/.apk/-$GITHUB_SHA.apk}"; done
+    - uses: gradle/actions/setup-gradle@v6
+    - name: Lint, test and build debug APKs
+      run: ./gradlew --build-cache lint test assembleDebug
     - uses: actions/upload-artifact@v7
-      if: matrix.javaVersion == '21'
+      if: github.ref == 'refs/heads/main' && matrix.javaVersion == 21
       with:
-        name: termux-debug-apks-${{ github.sha }}
-        path: upload/
-
-  gradle-wrapper-validation:
-    name: Validate gradle wrappers
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: gradle/actions/wrapper-validation@v6
+        path: termux-app/build/outputs/apk/debug/termux-app-debug.apk
+        archive: false
+        if-no-files-found: error
+    - uses: actions/upload-artifact@v7
+      if: github.ref == 'refs/heads/main' && matrix.javaVersion == 21
+      with:
+        path: termux-style/build/outputs/apk/debug/termux-style-debug.apk
+        archive: false
+        if-no-files-found: error

@@ -20,6 +20,8 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - uses: gradle/actions/setup-gradle@v6
+
       - name: Attach APK to release
         shell: bash
         env:
@@ -66,7 +68,7 @@ jobs:
             exit 1
           fi
 
-          ./gradlew :"$RELEASED_APP":assembleDebug
+          ./gradlew --build-cache :"$RELEASED_APP":assembleDebug
 
           BUILT_APK=./"$RELEASED_APP"/build/outputs/apk/debug/"$RELEASED_APP"-debug.apk
           UPLOAD_APK="$RELEASED_APP"-debug-$RELEASED_VERSION.apk
