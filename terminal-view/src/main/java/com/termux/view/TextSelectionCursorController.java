@@ -31,6 +31,7 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
     public final int ACTION_COPY = 1;
     public final int ACTION_PASTE = 2;
     public final int ACTION_MORE = 3;
+    public final int ACTION_SELECT_ALL = 4;
 
     public TextSelectionCursorController(TerminalView terminalView) {
         this.terminalView = terminalView;
@@ -101,7 +102,7 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
             }
         }
     }
-    
+
     public void setActionModeCallBacks() {
         final ActionMode.Callback callback = new ActionMode.Callback() {
             @Override
@@ -111,6 +112,7 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
                 ClipboardManager clipboard = (ClipboardManager) terminalView.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 menu.add(Menu.NONE, ACTION_COPY, Menu.NONE, R.string.copy_text).setShowAsAction(show);
                 menu.add(Menu.NONE, ACTION_PASTE, Menu.NONE, R.string.paste_text).setEnabled(clipboard != null && clipboard.hasPrimaryClip()).setShowAsAction(show);
+                menu.add(Menu.NONE, ACTION_SELECT_ALL, Menu.NONE, R.string.select_all_text).setShowAsAction(show);
                 menu.add(Menu.NONE, ACTION_MORE, Menu.NONE, R.string.text_selection_more);
                 return true;
             }
@@ -136,6 +138,9 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
                     case ACTION_PASTE:
                         terminalView.stopTextSelectionMode();
                         terminalView.mTermSession.onPasteTextFromClipboard();
+                        break;
+                    case ACTION_SELECT_ALL:
+                        selectAll();
                         break;
                     case ACTION_MORE:
                         // We first store the selected text in case TerminalViewClient needs the
@@ -345,19 +350,46 @@ public class TextSelectionCursorController implements ViewTreeObserver.OnTouchMo
         return mIsSelectingText;
     }
 
+    /**
+     * Select All Text
+     */
+    public void selectAll() {
+        TerminalBuffer screen = terminalView.mEmulator.getScreen();
+        final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
 
-    /** Get the currently selected text. */
+        mSelX1 = 0;
+        mSelY1 = -scrollRows;
+        mSelX2 = terminalView.mEmulator.mColumns - 1;
+        mSelY2 = terminalView.mEmulator.mRows - 1;
+
+        mStartHandle.positionAtCursor(mSelX1, mSelY1, true);
+        mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, true);
+
+        terminalView.invalidate();
+
+        if (mActionMode != null) {
+            mActionMode.invalidate();
+        }
+    }
+
+    /**
+     * Get the currently selected text.
+     */
     public String getSelectedText() {
         return terminalView.mEmulator.getSelectedText(mSelX1, mSelY1, mSelX2, mSelY2);
     }
 
-    /** Get the selected text stored before "MORE" button was pressed on the context menu. */
+    /**
+     * Get the selected text stored before "MORE" button was pressed on the context menu.
+     */
     @Nullable
     public String getStoredSelectedText() {
         return mStoredSelectedText;
     }
 
-    /** Unset the selected text stored before "MORE" button was pressed on the context menu. */
+    /**
+     * Unset the selected text stored before "MORE" button was pressed on the context menu.
+     */
     public void unsetStoredSelectedText() {
         mStoredSelectedText = null;
     }
