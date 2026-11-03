@@ -80,8 +80,6 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
 
     private BellHandler mBellHandler;
 
-    private static final int MAX_SESSIONS = 8;
-
     private SoundPool mBellSoundPool;
 
     private int mBellSoundId;
@@ -381,7 +379,7 @@ public final class TermuxTerminalSessionActivityClient implements TerminalSessio
             return;
         }
 
-        if (service.getTermuxSessionsSize() >= MAX_SESSIONS) {
+        if (service.getTermuxSessionsSize() >= mActivity.mProperties.getMaxSessions()) {
             new AlertDialog.Builder(mActivity)
                 .setTitle(R.string.title_max_terminals_reached)
                 .setMessage(R.string.msg_max_terminals_reached)

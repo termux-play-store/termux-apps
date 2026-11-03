@@ -73,4 +73,27 @@ public final class TermuxProperties {
         };
     }
 
+    public static final int MAX_SESSIONS_DEFAULT = 8;
+
+    /** The maximum number of terminal sessions that the new session button may create. */
+    public int getMaxSessions() {
+        return parseMaxSessions(properties.getProperty("max-sessions"));
+    }
+
+    static int parseMaxSessions(String value) {
+        if (value == null) {
+            return MAX_SESSIONS_DEFAULT;
+        }
+        try {
+            int maxSessions = Integer.parseInt(value.trim());
+            if (maxSessions >= 1) {
+                return maxSessions;
+            }
+        } catch (NumberFormatException e) {
+            // Handled below.
+        }
+        Log.w(TermuxConstants.LOG_TAG, "Invalid 'max-sessions' value: '" + value + "'");
+        return MAX_SESSIONS_DEFAULT;
+    }
+
 }
