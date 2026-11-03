@@ -18,7 +18,7 @@
     <string name="action_new_session">New session</string>
     <string name="action_new_session_failsafe">New failsafe session</string>
     <string name="title_max_terminals_reached">Max terminals reached</string>
-    <string name="msg_max_terminals_reached">Close down existing ones before creating new.</string>
+    <string name="msg_max_terminals_reached">Close down existing ones before creating new, or raise max-sessions in ~/.termux/termux.properties.</string>
     <string name="title_rename_session">Set session name</string>
     <string name="hint_session_name">Session name</string>
     <string name="action_rename_session_confirm">Set</string>
