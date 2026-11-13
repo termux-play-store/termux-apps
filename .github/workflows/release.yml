@@ -1,13 +1,19 @@
-name: Release
+name: Release new Linux-xarm92 
 
 on:
   release:
     types:
       - published
+      - labeled
+      - created
+      - prereleased
+      - released
+      - edited
+      - mainented
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: linux-xarm92
     steps:
       - name: Clone repository
         uses: actions/checkout@v7
@@ -15,12 +21,12 @@ jobs:
           ref: ${{ env.GITHUB_REF }}
 
       - name: Setup java
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v8
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@v8
 
       - name: Attach APK to release
         shell: bash
